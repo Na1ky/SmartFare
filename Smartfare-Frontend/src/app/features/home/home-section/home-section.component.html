@@ -37,7 +37,7 @@
 </div>
 
 <!-- Featured Itineraries Section -->
-<app-featured-itineraries [itineraries]="publicItineraries()"></app-featured-itineraries>
+<app-featured-itineraries [itineraries]="publicItineraries()" [loading]="isLoadingPublicItineraries()"></app-featured-itineraries>
 
 <!-- Features Section -->
 <app-features-grid></app-features-grid>

@@ -1,47 +1,63 @@
-<section class="features-section">
+<section class="sp-platform-showcase">
   <div class="container">
-    <div class="row mb-5 text-center" appRevealOnScroll="fade-up">
-      <div class="col-lg-8 mx-auto">
-        <h2 class="display-5 fw-bold text-white mb-3">Viaggia Più Intelligente, Non Più Difficile</h2>
-        <p class="text-secondary fs-5">La nostra piattaforma combina l'IA all'avanguardia con la conoscenza locale per creare esperienze di viaggio senza interruzioni.</p>
+    <!-- Center Header Content -->
+    <div class="sp-showcase-header" appRevealOnScroll="fade-up">
+      <div class="sp-tag">LA NOSTRA PIATTAFORMA</div>
+      <h2 class="sp-title">Viaggia Più Intelligente, <br> Non Più Difficile</h2>
+      <p class="sp-description">
+        SmartFare combina l'IA all'avanguardia con una profonda conoscenza locale per creare <br class="d-none d-lg-block"> 
+        esperienze di viaggio personalizzate, fluide e adatte al tuo spirito avventuriero.
+      </p>
+      
+      <div class="sp-actions">
+        <button class="sp-btn-primary">Inizia il Viaggio</button>
+        <button class="sp-btn-outline">Guarda Demo</button>
       </div>
     </div>
 
-    <div class="features-grid">
-      <div class="feature-card large" appRevealOnScroll="fade-up">
-        <div class="feature-tag">Assistente IA</div>
-        <h3>Pianificazione Smart</h3>
-        <p>Dicci le tue preferenze e la nostra IA costruirà un itinerario personalizzato giorno per giorno con trasporti e meteo in tempo reale.</p>
-        <div class="feature-icon"><i class="bi bi-magic"></i></div>
-      </div>
-
-      <div class="feature-card blue" appRevealOnScroll="fade-up" [revealDelay]="100">
-        <div class="feature-icon"><i class="bi bi-map"></i></div>
-        <h3>Mappe Interattive</h3>
-        <p>Sincronizza il tuo itinerario con le nostre mappe dinamiche. Trova spiagge, parcheggi e caffè con un solo tocco.</p>
-        <div class="feature-visual"></div>
-      </div>
-
-      <div class="feature-card summary" appRevealOnScroll="fade-up" [revealDelay]="200">
-        <div>
-          <div class="feature-icon"><i class="bi bi-file-earmark-pdf"></i></div>
-          <h3>Riepilogo del Viaggio</h3>
-          <p>Esporta l'intero viaggio in un bellissimo PDF condivisibile o in un riepilogo web interattivo. Conserva i tuoi ricordi in un unico pacchetto stupendo.</p>
+    <!-- Massive Centered Preview -->
+    <div class="sp-preview-container" appRevealOnScroll="fade-up" [revealDelay]="200">
+      <div class="sp-browser-frame">
+        <div class="sp-browser-toolbar">
+          <div class="sp-toolbar-dots">
+            <span class="dot-red"></span>
+            <span class="dot-yellow"></span>
+            <span class="dot-green"></span>
+          </div>
+          <div class="sp-toolbar-address">smartfare.it/planner/genova-trip</div>
         </div>
-        <div class="summary-visual ms-auto d-none d-lg-block">
-          <div style="background: white; padding: 20px; border-radius: 12px; width: 300px; color: #333; font-size: 0.8rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-            <div class="d-flex align-items-center mb-3">
-              <div style="width: 32px; height: 32px; background: #e0f2fe; color: #0369a1; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: bold; margin-right: 10px;">CW</div>
-              <div>
-                <div style="font-weight: 800; color: #0369a1;">Portugal Coastline</div>
-                <div style="font-size: 0.65rem; color: #64748b;">TRIP SUMMARY</div>
-              </div>
-            </div>
-            <div class="d-flex justify-content-between mb-2"><span>Total Distance</span><strong>420 km</strong></div>
-            <div class="d-flex justify-content-between mb-2"><span>Days Explored</span><strong>12</strong></div>
-            <div class="d-flex justify-content-between"><span>Spots Visited</span><strong>34</strong></div>
+        <div class="sp-browser-content">
+          <img src="assets/preview.png" alt="SmartFare Platform Preview">
+          
+          <!-- Decorative Floating Elements -->
+          <div class="sp-floating-badge b1" appRevealOnScroll="fade-right" [revealDelay]="400">
+            <i class="bi bi-stars"></i>
+            <span>Ottimizzazione IA</span>
+          </div>
+          <div class="sp-floating-badge b2" appRevealOnScroll="fade-left" [revealDelay]="500">
+            <i class="bi bi-map"></i>
+            <span>Mappe Live</span>
           </div>
         </div>
+      </div>
+      
+      <!-- Bottom Shine Effect -->
+      <div class="sp-glow-effect"></div>
+    </div>
+    
+    <!-- Optional: Minimal Feature List at Bottom -->
+    <div class="sp-mini-features" appRevealOnScroll="fade-up" [revealDelay]="300">
+      <div class="mini-item">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <span>Pianificazione Istantanea</span>
+      </div>
+      <div class="mini-item">
+        <i class="bi bi-shield-check"></i>
+        <span>Dati Verificati</span>
+      </div>
+      <div class="mini-item">
+        <i class="bi bi-cloud-arrow-down-fill"></i>
+        <span>Export Offline</span>
       </div>
     </div>
   </div>

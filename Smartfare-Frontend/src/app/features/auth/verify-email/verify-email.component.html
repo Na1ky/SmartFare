@@ -1,45 +1,81 @@
-<div class="verify-container">
-  <div class="verify-card glass-morphism">
-    <div class="header">
-      <div class="logo">
-        <img src="/assets/logo.png" alt="SmartFare Logo" onerror="this.src='https://rpcgfwithmoyezrdeahj.supabase.co/storage/v1/object/public/hotels/hotel.avif'"/>
-        <span>SMARTFARE</span>
+<div class="sp-auth-page">
+  <div class="sp-bg-canvas-container">
+    <div class="world-map-layer"></div>
+    <canvas #authCanvas class="sp-bg-canvas"></canvas>
+  </div>
+  <app-navbar class="sp-auth-navbar"></app-navbar>
+
+  <div class="sp-auth-wrapper">
+    <!-- Left Side: Visual -->
+    <div class="sp-auth-visual">
+      <div class="sp-visual-content">
+        <h1 class="sp-visual-title">Destinazione <br> confermata.</h1>
+        <p class="sp-visual-subtitle">Stiamo ultimando i preparativi per il tuo account. Un ultimo controllo e sarai pronto a partire.</p>
+        
+        <div class="sp-location-badge">
+          <span class="sp-location-icon">✅</span>
+          <div class="sp-location-details">
+            <span class="sp-location-name">Verifica Identità</span>
+            <span class="sp-location-desc">Il tuo account è quasi pronto</span>
+          </div>
+        </div>
       </div>
+      <div class="sp-visual-overlay"></div>
     </div>
 
-    <div class="content">
-      @if (isLoading) {
-        <div class="state-container">
-          <div class="spinner"></div>
-          <h2>Verifica in corso...</h2>
-          <p>Stiamo convalidando le tue credenziali. Un momento...</p>
-        </div>
-      }
-
-      @if (success) {
-        <div class="state-container success">
-          <div class="icon-wrapper">
-            <i class="bi bi-check-lg"></i>
+    <!-- Right Side: Content -->
+    <div class="sp-auth-content">
+      <div class="sp-auth-card">
+        <div class="sp-auth-header">
+          <div class="sp-logo-container">
+            <h2 class="sp-logo-text">Smart<span class="sp-text-accent">fare</span></h2>
           </div>
-          <h2>Email Verificata!</h2>
-          <p>Il tuo account è attivo. Verrai reindirizzato tra pochi secondi.</p>
+          <h1 class="sp-welcome-text">Verifica Email</h1>
         </div>
-      }
 
-      @if (error) {
-        <div class="state-container error">
-          <div class="icon-wrapper">
-            <i class="bi bi-x-lg"></i>
-          </div>
-          <h2>Errore di Verifica</h2>
-          <p>{{ error }}</p>
-          <button class="btn-action" (click)="goToLogin()">
-            <span>Torna al Login</span>
-            <i class="bi bi-arrow-right"></i>
-          </button>
+        <div class="sp-state-container">
+          @if (isLoading) {
+            <div class="sp-loading-state">
+              <div class="sp-spinner-wrapper">
+                <div class="sp-spinner"></div>
+              </div>
+              <h3 class="sp-state-title">Verifica in corso...</h3>
+              <p class="sp-state-text">Stiamo convalidando il tuo indirizzo email. Un momento...</p>
+            </div>
+          }
+
+          @if (success) {
+            <div class="sp-success-state">
+              <div class="sp-icon-circle success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <h3 class="sp-state-title">Email Verificata!</h3>
+              <p class="sp-state-text">Grazie! Il tuo indirizzo email è stato confermato correttamente. Verrai reindirizzato alla home tra pochi istanti.</p>
+            </div>
+          }
+
+          @if (error) {
+            <div class="sp-error-state">
+              <div class="sp-icon-circle error">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </div>
+              <h3 class="sp-state-title">Errore di Verifica</h3>
+              <p class="sp-state-text">{{ error }}</p>
+              <button class="sp-submit-btn" (click)="goToLogin()">
+                <span>Torna al Login</span>
+              </button>
+            </div>
+          }
         </div>
-      }
+      </div>
     </div>
   </div>
 </div>
+
+
 

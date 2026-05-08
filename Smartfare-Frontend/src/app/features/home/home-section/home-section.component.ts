@@ -45,6 +45,7 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   private backgroundVideos!: QueryList<ElementRef<HTMLVideoElement>>;
 
   protected readonly publicItineraries = signal<Itinerary[]>([]);
+  protected readonly isLoadingPublicItineraries = signal(true);
   private readonly itineraryService = inject(ItineraryService);
 
   protected readonly transitionMs = 1200;
@@ -85,10 +86,19 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   );
 
   ngOnInit(): void {
-    this.itineraryService.getPublicItineraries().subscribe(itineraries => {
-      this.publicItineraries.set(itineraries.filter(i => i.isPublished));
-      this.cdr.markForCheck();
+    this.isLoadingPublicItineraries.set(true);
+    this.itineraryService.getPublicItineraries().subscribe({
+      next: (itineraries) => {
+        this.publicItineraries.set(itineraries.filter(i => i.isPublished));
+        this.isLoadingPublicItineraries.set(false);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoadingPublicItineraries.set(false);
+        this.cdr.markForCheck();
+      }
     });
+
 
     if (this.reduceMotion) {
       this.heroLineTop.set(this.heroTypingLines[0] ?? '');

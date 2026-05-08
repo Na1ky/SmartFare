@@ -13,6 +13,7 @@ import { RevealOnScrollDirective } from '../../../core/directives/reveal-on-scro
 })
 export class FeaturedItinerariesComponent {
   @Input({ required: true }) itineraries: Itinerary[] = [];
+  @Input() loading = false;
 
   getDuration(itinerary: Itinerary): string {
     const days = itinerary.durationDays;

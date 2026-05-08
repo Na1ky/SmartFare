@@ -11,76 +11,88 @@
       </div>
     </div>
 
-    <div class="itinerary-grid">
-      @for (itinerary of itineraries; track itinerary.id) {
-        <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="$index * 100">
-          <div class="card-image-wrap">
-            <img [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800'" class="card-image" alt="Itinerary cover">
-          </div>
-          <div class="card-content">
-            <span class="location-tag">{{ itinerary.location?.name?.toUpperCase() || 'ITALIA' }}</span>
-            <h3>{{ itinerary.name }}</h3>
-            <p>{{ itinerary.description || 'Nessuna descrizione disponibile per questo itinerario.' }}</p>
-
-            <div class="card-meta-row">
-              <div class="card-meta-item">
-                <i class="bi bi-geo-alt-fill"></i>
-                <span>{{ itinerary.location?.name || 'Destinazione libera' }}</span>
-              </div>
-              <div class="card-meta-item">
-                <i class="bi bi-collection-fill"></i>
-                <span>{{ getItemCount(itinerary) }} {{ getItemCount(itinerary) === 1 ? 'tappa' : 'tappe' }}</span>
-              </div>
-            </div>
-
-            <div class="card-footer">
-              <span class="days-info">
-                <i class="bi bi-clock"></i>
-                {{ getDuration(itinerary) }}
-              </span>
-              <a [routerLink]="['/manual/planner']" [queryParams]="{ publicId: itinerary.id }" class="view-plan">
-                Vedi Piano <i class="bi bi-arrow-right"></i>
-              </a>
+    <div class="itinerary-grid" [class.is-loading]="loading">
+      @if (loading) {
+        <div class="loader-container">
+          <div class="premium-loader">
+            <div class="loader-ring"></div>
+            <div class="loader-compass">
+              <i class="bi bi-compass-fill"></i>
             </div>
           </div>
+          <p class="loader-text">Esplorando mete incredibili...</p>
         </div>
-      } @empty {
-        <div class="itinerary-card" appRevealOnScroll="fade-up">
-          <div class="card-image-wrap">
-            <img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800" class="card-image" alt="Amalfi">
-            <div class="card-badge"><i class="bi bi-star-fill"></i><span>4.9</span></div>
+      } @else {
+        @for (itinerary of itineraries; track itinerary.id) {
+          <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="$index * 100">
+            <div class="card-image-wrap">
+              <img [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800'" class="card-image" alt="Itinerary cover">
+            </div>
+            <div class="card-content">
+              <span class="location-tag">{{ itinerary.location?.name?.toUpperCase() || 'ITALIA' }}</span>
+              <h3>{{ itinerary.name }}</h3>
+              <p>{{ itinerary.description || 'Nessuna descrizione disponibile per questo itinerario.' }}</p>
+
+              <div class="card-meta-row">
+                <div class="card-meta-item">
+                  <i class="bi bi-geo-alt-fill"></i>
+                  <span>{{ itinerary.location?.name || 'Destinazione libera' }}</span>
+                </div>
+                <div class="card-meta-item">
+                  <i class="bi bi-collection-fill"></i>
+                  <span>{{ getItemCount(itinerary) }} {{ getItemCount(itinerary) === 1 ? 'tappa' : 'tappe' }}</span>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <span class="days-info">
+                  <i class="bi bi-clock"></i>
+                  {{ getDuration(itinerary) }}
+                </span>
+                <a [routerLink]="['/manual/planner']" [queryParams]="{ publicId: itinerary.id }" class="view-plan">
+                  Vedi Piano <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
           </div>
-          <div class="card-content">
-            <span class="location-tag">ITALY</span>
-            <h3>Amalfi Dream</h3>
-            <p>Esplora le grotte nascoste e i limoneti baciati dal sole lungo la costa.</p>
-            <div class="card-footer"><span class="days-info">7 Giorni</span><a href="#" class="view-plan">Vedi Piano <i class="bi bi-arrow-right"></i></a></div>
+        } @empty {
+          <div class="itinerary-card" appRevealOnScroll="fade-up">
+            <div class="card-image-wrap">
+              <img src="https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800" class="card-image" alt="Amalfi">
+              <div class="card-badge"><i class="bi bi-star-fill"></i><span>4.9</span></div>
+            </div>
+            <div class="card-content">
+              <span class="location-tag">ITALY</span>
+              <h3>Amalfi Dream</h3>
+              <p>Esplora le grotte nascoste e i limoneti baciati dal sole lungo la costa.</p>
+              <div class="card-footer"><span class="days-info">7 Giorni</span><a href="#" class="view-plan">Vedi Piano <i class="bi bi-arrow-right"></i></a></div>
+            </div>
           </div>
-        </div>
-        <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="100">
-          <div class="card-image-wrap">
-            <img src="https://images.unsplash.com/photo-1506929199175-60903ee11525?auto=format&fit=crop&q=80&w=800" class="card-image" alt="Santorini">
-            <div class="card-badge"><i class="bi bi-star-fill"></i><span>4.8</span></div>
+          <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="100">
+            <div class="card-image-wrap">
+              <img src="https://images.unsplash.com/photo-1506929199175-60903ee11525?auto=format&fit=crop&q=80&w=800" class="card-image" alt="Santorini">
+              <div class="card-badge"><i class="bi bi-star-fill"></i><span>4.8</span></div>
+            </div>
+            <div class="card-content">
+              <span class="location-tag">GREECE</span>
+              <h3>Santorini Sunset</h3>
+              <p>Un'esperienza curata tra spiagge vulcaniche, cantine boutique e panorami famosi.</p>
+              <div class="card-footer"><span class="days-info">5 Giorni</span><a href="#" class="view-plan">Vedi Piano <i class="bi bi-arrow-right"></i></a></div>
+            </div>
           </div>
-          <div class="card-content">
-            <span class="location-tag">GREECE</span>
-            <h3>Santorini Sunset</h3>
-            <p>Un'esperienza curata tra spiagge vulcaniche, cantine boutique e panorami famosi.</p>
-            <div class="card-footer"><span class="days-info">5 Giorni</span><a href="#" class="view-plan">Vedi Piano <i class="bi bi-arrow-right"></i></a></div>
+          <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="200">
+            <div class="card-image-wrap">
+              <img src="https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&q=80&w=800" class="card-image" alt="Ireland">
+              <div class="card-badge"><i class="bi bi-star-fill"></i><span>4.7</span></div>
+            </div>
+            <div class="card-content">
+              <span class="location-tag">IRELAND</span>
+              <h3>Wild Atlantic Way</h3>
+              <p>Vivi la bellezza selvaggia della costa occidentale irlandese, dalle scogliere ai pub locali.</p>
+              <div class="card-footer"><span class="days-info">10 Giorni</span><a href="#" class="view-plan">Vedi Piano <i class="bi bi-arrow-right"></i></a></div>
+            </div>
           </div>
-        </div>
-        <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="200">
-          <div class="card-image-wrap">
-            <img src="https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&q=80&w=800" class="card-image" alt="Ireland">
-            <div class="card-badge"><i class="bi bi-star-fill"></i><span>4.7</span></div>
-          </div>
-          <div class="card-content">
-            <span class="location-tag">IRELAND</span>
-            <h3>Wild Atlantic Way</h3>
-            <p>Vivi la bellezza selvaggia della costa occidentale irlandese, dalle scogliere ai pub locali.</p>
-            <div class="card-footer"><span class="days-info">10 Giorni</span><a href="#" class="view-plan">Vedi Piano <i class="bi bi-arrow-right"></i></a></div>
-          </div>
-        </div>
+        }
       }
     </div>
   </div>
