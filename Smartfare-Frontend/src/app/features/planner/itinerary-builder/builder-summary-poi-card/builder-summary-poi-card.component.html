@@ -11,8 +11,9 @@
     <span>{{ index + 1 }}</span>
   </div>
   <!-- Linea verticale che connette i pin -->
-  <div class="wl-vertical-line" *ngIf="!isLast"
-    [style.background-color]="dayColor"></div>
+  @if (!isLast) {
+    <div class="wl-vertical-line" [style.background-color]="dayColor"></div>
+  }
 </div>
 
 <div class="wl-poi-card-container">

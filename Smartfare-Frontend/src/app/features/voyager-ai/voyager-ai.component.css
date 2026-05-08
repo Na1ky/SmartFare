@@ -42,7 +42,7 @@
   flex: 1;
   display: flex;
   position: relative;
-  z-index: 1;
+  z-index: 3000; /* Higher than navbar to allow sidebar overlay */
   overflow: hidden;
 }
 
@@ -841,14 +841,19 @@ textarea {
   40% { transform: translateY(-6px); }
 }
 
-/* MOBILE RESPONSIVE */
+/* MOBILE RESPONSIVE REFINE */
 @media (max-width: 1024px) {
   .sidebar {
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
+    width: 300px;
+    height: 100vh; /* Full viewport height */
     transform: translateX(-100%);
+    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.7);
+    z-index: 2000; /* Extremely high to be above navbar */
+    background: #0a0a0f; /* Solid background for mobile overlay */
   }
 
   .sidebar.mobile-open {
@@ -858,19 +863,113 @@ textarea {
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    z-index: 90;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    z-index: 1900; /* Just below the sidebar */
+    animation: fadeIn 0.3s ease;
   }
 
-  .desktop-only { display: none; }
+  .desktop-only { display: none !important; }
+  .mobile-only { display: flex !important; }
 }
 
 @media (max-width: 768px) {
-  .chat-header { padding: 12px 16px; }
-  .header-left h1 { font-size: 1rem; max-width: 200px; }
-  .mode-toggle button { padding: 4px 10px; font-size: 0.75rem; }
-  .entry-choice { grid-template-columns: 1fr; }
-  .chat-footer { padding: 0 16px 16px; }
-  .messages-viewport { padding: 20px 0; }
+  .chat-header {
+    padding: 12px 16px;
+  }
+
+  .header-left h1 {
+    font-size: 1rem;
+    max-width: 180px;
+  }
+
+  .mode-toggle button {
+    padding: 6px 10px;
+    font-size: 0.7rem;
+  }
+
+  .messages-viewport {
+    padding: 20px 0;
+  }
+
+  .messages-list {
+    width: 92%;
+    gap: 20px;
+  }
+
+  .message-wrapper {
+    max-width: 92%;
+  }
+
+  .bubble {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .avatar-container {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .entry-choice {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .entry-card {
+    padding: 16px;
+  }
+
+  .empty-state h2 {
+    font-size: 1.5rem;
+  }
+
+  .chat-footer {
+    padding: 0 12px 12px;
+  }
+
+  .input-wrapper {
+    padding: 8px 12px;
+    border-radius: 16px;
+  }
+
+  textarea {
+    font-size: 0.9rem;
+    padding: 8px 0;
+  }
+
+  .quick-prompts {
+    gap: 6px;
+  }
+
+  .quick-prompts button {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  .itinerary-ready-card {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .card-image-wrapper {
+    height: 160px;
+  }
+
+  .card-body {
+    padding: 16px;
+  }
+
+  .generate-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Animations Helper */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
