@@ -30,28 +30,40 @@ model User {
 }
 
 model ChatSession {
-  id        Int           @id @default(autoincrement())
-  userId    Int
-  title     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  messages  ChatMessage[]
+  id            Int           @id @default(autoincrement())
+  userId        Int
+  title         String? // auto-generated from first message or manual
+  mode          String        @default("planner") // 'planner' | 'assistant'
+  locationId    Int? // destination context for planner mode
+  isActive      Boolean       @default(true)
+  isPinned      Boolean       @default(false)
+  metadata      Json? // store preferences, itinerary preview, etc
+  lastMessageAt DateTime? // for sorting chronologically
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  messages      ChatMessage[]
 
-  user User @relation(fields: [userId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
 
   @@index([userId])
+  @@index([userId, isPinned])
+  @@index([userId, createdAt])
+  @@index([lastMessageAt])
 }
 
 model ChatMessage {
   id        Int      @id @default(autoincrement())
   chatId    Int
-  role      String // 'user' or 'assistant'
+  role      String   @db.VarChar(20) // 'user' | 'assistant'
   content   String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  chat ChatSession @relation(fields: [chatId], references: [id])
+  chat ChatSession @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   @@index([chatId])
+  @@index([createdAt])
 }
 
 model UserProfile {
@@ -106,6 +118,7 @@ model Location {
   accommodations Accommodation[]
   activities     Activity[]
   itineraries    Itinerary[]
+  chatSessions   ChatSession[]
 }
 
 model Accommodation {

@@ -15,6 +15,17 @@ type DraftItemPayload = {
     accommodationId: number | null;
 };
 
+type SanitizedItemsResult = {
+    items: DraftItemPayload[];
+    droppedItems: Array<{
+        index: number;
+        reason: string;
+        itemTypeCode: string;
+        activityId: number | null;
+        accommodationId: number | null;
+    }>;
+};
+
 type NormalizedDraftIdentity = {
     name: string;
     description: string | null;
@@ -73,6 +84,99 @@ export class ItineraryService {
             activityId: item.activityId ? Number(item.activityId) : null,
             accommodationId: item.accommodationId ? Number(item.accommodationId) : null
         }));
+    }
+
+    private async sanitizeItemReferences(locationId: number | null, items: DraftItemPayload[]): Promise<SanitizedItemsResult> {
+        if (!locationId || items.length === 0) {
+            return { items, droppedItems: [] };
+        }
+
+        const requestedActivityIds = Array.from(
+            new Set(items.map((item) => item.activityId).filter((value): value is number => Boolean(value)))
+        );
+        const requestedAccommodationIds = Array.from(
+            new Set(items.map((item) => item.accommodationId).filter((value): value is number => Boolean(value)))
+        );
+
+        const [activities, accommodations] = await Promise.all([
+            requestedActivityIds.length > 0
+                ? prisma.activity.findMany({
+                    where: {
+                        id: { in: requestedActivityIds },
+                        locationId
+                    },
+                    select: { id: true }
+                })
+                : Promise.resolve([]),
+            requestedAccommodationIds.length > 0
+                ? prisma.accommodation.findMany({
+                    where: {
+                        id: { in: requestedAccommodationIds },
+                        locationId
+                    },
+                    select: { id: true }
+                })
+                : Promise.resolve([])
+        ]);
+
+        const validActivityIds = new Set(activities.map((entry) => entry.id));
+        const validAccommodationIds = new Set(accommodations.map((entry) => entry.id));
+        const droppedItems: SanitizedItemsResult['droppedItems'] = [];
+
+        const validItems = items.filter((item, index) => {
+            if (item.itemTypeCode === 'ACTIVITY') {
+                if (!item.activityId || !validActivityIds.has(item.activityId)) {
+                    droppedItems.push({
+                        index,
+                        reason: 'invalid_activity_reference',
+                        itemTypeCode: item.itemTypeCode,
+                        activityId: item.activityId,
+                        accommodationId: item.accommodationId
+                    });
+                    return false;
+                }
+            }
+
+            if (item.itemTypeCode === 'ACCOMMODATION') {
+                if (!item.accommodationId || !validAccommodationIds.has(item.accommodationId)) {
+                    droppedItems.push({
+                        index,
+                        reason: 'invalid_accommodation_reference',
+                        itemTypeCode: item.itemTypeCode,
+                        activityId: item.activityId,
+                        accommodationId: item.accommodationId
+                    });
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        const normalizedItems = this.reindexItems(validItems);
+        return {
+            items: normalizedItems,
+            droppedItems
+        };
+    }
+
+    private reindexItems(items: DraftItemPayload[]): DraftItemPayload[] {
+        const counters = new Map<number, number>();
+
+        return items
+            .slice()
+            .sort((left, right) => {
+                if (left.dayNumber !== right.dayNumber) return left.dayNumber - right.dayNumber;
+                return left.orderInt - right.orderInt;
+            })
+            .map((item) => {
+                const nextOrder = (counters.get(item.dayNumber) || 0) + 1;
+                counters.set(item.dayNumber, nextOrder);
+                return {
+                    ...item,
+                    orderInt: nextOrder
+                };
+            });
     }
 
     private async withLocation(itinerary: any) {
@@ -138,8 +242,21 @@ export class ItineraryService {
     async saveItinerary(userId: number, data: any) {
         try {
             const { id, locationId } = data;
-            const items = this.buildItemData(data);
             const draftPayload = this.normalizeDraftIdentity(data);
+            const rawItems = this.buildItemData(data);
+            const { items, droppedItems } = await this.sanitizeItemReferences(draftPayload.locationId, rawItems);
+
+            if (droppedItems.length > 0) {
+                console.warn('Itinerary items dropped because of invalid POI references', {
+                    userId,
+                    locationId: draftPayload.locationId,
+                    droppedItems
+                });
+            }
+
+            if (rawItems.length > 0 && items.length === 0) {
+                throw new Error('Tutti gli item dell’itinerario sono stati scartati perché non validi per la destinazione selezionata');
+            }
 
             // If an ID is provided, we try to update
             if (id) {

@@ -36,7 +36,6 @@ export interface AiItineraryChatRequest {
   conversation?: AiChatMessage[];
   preferences?: {
     style?: string;
-    budget?: string;
     pace?: string;
     interests?: string[];
     language?: string;
