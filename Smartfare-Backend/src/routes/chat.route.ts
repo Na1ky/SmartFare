@@ -34,12 +34,31 @@ router.post('/sessions', authenticateJWT, async (req: AuthRequest, res: Response
     try {
         const userId = Number(req.user?.userId);
         const { title, mode, locationId } = req.body;
+        const normalizedMode = mode || 'planner';
+
+        const existingEmptySession = await prisma.chatSession.findFirst({
+            where: {
+                userId,
+                mode: normalizedMode,
+                messages: {
+                    none: {}
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        if (existingEmptySession) {
+            res.status(200).json(existingEmptySession);
+            return;
+        }
 
         const session = await prisma.chatSession.create({
             data: {
                 userId,
                 title: title || 'Nuova conversazione',
-                mode: mode || 'planner',
+                mode: normalizedMode,
                 locationId: locationId || null,
                 metadata: {
                     plannerState: {
@@ -125,13 +144,24 @@ router.delete('/sessions/:id', authenticateJWT, async (req: AuthRequest, res: Re
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
 
-        const session = await prisma.chatSession.deleteMany({
-            where: { id: chatId, userId }
+        const session = await prisma.chatSession.findFirst({
+            where: { id: chatId, userId },
+            select: { id: true }
         });
 
-        if (session.count === 0) {
+        if (!session) {
             throw new AppError('Sessione non trovata', 404);
         }
+
+        await prisma.$transaction(async (tx) => {
+            await tx.chatMessage.deleteMany({
+                where: { chatId }
+            });
+
+            await tx.chatSession.delete({
+                where: { id: chatId }
+            });
+        });
 
         res.json({ success: true });
     } catch (error) {
@@ -166,7 +196,16 @@ router.post('/sessions/:id/stream', authenticateJWT, async (req: AuthRequest, re
         if (!res.headersSent) {
             next(error);
         } else {
-            res.write(`data: ${JSON.stringify({ error: 'Errore durante lo streaming' })}\n\n`);
+            const appError = error instanceof AppError ? error : new AppError('Errore durante lo streaming', 500);
+            res.write(`data: ${JSON.stringify({
+                reply: appError.message,
+                done: true,
+                error: true,
+                metadata: {
+                    code: appError.details?.code,
+                    retryAfterSeconds: appError.details?.retryAfterSeconds || null
+                }
+            })}\n\n`);
             res.end();
         }
     }

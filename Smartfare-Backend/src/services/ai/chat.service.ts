@@ -116,7 +116,14 @@ export class ChatService {
       ]);
 
       const readyToGenerate = this.isReadyToGenerate(session.mode as ChatMode, finalState);
-      const suggestedTitle = this.suggestTitle(session.title, finalState, userMessage);
+      const suggestedTitle = await this.suggestTitle(
+        session.title,
+        session.mode as ChatMode,
+        finalState,
+        userMessage,
+        fullReply,
+        persistedMessages.length === 0
+      );
 
       await prisma.chatMessage.create({
         data: {
@@ -155,7 +162,7 @@ export class ChatService {
       });
     } catch (error) {
       console.error('Gemini Stream Error:', error);
-      throw new AppError('Errore durante la comunicazione con l\'IA', 500);
+      throw this.mapGeminiStreamError(error);
     }
   }
 
@@ -404,9 +411,23 @@ export class ChatService {
     return this.getMissingPlannerFields(state).length === 0;
   }
 
-  private suggestTitle(currentTitle: string | null, state: PlannerState, userMessage: string): string {
+  private async suggestTitle(
+    currentTitle: string | null,
+    mode: ChatMode,
+    state: PlannerState,
+    userMessage: string,
+    assistantReply: string,
+    isFirstExchange: boolean
+  ): Promise<string> {
     if (currentTitle && currentTitle !== DEFAULT_TITLE) {
       return currentTitle;
+    }
+
+    if (isFirstExchange) {
+      const aiTitle = await this.generateSessionTitle(mode, state, userMessage, assistantReply);
+      if (aiTitle) {
+        return aiTitle;
+      }
     }
 
     if (state.destination && state.days) {
@@ -418,6 +439,44 @@ export class ChatService {
     }
 
     return userMessage.split(/[.!?\n]/)[0].slice(0, 48).trim() || DEFAULT_TITLE;
+  }
+
+  private async generateSessionTitle(
+    mode: ChatMode,
+    state: PlannerState,
+    userMessage: string,
+    assistantReply: string
+  ): Promise<string | null> {
+    if (!this.apiKey) {
+      return null;
+    }
+
+    try {
+      const ai = new GoogleGenerativeAI(this.apiKey);
+      const model = ai.getGenerativeModel({ model: this.modelName });
+      const prompt = [
+        'Genera un titolo breve per una chat travel premium di SmartFare.',
+        'Restituisci solo il titolo, senza virgolette, markdown o spiegazioni.',
+        'Massimo 5 parole.',
+        'Il titolo deve essere naturale, specifico e utile nella sidebar.',
+        `Modalita: ${mode}.`,
+        `Planner state: ${JSON.stringify(state)}.`,
+        `Messaggio utente: ${userMessage}`,
+        `Risposta assistant: ${assistantReply}`
+      ].join('\n');
+
+      const result = await model.generateContent(prompt);
+      const rawTitle = result.response.text().replace(/["'*`#]/g, ' ').trim();
+      const cleanTitle = rawTitle
+        .split('\n')[0]
+        ?.replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 60);
+
+      return cleanTitle || null;
+    } catch {
+      return null;
+    }
   }
 
   private buildItineraryPrompt(state: PlannerState, messages: DbMessage[]): string {
@@ -747,6 +806,38 @@ export class ChatService {
     const parsed = Number(value);
     if (!parsed || Number.isNaN(parsed)) return null;
     return parsed;
+  }
+
+  private mapGeminiStreamError(error: any): AppError {
+    const status = Number(error?.status || error?.statusCode || 0);
+    const retryAfterSeconds = this.extractRetryAfterSeconds(error);
+
+    if (status === 429) {
+      const retryText = retryAfterSeconds ? ` Riprova tra circa ${retryAfterSeconds} secondi.` : ' Riprova tra poco.';
+      return new AppError(
+        `Voyager AI è temporaneamente in sovraccarico.${retryText}`,
+        503,
+        {
+          code: 'AI_OVERLOADED',
+          retryAfterSeconds
+        }
+      );
+    }
+
+    return new AppError('Errore durante la comunicazione con l\'IA', 500);
+  }
+
+  private extractRetryAfterSeconds(error: any): number | null {
+    const retryDelay = error?.errorDetails?.find?.(
+      (detail: any) => detail?.['@type'] === 'type.googleapis.com/google.rpc.RetryInfo'
+    )?.retryDelay;
+
+    if (typeof retryDelay !== 'string') {
+      return null;
+    }
+
+    const seconds = Number.parseInt(retryDelay.replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(seconds) ? seconds : null;
   }
 
   private async findBestLocation(sourceText: string) {

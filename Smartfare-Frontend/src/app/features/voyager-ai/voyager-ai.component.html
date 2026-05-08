@@ -4,8 +4,6 @@
     <div class="glow glow-2"></div>
   </div>
 
-  <app-navbar></app-navbar>
-
   <div class="voyager-content">
     <!-- SIDEBAR -->
     <aside class="sidebar" [class.collapsed]="!chatService.isSidebarOpen()" [class.mobile-open]="showMobileSidebar()">
@@ -101,6 +99,15 @@
           }
         </div>
       }
+
+      <div class="sidebar-footer">
+        <button class="home-btn" type="button" (click)="goHome()">
+          <i class="bi bi-house-door"></i>
+          @if (chatService.isSidebarOpen()) {
+            <span>Torna alla home</span>
+          }
+        </button>
+      </div>
     </aside>
 
     @if (showMobileSidebar()) {

@@ -13,7 +13,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { NavbarComponent } from '../ui/navbar/navbar.component';
 import {
   ChatMode,
   ChatSession,
@@ -38,7 +37,7 @@ type SessionGroup = {
 @Component({
   selector: 'app-voyager-ai',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './voyager-ai.component.html',
   styleUrls: ['./voyager-ai.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -176,7 +175,28 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
     this.showMobileSidebar.update((value) => !value);
   }
 
+  goHome() {
+    this.showMobileSidebar.set(false);
+    this.router.navigate(['/home']);
+  }
+
   async createNewChat(mode: ChatMode = this.chatService.mode()) {
+    const active = this.chatService.activeSession();
+    const hasNoMessages = this.chatService.messages().length === 0;
+    const hasDraftInput = !this.message().trim() && !this.pendingAttachmentName();
+
+    if (active && hasNoMessages && hasDraftInput) {
+      if (active.mode !== mode) {
+        this.chatService.updateSession(active.id, { mode }).subscribe(() => {
+          this.chatService.setActiveSession({ ...active, mode });
+        });
+      }
+
+      this.showMobileSidebar.set(false);
+      this.router.navigate([], { queryParams: { sessionId: active.id }, queryParamsHandling: 'merge' });
+      return;
+    }
+
     const session = await firstValueFrom(
       this.chatService.createSession({
         mode,
