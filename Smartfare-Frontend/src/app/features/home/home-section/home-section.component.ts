@@ -22,6 +22,7 @@ import { FooterComponent } from '../../ui/footer/footer.component';
 import { FeaturedItinerariesComponent } from '../featured-itineraries/featured-itineraries.component';
 import { FeaturesGridComponent } from '../features-grid/features-grid.component';
 import { CtaSectionComponent } from '../cta-section/cta-section.component';
+import { AppLoaderComponent } from '../../ui/loader/loader.component';
 
 @Component({
   selector: 'app-home-section',
@@ -34,7 +35,8 @@ import { CtaSectionComponent } from '../cta-section/cta-section.component';
     FooterComponent,
     FeaturedItinerariesComponent,
     FeaturesGridComponent,
-    CtaSectionComponent
+    CtaSectionComponent,
+    AppLoaderComponent
   ],
   templateUrl: './home-section.component.html',
   styleUrl: './home-section.component.css',
@@ -52,9 +54,9 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly videoRotationMs = 9000;
   protected readonly heroTypingLines = ['Explore the World', 'With SmartFare'];
   protected readonly videoSources = [
-    'assets/videos/home/background-3.mp4',
-    'assets/videos/home/background-5.mp4',
-    'assets/videos/home/background-6.mp4',
+    'https://res.cloudinary.com/dxudggkln/video/upload/f_auto,q_auto/v1778223687/background-3_kzhy8e.mp4',
+    'https://res.cloudinary.com/dxudggkln/video/upload/f_auto,q_auto/v1778223688/background-5_cjnawy.mp4',
+    'https://res.cloudinary.com/dxudggkln/video/upload/f_auto,q_auto/v1778223688/background-6_zuz2zt.mp4',
   ];
 
   protected readonly videoLayers = [
@@ -63,6 +65,7 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   protected activeVideoLayer = 0;
+  protected readonly isInitialVideoReady = signal(false);
   protected readonly heroLineTop = signal('');
   protected readonly heroLineBottom = signal('');
   protected readonly caretLine = signal<0 | 1>(0);
@@ -165,7 +168,10 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
     video.currentTime = 0;
 
     if (layerIndex === this.activeVideoLayer) {
-      this.playVideo(video);
+      this.playVideo(video).then(() => {
+        this.isInitialVideoReady.set(true);
+        this.cdr.markForCheck();
+      });
       return;
     }
 
