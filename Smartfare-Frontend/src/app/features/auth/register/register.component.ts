@@ -2,7 +2,11 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, NgZ
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../../core/auth/auth.service';
+import {
+  AuthService,
+  PendingSocialRegistration,
+  SocialProvider,
+} from '../../../core/auth/auth.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { NavbarComponent } from "../../ui/navbar/navbar.component";
 import { GoogleSigninButtonModule, SocialAuthService } from '@abacritt/angularx-social-login';
@@ -26,8 +30,10 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     avatarUrl: ''
   };
 
-  isGoogleRegistration = false;
+  isSocialRegistration = false;
   showPassword = false;
+  socialProvider: SocialProvider | null = null;
+  oauthRegistrationToken: string | null = null;
   private googleLoginInProgress = false;
   private returnUrl: string = '/';
   private animFrameId: number | null = null;
@@ -42,23 +48,41 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     private ngZone: NgZone
   ) {
     const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as { googleData: any };
+    const state = navigation?.extras.state as { socialData?: PendingSocialRegistration } | undefined;
     
-    if (state && state.googleData) {
-      this.handleGoogleData(state.googleData);
+    if (state?.socialData) {
+      this.handleSocialData(state.socialData);
     }
   }
 
   ngOnInit(): void {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.returnUrl = this.authService.sanitizeReturnUrl(this.route.snapshot.queryParams['returnUrl'] || '/');
+    const requestedSocialProvider = this.route.snapshot.queryParams['social'];
+
+    if ((requestedSocialProvider === 'google' || requestedSocialProvider === 'github') && !this.isSocialRegistration) {
+      const pendingSocialRegistration = this.authService.getPendingSocialRegistration();
+
+      if (pendingSocialRegistration && pendingSocialRegistration.provider === requestedSocialProvider) {
+        const socialRegistration = pendingSocialRegistration;
+        this.handleSocialData(socialRegistration);
+      } else {
+        this.alertService.error('Sessione social scaduta. Riprova con il provider scelto.');
+        this.router.navigate(['/register'], { queryParams: { returnUrl: this.returnUrl } });
+      }
+    }
+
     this.socialAuthService.authState.subscribe((user) => {
       if (user && user.idToken && !this.googleLoginInProgress && !this.authService.IsAuthenticated()) {
         this.googleLoginInProgress = true;
         this.authService.LoginWithGoogle(user.idToken).subscribe({
           next: (res) => {
-            if (res.needsRegistration && res.userData) {
+            if (res.needsRegistration && res.userData && res.registrationToken) {
               this.alertService.success('Profilo caricato da Google!');
-              this.handleGoogleData(res.userData);
+              this.handleSocialData({
+                ...res.userData,
+                provider: res.userData.provider || 'google',
+                registrationToken: res.registrationToken
+              });
             } else if (res.token) {
               this.alertService.success('Accesso effettuato con successo!');
               this.authService.saveAuth(res.token);
@@ -186,18 +210,26 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     draw();
   }
 
-  private handleGoogleData(data: any) {
-    this.isGoogleRegistration = true;
+  private handleSocialData(data: PendingSocialRegistration) {
+    this.isSocialRegistration = true;
+    this.socialProvider = data.provider;
+    this.oauthRegistrationToken = data.registrationToken;
+    this.authService.savePendingSocialRegistration(data);
     this.registerData.email = data.email;
     this.registerData.name = data.name || '';
     this.registerData.surname = data.surname || '';
     this.registerData.avatarUrl = data.avatarUrl || '';
   }
 
+  startGithubRegistration() {
+    this.authService.startGithubAuth('register', this.returnUrl);
+  }
+
   async goToLogin() {
     try {
       await this.socialAuthService.signOut();
     } catch (e) {}
+    this.authService.clearPendingSocialRegistration();
     this.router.navigate(['/login'], { queryParams: { returnUrl: this.returnUrl } });
   }
 
@@ -215,12 +247,15 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
     const { confirmPassword, ...data } = this.registerData;
     const finalData = {
       ...data,
-      authProvider: this.isGoogleRegistration ? 'google' : 'local'
+      authProvider: this.socialProvider ?? 'local',
+      oauthRegistrationToken: this.oauthRegistrationToken ?? undefined
     };
 
     this.authService.Register(finalData).subscribe({
       next: (res) => {
-        if (this.isGoogleRegistration) {
+        this.authService.clearPendingSocialRegistration();
+
+        if (this.isSocialRegistration) {
           this.alertService.success('Registrazione completata! Ora puoi effettuare il login.');
         } else {
           this.alertService.success('Registrazione completata! Controlla la tua email per verificare l\'account.');

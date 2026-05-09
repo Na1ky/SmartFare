@@ -30,9 +30,9 @@
             <h2 class="logo-text">Smart<span class="text-accent">fare</span></h2>
           </div>
 
-          <h1 class="welcome-text">{{ isGoogleRegistration ? 'Quasi fatto!' : 'Crea Account' }}</h1>
+          <h1 class="welcome-text">{{ isSocialRegistration ? 'Quasi fatto!' : 'Crea Account' }}</h1>
           <p class="subtitle">
-            {{ isGoogleRegistration ? 'Completa il tuo profilo per terminare l\'accesso.' : 'Inizia oggi il tuo viaggio
+            {{ isSocialRegistration ? 'Completa il tuo profilo per terminare l\'accesso.' : 'Inizia oggi il tuo viaggio
             con Smartfare.' }}
           </p>
         </div>
@@ -59,7 +59,7 @@
             <label for="email">Indirizzo Email</label>
             <div class="input-wrapper">
               <input id="email" type="email" [(ngModel)]="registerData.email" name="email" required
-                placeholder="nome@esempio.com" [disabled]="isGoogleRegistration" />
+                placeholder="nome@esempio.com" [disabled]="isSocialRegistration" />
             </div>
           </div>
 
@@ -89,7 +89,7 @@
           </div>
 
           <button type="submit" class="submit-btn">
-            <span>{{ isGoogleRegistration ? 'Completa Registrazione' : 'Crea Account' }}</span>
+            <span>{{ isSocialRegistration ? 'Completa Registrazione' : 'Crea Account' }}</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -97,12 +97,19 @@
             </svg>
           </button>
 
-          @if (!isGoogleRegistration) {
+          @if (!isSocialRegistration) {
           <div class="auth-divider">
             <span>Oppure registrati con</span>
           </div>
 
           <div class="social-actions">
+            <button type="button" class="social-btn github-btn" (click)="startGithubRegistration()">
+              <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor"
+                  d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.5 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.2-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.05 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.27 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85 0 1.71.12 2.51.35 1.9-1.32 2.74-1.05 2.74-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.92-2.33 4.78-4.56 5.04.36.32.68.95.68 1.92 0 1.39-.01 2.51-.01 2.85 0 .28.18.61.69.5A10.24 10.24 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z" />
+              </svg>
+              <span>Continua con GitHub</span>
+            </button>
             <div class="google-btn-wrapper">
               <asl-google-signin-button type="standard" size="large" shape="pill" theme="filled_black">
               </asl-google-signin-button>

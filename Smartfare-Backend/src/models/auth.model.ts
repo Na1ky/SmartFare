@@ -1,9 +1,11 @@
 export interface User {
-    id: string;
+    id: number;
     email: string;
     password?: string;
     sessionId: string | null;
 }
+
+export type OAuthProvider = "local" | "google" | "github";
 
 export interface LoginParams {
     email: string,
@@ -15,8 +17,23 @@ export interface RegisterData {
     password: string,
     name?: string;
     surname?: string;
-    authProvider?: string;
+    authProvider?: OAuthProvider;
+    oauthRegistrationToken?: string;
     avatarUrl?: string;
     street?: string;
     city?: string;
+}
+
+export interface SocialProfile {
+    email: string;
+    name?: string;
+    surname?: string;
+    avatarUrl?: string;
+    provider: Exclude<OAuthProvider, "local">;
+}
+
+export interface OAuthStateData {
+    provider: Exclude<OAuthProvider, "local">;
+    mode: "login" | "register";
+    returnUrl: string;
 }

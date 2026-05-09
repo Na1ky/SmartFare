@@ -33,13 +33,17 @@ export function createApp() {
     const parts = [`RICHIESTA: ${req.method} - ${req.url}`];
 
     if (req.query && Object.keys(req.query).length > 0) {
-      parts.push(`query: ${JSON.stringify(req.query)}`);
+      const safeQuery = { ...req.query };
+      if (safeQuery.code) safeQuery.code = '[REDACTED]';
+      if (safeQuery.state) safeQuery.state = '[REDACTED]';
+      parts.push(`query: ${JSON.stringify(safeQuery)}`);
     }
 
     if (req.body && Object.keys(req.body).length > 0) {
       const safeBody = { ...req.body };
       if (safeBody.password) safeBody.password = '[REDACTED]';
       if (safeBody.idToken) safeBody.idToken = '[REDACTED]';
+      if (safeBody.oauthRegistrationToken) safeBody.oauthRegistrationToken = '[REDACTED]';
       parts.push(`body: ${JSON.stringify(safeBody)}`);
     }
 

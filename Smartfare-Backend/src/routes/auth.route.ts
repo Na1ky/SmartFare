@@ -50,6 +50,67 @@ router.post("/register", authLimiter, async (req: Request, res: Response, next: 
     }
 });
 
+// ─── GET /auth/github ─────────────────────────────────────────────────────────
+router.get("/github", authLimiter, (req: Request, res: Response) => {
+    try {
+        const mode = req.query.mode === 'register' ? 'register' : 'login';
+        const returnUrl = typeof req.query.returnUrl === 'string' ? req.query.returnUrl : '/';
+        const authorizationUrl = authService.getGitHubAuthorizationUrl(mode, returnUrl);
+        return res.redirect(authorizationUrl);
+    } catch (error) {
+        console.error("❌ Errore durante l'avvio del login GitHub:", error);
+        const redirectUrl = authService.buildFrontendOAuthRedirect(
+            { error: "Configurazione GitHub non disponibile" },
+            typeof req.query.returnUrl === 'string' ? req.query.returnUrl : '/'
+        );
+        return res.redirect(redirectUrl);
+    }
+});
+
+// ─── GET /auth/github/callback ────────────────────────────────────────────────
+router.get("/github/callback", authLimiter, async (req: Request, res: Response) => {
+    const code = typeof req.query.code === 'string' ? req.query.code : null;
+    const state = typeof req.query.state === 'string' ? req.query.state : null;
+    const providerError = typeof req.query.error === 'string' ? req.query.error : null;
+    const providerErrorDescription = typeof req.query.error_description === 'string'
+        ? req.query.error_description
+        : null;
+
+    const verifiedState = state ? authService.verifyOAuthState(state) : null;
+    const returnUrl = verifiedState?.returnUrl || '/';
+
+    if (providerError) {
+        return res.redirect(
+            authService.buildFrontendOAuthRedirect(
+                { error: providerErrorDescription || "Autorizzazione GitHub annullata" },
+                returnUrl
+            )
+        );
+    }
+
+    if (!code || !state || !verifiedState) {
+        return res.redirect(
+            authService.buildFrontendOAuthRedirect(
+                { error: "Callback GitHub non valida o scaduta" },
+                returnUrl
+            )
+        );
+    }
+
+    const result = await authService.GitHubLogin(code);
+
+    if (!result.success) {
+        return res.redirect(
+            authService.buildFrontendOAuthRedirect(
+                { error: result.message || "Errore durante il login con GitHub" },
+                returnUrl
+            )
+        );
+    }
+
+    return res.redirect(authService.buildFrontendOAuthRedirect(result, returnUrl));
+});
+
 // ─── POST /auth/google ────────────────────────────────────────────────────────
 router.post("/google", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
