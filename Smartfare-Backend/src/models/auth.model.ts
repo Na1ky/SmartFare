@@ -2,7 +2,6 @@ export interface User {
     id: number;
     email: string;
     password?: string;
-    sessionId: string | null;
 }
 
 export type OAuthProvider = "local" | "google" | "github";

@@ -18,6 +18,7 @@ const DEFAULT_TITLE = 'Nuova conversazione';
 export class ChatService {
   private readonly apiKey = process.env.GEMINI_API_KEY;
   private readonly modelName = this.resolveModelName(process.env.GEMINI_MODEL);
+  private readonly modelFallbacks = this.getModelFallbacks(process.env.GEMINI_MODEL);
   private readonly geminiPlannerService = new GeminiItineraryChatService();
   private readonly itineraryService = new ItineraryService();
 
@@ -27,7 +28,7 @@ export class ChatService {
       'gemini-1.5-flash-latest': 'gemini-2.5-flash',
       'gemini-1.5-pro': 'gemini-2.5-flash'
     };
-    const fallbackModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+    const fallbackModels = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
     const candidates = [
       ...(rawModelName || '')
         .split(',')
@@ -38,6 +39,12 @@ export class ChatService {
 
     const validModel = candidates.find((model) => /^gemini-[a-z0-9.-]+$/i.test(model));
     return validModel || 'gemini-2.0-flash';
+  }
+
+  private getModelFallbacks(rawModelName?: string): string[] {
+    const primary = this.resolveModelName(rawModelName);
+    const fallbackModels = ['gemini-2.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+    return [primary, ...fallbackModels].filter((model, index, array) => array.indexOf(model) === index);
   }
 
   async streamChatResponse(
@@ -68,20 +75,6 @@ export class ChatService {
     const bestLocation = await this.findBestLocation(extractedState.destination || userMessage);
     const plannerState = this.mergePlannerState(baseState, extractedState, bestLocation);
 
-    const ai = new GoogleGenerativeAI(this.apiKey);
-    const model = ai.getGenerativeModel({
-      model: this.modelName,
-      generationConfig: {
-        temperature: session.mode === 'planner' ? 0.75 : 0.6,
-        topP: 0.85,
-        topK: 40
-      },
-      systemInstruction: {
-        role: 'system',
-        parts: [{ text: this.getSystemInstruction(session.mode as ChatMode, plannerState, Boolean(bestLocation)) }]
-      }
-    });
-
     const history = persistedMessages
       .slice(-16)
       .map((message) => ({
@@ -89,24 +82,62 @@ export class ChatService {
         parts: [{ text: message.content }]
       }));
 
-    const chat = model.startChat({
-      history: history as any
-    });
-
     let fullReply = '';
 
     try {
-      const result = await chat.sendMessageStream(userMessage);
+      let lastError: unknown = null;
 
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        if (!chunkText) continue;
-
-        fullReply += chunkText;
-        onChunk({
-          reply: chunkText,
-          done: false
+      for (const modelName of this.modelFallbacks) {
+        const ai = new GoogleGenerativeAI(this.apiKey);
+        const model = ai.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            temperature: session.mode === 'planner' ? 0.75 : 0.6,
+            topP: 0.85,
+            topK: 40
+          },
+          systemInstruction: {
+            role: 'system',
+            parts: [{ text: this.getSystemInstruction(session.mode as ChatMode, plannerState, Boolean(bestLocation)) }]
+          }
         });
+
+        const chat = model.startChat({
+          history: history as any
+        });
+
+        fullReply = '';
+
+        try {
+          const result = await chat.sendMessageStream(userMessage);
+
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (!chunkText) continue;
+
+            fullReply += chunkText;
+            onChunk({
+              reply: chunkText,
+              done: false
+            });
+          }
+
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+
+          const status = Number((error as any)?.status || (error as any)?.statusCode || 0);
+          if (status !== 429 || fullReply.length > 0) {
+            throw error;
+          }
+
+          console.warn(`Gemini stream rate limited on ${modelName}, retrying with fallback model...`);
+        }
+      }
+
+      if (lastError) {
+        throw lastError;
       }
 
       const finalState = await this.finalizePlannerState(session.mode as ChatMode, plannerState, [
@@ -817,9 +848,9 @@ export class ChatService {
       const baseMessage = is503
         ? 'I server di Voyager AI sono al momento sovraccarichi per l’alta richiesta.'
         : 'Voyager AI è temporaneamente in sovraccarico.';
-      
-      const retryText = retryAfterSeconds 
-        ? ` Riprova tra circa ${retryAfterSeconds} secondi.` 
+
+      const retryText = retryAfterSeconds
+        ? ` Riprova tra circa ${retryAfterSeconds} secondi.`
         : ' Riprova tra un istante.';
 
       return new AppError(

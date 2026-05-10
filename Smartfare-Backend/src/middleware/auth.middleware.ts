@@ -53,14 +53,21 @@ function verifyTokenOrThrow(token: string): JwtAuthPayload {
 }
 
 async function validateUserSession(payload: JwtAuthPayload): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: { sessionId: true, email: true }
+  const session = await prisma.authSession.findUnique({
+    where: { id: payload.sessionId },
+    select: {
+      revokedAt: true,
+      userId: true,
+      user: {
+        select: { email: true }
+      }
+    }
   });
 
-  if (!user?.sessionId) return false;
-  if (user.sessionId !== payload.sessionId) return false;
-  if (user.email !== payload.email) return false;
+  if (!session) return false;
+  if (session.revokedAt) return false;
+  if (session.userId !== payload.userId) return false;
+  if (session.user.email !== payload.email) return false;
 
   return true;
 }

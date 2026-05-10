@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { AuthService } from '../services/auth/auth.service';
 import rateLimit from 'express-rate-limit';
+import { authenticateJWT, AuthRequest } from '../middleware/auth.middleware';
 import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema, verifyEmailSchema } from "../schemas/auth.schema";
 
 
@@ -138,6 +139,19 @@ router.post("/google", authLimiter, async (req: Request, res: Response, next: Ne
 
         console.info("[AUTH] google login success");
         return res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ─── POST /auth/logout ───────────────────────────────────────────────────────
+router.post("/logout", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        if (req.user?.sessionId) {
+            await authService.Logout(req.user.sessionId);
+        }
+
+        return res.status(200).json({ success: true });
     } catch (error) {
         next(error);
     }

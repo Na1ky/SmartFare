@@ -44,6 +44,9 @@ export class AuthService {
   }
 
   Logout() {
+    this.http.post(`${this.AUTH_URL}/logout`, {}).subscribe({
+      error: () => undefined
+    });
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem('sf_itinerary_draft');
     this.tokenSignal.set(null);

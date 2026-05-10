@@ -1,7 +1,7 @@
 import prisma from "../../config/prisma";
 import bcrypt from "bcryptjs";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import crypto, { randomUUID } from "crypto";
+import crypto from "crypto";
 import axios from "axios";
 import { OAuth2Client } from "google-auth-library";
 import { EmailService } from "../email/email.service";
@@ -95,15 +95,27 @@ export class AuthService {
     }
 
     private async issueSessionToken(user: AuthTokenUser): Promise<string> {
-        const sessionId = randomUUID();
-        console.log("Nuovo sessionId generato per " + user.email);
-
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { sessionId }
+        const session = await prisma.authSession.create({
+            data: {
+                userId: user.id
+            }
         });
 
-        return this.buildAuthToken(user, sessionId);
+        console.log("Nuova sessione creata per " + user.email + ` sessionId=${session.id}`);
+
+        return this.buildAuthToken(user, session.id);
+    }
+
+    async Logout(sessionId: string): Promise<void> {
+        await prisma.authSession.updateMany({
+            where: {
+                id: sessionId,
+                revokedAt: null
+            },
+            data: {
+                revokedAt: new Date()
+            }
+        });
     }
 
     private splitDisplayName(displayName?: string | null): { name?: string; surname?: string } {
@@ -697,8 +709,17 @@ export class AuthService {
                     passwordHash,
                     resetPasswordToken: null,
                     resetPasswordExpires: null,
-                    sessionId: null,
                 },
+            });
+
+            await prisma.authSession.updateMany({
+                where: {
+                    userId: user.id,
+                    revokedAt: null
+                },
+                data: {
+                    revokedAt: new Date()
+                }
             });
 
             return { success: true };
@@ -752,16 +773,19 @@ export class AuthService {
                 console.log("ℹ️ Email già verificata per questo utente.");
             }
 
-            const sessionId = randomUUID();
-
             await prisma.user.update({
                 where: { id: user.id },
                 data: {
                     isEmailVerified: true,
                     emailVerificationToken: null,
                     emailVerificationExpires: null,
-                    sessionId
                 },
+            });
+
+            const session = await prisma.authSession.create({
+                data: {
+                    userId: user.id
+                }
             });
 
             return {
@@ -772,7 +796,7 @@ export class AuthService {
                         email: user.email,
                         avatarUrl: user.profile?.avatarUrl
                     },
-                    sessionId
+                    session.id
                 )
             };
         } catch (error) {
