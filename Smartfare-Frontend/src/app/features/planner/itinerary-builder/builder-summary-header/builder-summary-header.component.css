@@ -280,3 +280,55 @@
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* ── Mobile Responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .wl-header-bg {
+    height: 240px;
+  }
+
+  .wl-header-card {
+    margin-top: -80px;
+    padding: 32px 20px;
+    border-radius: 24px;
+    width: calc(100% - 32px);
+  }
+
+  .wl-title {
+    font-size: clamp(24px, 8vw, 32px);
+  }
+
+  .wl-title-input {
+    font-size: 28px;
+  }
+
+  .wl-duration-badge, .wl-publish-toggle {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .wl-description {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wl-header-bg {
+    height: 200px;
+  }
+
+  .wl-header-card {
+    margin-top: -60px;
+    padding: 24px 16px;
+  }
+
+  .wl-meta-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .wl-title {
+    font-size: 22px;
+  }
+}

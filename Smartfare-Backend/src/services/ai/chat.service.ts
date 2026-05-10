@@ -812,13 +812,21 @@ export class ChatService {
     const status = Number(error?.status || error?.statusCode || 0);
     const retryAfterSeconds = this.extractRetryAfterSeconds(error);
 
-    if (status === 429) {
-      const retryText = retryAfterSeconds ? ` Riprova tra circa ${retryAfterSeconds} secondi.` : ' Riprova tra poco.';
+    if (status === 429 || status === 503) {
+      const is503 = status === 503;
+      const baseMessage = is503
+        ? 'I server di Voyager AI sono al momento sovraccarichi per l’alta richiesta.'
+        : 'Voyager AI è temporaneamente in sovraccarico.';
+      
+      const retryText = retryAfterSeconds 
+        ? ` Riprova tra circa ${retryAfterSeconds} secondi.` 
+        : ' Riprova tra un istante.';
+
       return new AppError(
-        `Voyager AI è temporaneamente in sovraccarico.${retryText}`,
+        `${baseMessage}${retryText}`,
         503,
         {
-          code: 'AI_OVERLOADED',
+          code: is503 ? 'AI_SERVICE_UNAVAILABLE' : 'AI_OVERLOADED',
           retryAfterSeconds
         }
       );

@@ -862,3 +862,56 @@
   }
 }
 
+/* ── Very Small Devices (Tiny Mobile) ──────────────────── */
+@media (max-width: 480px) {
+  .wl-day-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .wl-day-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .wl-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .wl-group-title {
+    width: 100%;
+  }
+
+  .wl-group-name-input {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .wl-group-time-actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .wl-group-btn-time {
+    padding: 6px 12px;
+    font-size: 11px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .wl-selection-action-bar {
+    width: calc(100% - 32px);
+    bottom: 90px;
+    padding: 8px;
+  }
+
+  .wl-btn-group span {
+    display: none;
+  }
+}
+

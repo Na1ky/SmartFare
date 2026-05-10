@@ -322,10 +322,80 @@
 
 @media (max-width: 768px) {
   .route-compact-bar {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    width: auto;
+    flex-direction: row; /* Single line as requested */
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 100px;
+    bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .route-compact-bar {
     left: 10px;
     right: 10px;
-    flex-direction: column;
+    width: calc(100% - 20px);
+    transform: none;
+    flex-direction: row;
+    padding: 8px 12px;
+    border-radius: 50px;
+    justify-content: space-between;
+    background: #0f172a; /* Solid dark color */
+  }
+}
+
+@media (max-width: 480px) {
+  .route-compact-bar {
+    left: 8px;
+    right: 8px;
+    width: calc(100% - 16px);
+    padding: 6px 10px;
     gap: 8px;
+    bottom: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
+
+  .route-compact-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 4px;
+  }
+
+  .route-compact-sep {
+    display: none;
+  }
+
+  .route-compact-chip strong {
+    font-size: 12px;
+  }
+
+  .route-compact-stops {
+    display: none;
+  }
+
+  .route-compact-gmaps {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 20px;
+    background: #2563eb;
+    color: white;
+  }
+
+  .route-compact-gmaps span {
+    display: none;
+  }
+
+  .route-compact-gmaps:after {
+    content: 'Maps';
+    margin-left: 4px;
   }
 }
 

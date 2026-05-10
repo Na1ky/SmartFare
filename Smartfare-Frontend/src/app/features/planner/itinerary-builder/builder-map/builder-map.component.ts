@@ -132,9 +132,14 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.routeLayer = L.layerGroup();
     this.endpointLayer = L.layerGroup();
 
-    // Use a check to ensure markerClusterGroup exists (important for production build)
-    const clusterFn = (L as any).markerClusterGroup || (L as any).MarkerClusterGroup;
+    // Robust detection for MarkerClusterGroup (Vite/ESM production fix)
+    let clusterFn: any = (L as any).markerClusterGroup || (L as any).MarkerClusterGroup;
     
+    // Fallback: Check if it's attached to the global L or needs manual reference
+    if (!clusterFn && typeof window !== 'undefined' && (window as any).L) {
+      clusterFn = (window as any).L.markerClusterGroup || (window as any).L.MarkerClusterGroup;
+    }
+
     if (clusterFn) {
       this.availableLayer = clusterFn({
         chunkedLoading: true,
@@ -237,7 +242,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.endpointLayer.clearLayers();
 
     if (this.location && recenterForLocation) {
-      this.map.setView([this.location.latitude, this.location.longitude], 12);
+      this.map.setView([this.location.latitude, this.location.longitude], 13);
     }
 
     const availableMarkers: L.Marker[] = [];
@@ -318,8 +323,15 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       setTimeout(() => previewMarker.openPopup(), 50);
     }
 
-    // Defer route calculation to next tick to avoid ExpressionChangedAfterItHasBeenCheckedError
-    // since refreshRoute synchronously modifies template-bound properties like isRouteLoading and googleMapsUrl
+    // If no route but we have saved POIs, zoom to them
+    if (this.savedPois.length > 0 && this.ui.visibleDayRoute() === 'all') {
+      const bounds = L.latLngBounds(this.savedPois.map(p => [p.latitude, p.longitude]));
+      this.map.fitBounds(bounds.pad(0.2));
+    } else if (this.savedPois.length === 0 && this.location && recenterForLocation) {
+      this.map.setView([this.location.latitude, this.location.longitude], 13);
+    }
+
+    // Defer route calculation to next tick
     setTimeout(() => {
       void this.refreshRoute();
     }, 0);

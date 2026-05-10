@@ -111,13 +111,14 @@
             (input)="onDayColorChange($event)" class="hidden-color-input">
           <span class="color-swatch"
             [style.background-color]="ui.dayRouteColors()[ui.selectedDay()] || ui.getDefaultDayColor(ui.selectedDay())">
+            <i class="bi bi-brush color-swatch-icon"></i>
           </span>
         </label>
 
-        <div class="map-ctrl-separator"></div>
+        <div class="map-ctrl-separator d-none d-lg-block"></div>
 
-        <!-- Layout toggles -->
-        <div class="layout-toggles">
+        <!-- Layout toggles (hidden on mobile) -->
+        <div class="layout-toggles d-none d-lg-flex">
           <button class="toggle-btn" [class.active]="ui.showSidebar()" (click)="ui.toggleSidebar()"
             title="Mostra/Nascondi scelte attività">
             <i class="bi bi-layout-sidebar"></i>
