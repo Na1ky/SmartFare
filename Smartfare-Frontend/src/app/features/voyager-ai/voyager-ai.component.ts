@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -150,6 +151,9 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
         }
 
         this.enterCleanLandingState();
+      },
+      error: (error) => {
+        this.handleChatAccessError(error);
       }
     });
   }
@@ -202,7 +206,10 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
         mode,
         title: mode === 'planner' ? 'Nuova sessione Planner' : 'Nuova sessione Assistant'
       })
-    );
+    ).catch((error) => {
+      this.handleChatAccessError(error);
+      throw error;
+    });
 
     this.chatService.setActiveSession(session);
     this.showMobileSidebar.set(false);
@@ -272,13 +279,19 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
           mode: this.chatService.mode(),
           title: this.chatService.mode() === 'planner' ? 'Nuova sessione Planner' : 'Nuova sessione Assistant'
         })
-      );
+      ).catch((error) => {
+        this.handleChatAccessError(error);
+        throw error;
+      });
     }
 
     await this.chatService.sendMessageStreaming(active.id, content, (data) => {
       if (data.metadata?.suggestedTitle) {
         this.router.navigate([], { queryParams: { sessionId: active!.id }, queryParamsHandling: 'merge' });
       }
+    }).catch((error) => {
+      this.handleChatAccessError(error);
+      throw error;
     });
   }
 
@@ -293,7 +306,10 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
         title: 'Voyager AI',
         mode: 'planner'
       })
-    );
+    ).catch((error) => {
+      this.handleChatAccessError(error);
+      throw error;
+    });
 
     this.chatService.setActiveSession(session);
     this.router.navigate([], {
@@ -301,7 +317,10 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
       queryParamsHandling: 'merge'
     });
 
-    await this.chatService.sendMessageStreaming(session.id, prompt, () => { });
+    await this.chatService.sendMessageStreaming(session.id, prompt, () => { }).catch((error) => {
+      this.handleChatAccessError(error);
+      throw error;
+    });
   }
 
   async generateItinerary() {
@@ -315,6 +334,7 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
       this.itineraryService.setCurrentItinerary(response.itinerary, { autosave: false });
       await this.router.navigate(['/itineraries/builder']);
     } catch (error: any) {
+      this.handleChatAccessError(error);
       const message = error?.error?.message || 'Non sono riuscito a generare l’itinerario.';
       this.alertService.error(message);
     } finally {
@@ -423,6 +443,28 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
       queryParamsHandling: 'merge',
       replaceUrl: true
     });
+  }
+
+  private handleChatAccessError(error: unknown): boolean {
+    if (!this.isAuthError(error)) {
+      return false;
+    }
+
+    this.authService.Logout();
+    this.chatService.clearActiveConversation(this.chatService.mode());
+    this.alertService.error('La sessione è scaduta. Accedi di nuovo per usare Voyager AI.');
+    void this.router.navigate(['/login'], {
+      queryParams: { returnUrl: '/voyager' }
+    });
+    return true;
+  }
+
+  private isAuthError(error: unknown): boolean {
+    if (!(error instanceof HttpErrorResponse)) {
+      return false;
+    }
+
+    return error.status === 401 || error.status === 403;
   }
 
   private resolveSessionGroupLabel(dateString: string): string {
