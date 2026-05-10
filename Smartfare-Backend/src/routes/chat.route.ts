@@ -1,4 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
+import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import prisma from '../config/prisma';
 import { authenticateJWT, AuthRequest } from '../middleware/auth.middleware';
 import { ChatService } from '../services/ai/chat.service';
@@ -6,6 +8,37 @@ import { AppError } from '../middleware/error.middleware';
 
 const router = Router();
 const chatService = new ChatService();
+
+const chatWriteLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Troppe operazioni chat. Riprova tra un minuto.'
+    }
+});
+
+const createSessionSchema = z.object({
+    title: z.string().trim().min(1).max(120).optional(),
+    mode: z.enum(['planner', 'assistant']).optional(),
+    locationId: z.coerce.number().int().positive().nullable().optional()
+});
+
+const updateSessionSchema = z
+    .object({
+        title: z.string().trim().min(1).max(120).optional(),
+        isPinned: z.boolean().optional(),
+        isActive: z.boolean().optional(),
+        mode: z.enum(['planner', 'assistant']).optional()
+    })
+    .refine((body) => Object.keys(body).length > 0, {
+        message: 'Payload di aggiornamento vuoto'
+    });
+
+const streamBodySchema = z.object({
+    message: z.string().trim().min(1).max(4000)
+});
 
 // List sessions
 router.get('/sessions', authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -30,10 +63,10 @@ router.get('/sessions', authenticateJWT, async (req: AuthRequest, res: Response,
 });
 
 // Create session
-router.post('/sessions', authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/sessions', chatWriteLimiter, authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = Number(req.user?.userId);
-        const { title, mode, locationId } = req.body;
+        const { title, mode, locationId } = createSessionSchema.parse(req.body);
         const normalizedMode = mode || 'planner';
 
         const existingEmptySession = await prisma.chatSession.findFirst({
@@ -112,11 +145,11 @@ router.get('/sessions/:id/messages', authenticateJWT, async (req: AuthRequest, r
 });
 
 // Update session (pin, rename)
-router.patch('/sessions/:id', authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.patch('/sessions/:id', chatWriteLimiter, authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
-        const { title, isPinned, isActive, mode } = req.body;
+        const { title, isPinned, isActive, mode } = updateSessionSchema.parse(req.body);
 
         const session = await prisma.chatSession.updateMany({
             where: { id: chatId, userId },
@@ -170,15 +203,11 @@ router.delete('/sessions/:id', authenticateJWT, async (req: AuthRequest, res: Re
 });
 
 // Streaming chat endpoint
-router.post('/sessions/:id/stream', authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+router.post('/sessions/:id/stream', chatWriteLimiter, authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
-        const { message } = req.body;
-
-        if (!message) {
-            throw new AppError('Messaggio mancante', 400);
-        }
+        const { message } = streamBodySchema.parse(req.body);
 
         // Set up SSE headers
         res.setHeader('Content-Type', 'text/event-stream');

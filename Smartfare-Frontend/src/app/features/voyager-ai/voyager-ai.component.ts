@@ -301,7 +301,7 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
       queryParamsHandling: 'merge'
     });
 
-    await this.chatService.sendMessageStreaming(session.id, prompt, () => {});
+    await this.chatService.sendMessageStreaming(session.id, prompt, () => { });
   }
 
   async generateItinerary() {
@@ -329,16 +329,16 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
     const payload =
       format === 'json'
         ? JSON.stringify(
-            {
-              session,
-              messages: this.chatService.messages()
-            },
-            null,
-            2
-          )
+          {
+            session,
+            messages: this.chatService.messages()
+          },
+          null,
+          2
+        )
         : this.chatService.messages()
-            .map((message) => `## ${message.role === 'user' ? 'You' : 'Voyager AI'}\n\n${message.content}`)
-            .join('\n\n');
+          .map((message) => `## ${message.role === 'user' ? 'You' : 'Voyager AI'}\n\n${message.content}`)
+          .join('\n\n');
 
     const blob = new Blob([payload], {
       type: format === 'json' ? 'application/json;charset=utf-8' : 'text/markdown;charset=utf-8'
@@ -390,9 +390,20 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
   formatMessage(content: string): string {
     if (!content) return '';
 
-    return content
+    const escaped = this.escapeHtml(content);
+
+    return escaped
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n/g, '<br>');
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private scrollToBottom() {

@@ -1,28 +1,53 @@
 import { Router } from 'express';
 import { upload } from '../config/cloudinary';
-import { optionalAuthenticateJWT, AuthRequest } from '../middleware/auth.middleware';
+import rateLimit from 'express-rate-limit';
+import { z } from 'zod';
+import { authenticateJWT, AuthRequest } from '../middleware/auth.middleware';
 import prisma from '../config/prisma';
 
 const router = Router();
 
-// Cambiato in optionalAuthenticateJWT per permettere l'upload anche ai guest (che salvano solo in locale)
-router.post('/image', optionalAuthenticateJWT, upload.single('image'), async (req: AuthRequest, res: any) => {
+const uploadLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        error: 'Troppi upload in poco tempo. Riprova tra un minuto.'
+    }
+});
+
+const uploadImageSchema = z.object({
+    itineraryId: z.coerce.number().int().positive().optional()
+});
+
+router.post('/image', uploadLimiter, authenticateJWT, upload.single('image'), async (req: AuthRequest, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Nessuna immagine fornita' });
         }
 
         const imageUrl = req.file.path;
-        const itineraryId = req.body.itineraryId;
+        const { itineraryId } = uploadImageSchema.parse(req.body);
         let savedToDb = false;
 
-        // Aggiorna il database solo se l'utente è autenticato e viene fornito un ID itinerario
         if (itineraryId && req.user) {
             try {
+                const itinerary = await prisma.itinerary.findFirst({
+                    where: {
+                        id: itineraryId,
+                        userId: req.user.userId
+                    },
+                    select: { id: true }
+                });
+
+                if (!itinerary) {
+                    return res.status(404).json({ error: 'Itinerario non trovato o non autorizzato' });
+                }
+
                 await prisma.itinerary.update({
                     where: {
-                        id: Number(itineraryId),
-                        userId: req.user.userId
+                        id: itinerary.id
                     },
                     data: { imageUrl: imageUrl }
                 });

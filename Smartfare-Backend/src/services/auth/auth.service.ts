@@ -53,7 +53,7 @@ interface AuthResult {
 const emailService = new EmailService();
 
 const JWT_SECRET: string = process.env.JWT_SECRET || "";
-const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "";
+const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "7d";
 const OAUTH_STATE_EXPIRES_IN = "10m";
 const OAUTH_REGISTRATION_EXPIRES_IN = "15m";
 
@@ -503,8 +503,6 @@ export class AuthService {
 
             if (verificationToken) {
                 console.log("🆕 Generato nuovo token di verifica per", registerData.email);
-                console.log("🎫 Token raw:", verificationToken);
-                console.log("🔒 Token hashed (saved to DB):", hashedVerificationToken);
                 console.log("⏰ Scadenza impostata:", verificationExpires);
             }
 
@@ -715,9 +713,7 @@ export class AuthService {
 
     async VerifyEmail(token: string) {
         try {
-            console.log("🔍 Tentativo di verifica email con token:", token);
             const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-            console.log("🔑 Token hash generato:", hashedToken);
 
             const user = await prisma.user.findFirst({
                 where: {
@@ -743,8 +739,6 @@ export class AuthService {
             }
 
             console.log("👤 Utente trovato:", user.email);
-            console.log("⏰ Scadenza token:", user.emailVerificationExpires);
-            console.log("📅 Ora attuale:", new Date());
 
             if (user.emailVerificationExpires && user.emailVerificationExpires < new Date()) {
                 console.warn("⚠️ Il token è scaduto.");

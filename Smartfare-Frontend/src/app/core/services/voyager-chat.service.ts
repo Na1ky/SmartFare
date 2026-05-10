@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Itinerary } from '../models/itinerary.model';
+import { AuthService } from '../auth/auth.service';
 
 export type ChatMode = 'planner' | 'assistant';
 
@@ -50,6 +51,7 @@ export interface ChatMessage {
 })
 export class VoyagerChatService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly apiUrl = `${environment.apiUrl}/api/chat`;
 
   readonly sessions = signal<ChatSession[]>([]);
@@ -148,7 +150,11 @@ export class VoyagerChatService {
     this.messages.update((messages) => [...messages, userMessage, { role: 'assistant', content: '', isStreaming: true }]);
     this.isStreaming.set(true);
 
-    const token = localStorage.getItem('authToken');
+    const token = this.authService.getAccessToken();
+    if (!token) {
+      throw new Error('Sessione non autenticata');
+    }
+
     let buffer = '';
     let fullContent = '';
 

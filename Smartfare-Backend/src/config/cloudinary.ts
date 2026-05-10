@@ -21,5 +21,25 @@ const storage = new CloudinaryStorage({
   } as any,
 });
 
-export const upload = multer({ storage: storage });
+const allowedMimeTypes = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif'
+]);
+
+export const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+    files: 1
+  },
+  fileFilter: (_req, file, cb) => {
+    if (!allowedMimeTypes.has(file.mimetype)) {
+      cb(new Error('Formato file non supportato'));
+      return;
+    }
+    cb(null, true);
+  }
+});
 export { cloudinary };

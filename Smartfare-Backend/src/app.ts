@@ -17,6 +17,9 @@ import { errorHandler } from "./middleware/error.middleware";
 export function createApp() {
   const app = express();
 
+  // Required behind Render/other reverse proxies for correct client IP and rate-limiting.
+  app.set('trust proxy', 1);
+
   app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
     crossOriginEmbedderPolicy: false
@@ -24,25 +27,34 @@ export function createApp() {
 
   const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minuti
-    max: 500, // limite di 500 richieste ogni 15 minuti
+    max: 50,
     standardHeaders: true,
     legacyHeaders: false,
     message: { error: 'Troppe richieste. Riprova più tardi.' }
   });
   app.use(globalLimiter);
 
-  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:4200').split(',').map(o => o.trim());
+  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:4200')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean);
+  const allowVercelPreviewOrigins = process.env.ALLOW_VERCEL_PREVIEW_ORIGINS === 'true';
+  const vercelPreviewRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i;
+
   app.use(cors({
     origin: (origin, callback) => {
       if (!origin && process.env.NODE_ENV !== 'production') return callback(null, true);
       if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      if (allowVercelPreviewOrigins && origin && vercelPreviewRegex.test(origin)) {
+        return callback(null, true);
+      }
       callback(new Error(`CORS non autorizzato per origin: ${origin}`));
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
   }));
-  app.use(express.json());
+  app.use(express.json({ limit: '1mb' }));
 
   // Static
   app.use(express.static(path.join(process.cwd(), "/public")));
@@ -50,6 +62,11 @@ export function createApp() {
   // Route home
   app.get("/", (req, res) => {
     res.sendFile(path.join(process.cwd(), "/public", "index.html"));
+  });
+
+  // Health endpoint for Render checks
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
   });
 
   // API Routes
