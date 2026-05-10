@@ -16,9 +16,25 @@ import { errorHandler } from "./middleware/error.middleware";
 
 export function createApp() {
   const app = express();
+  const startedAt = Date.now();
 
   // Required behind Render/other reverse proxies for correct client IP and rate-limiting.
   app.set('trust proxy', 1);
+
+  app.use((req, res, next) => {
+    const requestStartedAt = Date.now();
+    const requestId = `${requestStartedAt}-${Math.random().toString(36).slice(2, 8)}`;
+    (req as express.Request & { requestId?: string }).requestId = requestId;
+
+    console.info(`[REQ] ${requestId} ${req.method} ${req.originalUrl} ip=${req.ip} ua=${req.get('user-agent') || 'n/a'}`);
+
+    res.on('finish', () => {
+      const durationMs = Date.now() - requestStartedAt;
+      console.info(`[RES] ${requestId} ${req.method} ${req.originalUrl} status=${res.statusCode} durationMs=${durationMs}`);
+    });
+
+    next();
+  });
 
   app.use(helmet({
     contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false,
@@ -68,6 +84,8 @@ export function createApp() {
   app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
   });
+
+  console.info(`[BOOT] Backend initialized in ${Date.now() - startedAt}ms`);
 
   // API Routes
   app.use("/api/locations", locationsRoutes);

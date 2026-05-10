@@ -21,12 +21,15 @@ const authLimiter = rateLimit({
 router.post("/login", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const body = loginSchema.parse(req.body);
+        console.info(`[AUTH] login attempt email=${body.email}`);
         const result = await authService.Login(body);
 
         if (!result.success) {
+            console.warn(`[AUTH] login failed email=${body.email} reason=${result.message || 'unknown'}`);
             return res.status(401).json(result);
         }
 
+        console.info(`[AUTH] login success email=${body.email}`);
         return res.status(200).json(result);
     } catch (error) {
         next(error);
@@ -37,13 +40,16 @@ router.post("/login", authLimiter, async (req: Request, res: Response, next: Nex
 router.post("/register", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const body = registerSchema.parse(req.body);
+        console.info(`[AUTH] register attempt email=${body.email}`);
         const result = await authService.Register(body);
 
         if (!result.success) {
             const status = result.message === 'Email già esistente' ? 409 : 400;
+            console.warn(`[AUTH] register failed email=${body.email} reason=${result.message || 'unknown'}`);
             return res.status(status).json(result);
         }
 
+        console.info(`[AUTH] register success email=${body.email}`);
         return res.status(201).json(result);
     } catch (error) {
         next(error);
@@ -122,12 +128,15 @@ router.post("/google", authLimiter, async (req: Request, res: Response, next: Ne
             });
         }
 
+        console.info("[AUTH] google login attempt");
         const result = await authService.GoogleLogin(idToken);
 
         if (!result.success) {
+            console.warn(`[AUTH] google login failed reason=${result.message || 'unknown'}`);
             return res.status(401).json(result);
         }
 
+        console.info("[AUTH] google login success");
         return res.status(200).json(result);
     } catch (error) {
         next(error);
@@ -138,6 +147,7 @@ router.post("/google", authLimiter, async (req: Request, res: Response, next: Ne
 router.post("/forgot-password", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email } = forgotPasswordSchema.parse(req.body);
+        console.info(`[AUTH] forgot-password requested email=${email}`);
         const result = await authService.ForgotPassword(email);
 
         if (!result.success) {
@@ -154,6 +164,7 @@ router.post("/forgot-password", authLimiter, async (req: Request, res: Response,
 router.post("/reset-password", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const body = resetPasswordSchema.parse(req.body);
+        console.info("[AUTH] reset-password requested");
         const result = await authService.ResetPassword(body);
 
         if (!result.success) {
@@ -170,6 +181,7 @@ router.post("/reset-password", authLimiter, async (req: Request, res: Response, 
 router.post("/verify-email", authLimiter, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { token } = verifyEmailSchema.parse(req.body);
+        console.info("[AUTH] verify-email requested");
         const result = await authService.VerifyEmail(token);
 
         if (!result.success) {

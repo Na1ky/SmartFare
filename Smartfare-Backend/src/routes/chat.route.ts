@@ -44,6 +44,7 @@ const streamBodySchema = z.object({
 router.get('/sessions', authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const userId = Number(req.user?.userId);
+        console.info(`[CHAT] list sessions userId=${userId}`);
         const sessions = await prisma.chatSession.findMany({
             where: { userId },
             orderBy: [
@@ -68,6 +69,7 @@ router.post('/sessions', chatWriteLimiter, authenticateJWT, async (req: AuthRequ
         const userId = Number(req.user?.userId);
         const { title, mode, locationId } = createSessionSchema.parse(req.body);
         const normalizedMode = mode || 'planner';
+        console.info(`[CHAT] create session userId=${userId} mode=${normalizedMode} locationId=${locationId || 'none'}`);
 
         const existingEmptySession = await prisma.chatSession.findFirst({
             where: {
@@ -83,6 +85,7 @@ router.post('/sessions', chatWriteLimiter, authenticateJWT, async (req: AuthRequ
         });
 
         if (existingEmptySession) {
+            console.info(`[CHAT] reuse empty session userId=${userId} sessionId=${existingEmptySession.id}`);
             res.status(200).json(existingEmptySession);
             return;
         }
@@ -114,6 +117,7 @@ router.post('/sessions', chatWriteLimiter, authenticateJWT, async (req: AuthRequ
         });
 
         res.status(201).json(session);
+        console.info(`[CHAT] created session userId=${userId} sessionId=${session.id}`);
     } catch (error) {
         next(error);
     }
@@ -124,6 +128,7 @@ router.get('/sessions/:id/messages', authenticateJWT, async (req: AuthRequest, r
     try {
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
+        console.info(`[CHAT] get messages userId=${userId} sessionId=${chatId}`);
 
         const session = await prisma.chatSession.findFirst({
             where: { id: chatId, userId }
@@ -150,6 +155,7 @@ router.patch('/sessions/:id', chatWriteLimiter, authenticateJWT, async (req: Aut
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
         const { title, isPinned, isActive, mode } = updateSessionSchema.parse(req.body);
+        console.info(`[CHAT] update session userId=${userId} sessionId=${chatId}`);
 
         const session = await prisma.chatSession.updateMany({
             where: { id: chatId, userId },
@@ -176,6 +182,7 @@ router.delete('/sessions/:id', authenticateJWT, async (req: AuthRequest, res: Re
     try {
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
+        console.info(`[CHAT] delete session userId=${userId} sessionId=${chatId}`);
 
         const session = await prisma.chatSession.findFirst({
             where: { id: chatId, userId },
@@ -208,6 +215,7 @@ router.post('/sessions/:id/stream', chatWriteLimiter, authenticateJWT, async (re
         const userId = Number(req.user?.userId);
         const chatId = Number(req.params.id);
         const { message } = streamBodySchema.parse(req.body);
+        console.info(`[CHAT] stream start userId=${userId} sessionId=${chatId} messageLength=${message.length}`);
 
         // Set up SSE headers
         res.setHeader('Content-Type', 'text/event-stream');
@@ -220,12 +228,15 @@ router.post('/sessions/:id/stream', chatWriteLimiter, authenticateJWT, async (re
         });
 
         res.end();
+        console.info(`[CHAT] stream completed userId=${userId} sessionId=${chatId}`);
     } catch (error) {
         // If headers already sent, we can't use next(error) properly for JSON response
         if (!res.headersSent) {
+            console.error(`[CHAT] stream failed before headers userId=${req.user?.userId || 'unknown'} sessionId=${req.params.id}`, error);
             next(error);
         } else {
             const appError = error instanceof AppError ? error : new AppError('Errore durante lo streaming', 500);
+            console.error(`[CHAT] stream failed after headers userId=${req.user?.userId || 'unknown'} sessionId=${req.params.id}`, appError);
             res.write(`data: ${JSON.stringify({
                 reply: appError.message,
                 done: true,

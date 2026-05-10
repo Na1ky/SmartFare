@@ -18,8 +18,10 @@ export const errorHandler = (
     res: Response,
     next: NextFunction
 ) => {
+    const requestId = (req as Request & { requestId?: string }).requestId || 'unknown';
+
     if (err instanceof ZodError) {
-        console.warn(`[Validation Error] ${req.method} ${req.url} - ${err.issues.map(i => i.message).join(', ')}`);
+        console.warn(`[Validation Error] requestId=${requestId} ${req.method} ${req.originalUrl} - ${err.issues.map(i => i.message).join(', ')}`);
         return res.status(400).json({
             error: "Errore di validazione",
             details: err.issues.map((e) => ({
@@ -30,9 +32,9 @@ export const errorHandler = (
     }
 
     if (err instanceof Error) {
-        console.error(`[Error] ${err.message}`, err);
+        console.error(`[Error] requestId=${requestId} ${req.method} ${req.originalUrl} - ${err.message}`, err);
     } else {
-        console.error(`[Error]`, err);
+        console.error(`[Error] requestId=${requestId} ${req.method} ${req.originalUrl}`, err);
     }
 
     if (err instanceof AppError) {

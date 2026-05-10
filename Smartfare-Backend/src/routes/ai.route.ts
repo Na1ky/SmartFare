@@ -26,6 +26,7 @@ router.post('/itinerary/chat', aiLimiter, optionalAuthenticateJWT, async (req: A
     try {
         const body = aiItineraryChatSchema.parse(req.body);
         const locationId = body.locationId || body.itinerary?.locationId;
+        console.info(`[AI] itinerary chat started locationId=${locationId || 'missing'} userId=${req.user?.userId || 'guest'}`);
 
         if (!locationId) {
             throw new AppError('locationId mancante per avviare la chat IA', 400);
@@ -53,7 +54,9 @@ router.post('/itinerary/chat', aiLimiter, optionalAuthenticateJWT, async (req: A
             success: true,
             ...response,
         });
+        console.info(`[AI] itinerary chat completed locationId=${locationId} userId=${req.user?.userId || 'guest'}`);
     } catch (error) {
+        console.error(`[AI] itinerary chat failed userId=${req.user?.userId || 'guest'}`, error);
         next(error);
     }
 });
@@ -61,6 +64,7 @@ router.post('/itinerary/chat', aiLimiter, optionalAuthenticateJWT, async (req: A
 router.post('/itinerary/generate', aiLimiter, optionalAuthenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         const { prompt } = aiItineraryGenerateSchema.parse(req.body);
+        console.info(`[AI] itinerary generate started userId=${req.user?.userId || 'guest'} promptLength=${prompt.length}`);
 
         // 1. Fetch all locations to identify the destination
         const locations = await prisma.location.findMany({
@@ -105,7 +109,9 @@ router.post('/itinerary/generate', aiLimiter, optionalAuthenticateJWT, async (re
                 location: workspace.location
             }
         });
+        console.info(`[AI] itinerary generate completed userId=${req.user?.userId || 'guest'} locationId=${locationId}`);
     } catch (error) {
+        console.error(`[AI] itinerary generate failed userId=${req.user?.userId || 'guest'}`, error);
         next(error);
     }
 });
