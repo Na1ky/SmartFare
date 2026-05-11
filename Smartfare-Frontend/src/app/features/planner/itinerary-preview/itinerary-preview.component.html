@@ -1,0 +1,64 @@
+<div class="preview-container">
+    <!-- Header -->
+    <div class="preview-header">
+        <div class="header-content">
+            <button class="btn-back" (click)="goBack()">
+                <i class="bi bi-chevron-left"></i>
+                <span>Indietro</span>
+            </button>
+
+            <div class="header-title">
+                <h1>{{ isLoading() ? 'Caricamento...' : 'Anteprima Itinerario' }}</h1>
+            </div>
+
+            <div class="header-actions">
+                @if (!isLoading()) {
+                @if (!isOwner()) {
+                <button class="btn-favorite" [class.is-favorite]="isFavorite()" (click)="toggleFavorite()"
+                    [disabled]="isSaving()">
+                    <i [class]="isFavorite() ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                    <span>{{ isFavorite() ? 'Preferito' : 'Aggiungi ai preferiti' }}</span>
+                </button>
+                }
+
+                @if (isOwner()) {
+                <button class="btn-edit" (click)="saveAndEdit()" [disabled]="isSaving()">
+                    <i class="bi bi-pencil-square"></i>
+                    <span>{{ isSaving() ? 'Salvataggio...' : 'Modifica' }}</span>
+                </button>
+                }
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="preview-content">
+        @if (isLoading()) {
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Caricamento itinerario in corso...</p>
+        </div>
+        } @else if (itinerary()) {
+        <div class="content-grid">
+            <!-- Map Section -->
+            <div class="map-section">
+                <app-builder-map [itinerary]="itinerary()" [isPreview]="true" [location]="itinerary()?.location || null"
+                    [savedPois]="[]">
+                </app-builder-map>
+            </div>
+
+            <!-- Summary Section -->
+            <div class="summary-section">
+                <app-builder-summary [previewItineraryInput]="itinerary()" [isPreviewInput]="true">
+                </app-builder-summary>
+            </div>
+        </div>
+        } @else {
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>Itinerario non trovato</p>
+        </div>
+        }
+    </div>
+</div>

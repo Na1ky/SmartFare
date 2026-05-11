@@ -327,12 +327,35 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
     const session = this.chatService.activeSession();
     if (!session) return;
 
+    // If the session already has a generated itinerary, reuse it instead of creating a new one
+    const existing = session.metadata?.generatedItinerary as any | undefined;
+    if (existing && existing.id) {
+      this.itineraryService.setCurrentItinerary(existing, { autosave: false });
+      await this.router.navigate(['/itineraries/builder']);
+      return;
+    }
+
     this.isGeneratingItinerary.set(true);
 
     try {
       const response = await firstValueFrom(this.chatService.generateItinerary(session.id));
       this.itineraryService.setCurrentItinerary(response.itinerary, { autosave: false });
-      await this.router.navigate(['/itineraries/builder']);
+
+      // Update active session metadata so subsequent generate clicks reuse the same itinerary
+      const updatedSession: any = {
+        ...session,
+        metadata: {
+          ...(session.metadata || {}),
+          generatedItinerary: response.itinerary,
+          readyToGenerate: true
+        }
+      };
+
+      this.chatService.setActiveSession(updatedSession);
+      this.chatService.sessions.update((sessions) => sessions.map((s) => (s.id === updatedSession.id ? updatedSession : s)));
+
+      // Navigate to builder and include itinerary id in query for shareable URL
+      await this.router.navigate(['/itineraries/builder'], { queryParams: { itineraryId: response.itinerary.id } });
     } catch (error: any) {
       this.handleChatAccessError(error);
       const message = error?.error?.message || 'Non sono riuscito a generare l’itinerario.';

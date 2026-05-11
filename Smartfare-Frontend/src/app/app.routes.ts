@@ -14,6 +14,7 @@ export const APP_ROUTES: Routes = [
   { path: 'manual/planner', loadComponent: () => import('./features/planner/manual-planner/manual-planner.component').then((m) => m.ManualPlannerComponent), canActivate: [authGuard] },
   { path: 'itineraries', loadComponent: () => import('./features/profile/itineraries/itineraries.component').then((c) => c.ItinerariesComponent), canActivate: [authGuard] },
   { path: 'itineraries/new', loadComponent: () => import('./features/planner/manual-planner/manual-planner.component').then((m) => m.ManualPlannerComponent), canActivate: [authGuard] },
+  { path: 'itineraries/preview', loadComponent: () => import('./features/planner/itinerary-preview/itinerary-preview.component').then((p) => p.ItineraryPreviewComponent) },
   { path: 'itineraries/builder', loadComponent: () => import('./features/planner/itinerary-builder/itinerary-builder.component').then((m) => m.ItineraryBuilderComponent), canActivate: [authGuard] },
   { path: 'voyager', loadComponent: () => import('./features/voyager-ai/voyager-ai.component').then((v) => v.VoyagerAiComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }

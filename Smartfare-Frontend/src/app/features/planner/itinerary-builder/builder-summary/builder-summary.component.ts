@@ -44,6 +44,8 @@ interface ExploreCard {
 })
 export class BuilderSummaryComponent {
   workspace = input<ItineraryWorkspace | null>(null);
+  previewItineraryInput = input<Itinerary | null>(null);
+  isPreviewInput = input<boolean>(false);
 
   @Output() showOnMap = new EventEmitter<BuilderPoi>();
 
@@ -56,7 +58,17 @@ export class BuilderSummaryComponent {
 
   // Modalità Anteprima
   previewItinerary = signal<Itinerary | null>(null);
-  isPreviewMode = computed(() => !!this.previewItinerary());
+  isPreviewMode = computed(() => !!this.previewItinerary() || this.isPreviewInput());
+
+  constructor() {
+    // Sincronizza l'input preview all'interno del signal interno
+    effect(() => {
+      const input = this.previewItineraryInput();
+      if (input) {
+        this.previewItinerary.set(input);
+      }
+    });
+  }
 
   // ---- Sezione percorso giorno selezionato ----
   /** Giorno attualmente visibile nella mappa (number | 'all') */

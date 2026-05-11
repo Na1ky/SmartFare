@@ -38,7 +38,7 @@ export class ItinerariesComponent implements OnInit {
   constructor(
     private itineraryService: ItineraryService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadItineraries();
@@ -58,17 +58,26 @@ export class ItinerariesComponent implements OnInit {
     this.router.navigate(['/manual/planner']);
   }
 
+  editItinerary(itinerary: Itinerary): void {
+    this.itineraryService.setCurrentItinerary(itinerary, { autosave: false });
+    this.router.navigate(['/itineraries/builder'], { queryParams: { itineraryId: itinerary.id } });
+  }
+
+  previewItinerary(itinerary: Itinerary): void {
+    this.router.navigate(['/itineraries/preview'], { queryParams: { itineraryId: itinerary.id } });
+  }
+
   formatDateRange(itinerary: Itinerary): string {
     if (!itinerary.startDate) return 'Date non confermate';
-    
+
     const start = new Date(itinerary.startDate);
     const end = itinerary.endDate ? new Date(itinerary.endDate) : null;
-    
+
     const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' };
     const startStr = start.toLocaleDateString('it-IT', options);
-    
+
     if (!end) return startStr;
-    
+
     const endStr = end.toLocaleDateString('it-IT', options);
     return `${startStr} - ${endStr}`;
   }

@@ -16,7 +16,7 @@
         <h1 class="premium-title">I Miei <span class="text-gradient">Itinerari</span></h1>
         <p class="premium-subtitle">Gestisci i tuoi prossimi viaggi e rivivi le tue avventure passate.</p>
       </div>
-      
+
       <div class="header-actions">
         <div class="premium-search">
           <i class="bi bi-search"></i>
@@ -46,41 +46,54 @@
 
       <!-- Lista Itinerari -->
       @for (itinerary of filteredItineraries(); track itinerary.id) {
-        <div class="itinerary-card">
-          <div class="card-image-wrap">
-            <img [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'" [alt]="itinerary.name">
-            <div class="image-overlay"></div>
-            @if (getStatusTag(itinerary)) {
-              <span class="status-tag" [class]="getStatusTag(itinerary).toLowerCase().replace(' ', '-')">
-                {{ getStatusTag(itinerary) }}
-              </span>
-            }
+      <div class="itinerary-card">
+        <div class="card-image-wrap">
+          <img
+            [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'"
+            [alt]="itinerary.name">
+          <div class="image-overlay"></div>
+          @if (getStatusTag(itinerary)) {
+          <span class="status-tag" [class]="getStatusTag(itinerary).toLowerCase().replace(' ', '-')">
+            {{ getStatusTag(itinerary) }}
+          </span>
+          }
+        </div>
+
+        <div class="card-body">
+          <div class="card-meta">
+            <i class="bi bi-calendar3"></i>
+            <span>{{ formatDateRange(itinerary) }}</span>
           </div>
-          
-          <div class="card-body">
-            <div class="card-meta">
-              <i class="bi bi-calendar3"></i>
-              <span>{{ formatDateRange(itinerary) }}</span>
+          <h3 class="itinerary-name">{{ itinerary.name }}</h3>
+          <div class="card-location">
+            <i class="bi bi-geo-alt"></i>
+            <span>{{ itinerary.location?.name || 'Destinazione da definire' }}</span>
+          </div>
+
+          <div class="card-footer">
+            <div class="avatar-stack">
+              <img [src]="itinerary.user?.profile?.avatarUrl || 'https://i.pravatar.cc/150?u=' + itinerary.id"
+                class="avatar" alt="User">
+              @if (itinerary.id && itinerary.id % 2 === 0) {
+              <img src="https://i.pravatar.cc/150?u=traveler" class="avatar" alt="Traveler">
+              }
             </div>
-            <h3 class="itinerary-name">{{ itinerary.name }}</h3>
-            <div class="card-location">
-              <i class="bi bi-geo-alt"></i>
-              <span>{{ itinerary.location?.name || 'Destinazione da definire' }}</span>
-            </div>
-            
-            <div class="card-footer">
-              <div class="avatar-stack">
-                <img [src]="itinerary.user?.profile?.avatarUrl || 'https://i.pravatar.cc/150?u=' + itinerary.id" class="avatar" alt="User">
-                @if (itinerary.id && itinerary.id % 2 === 0) {
-                  <img src="https://i.pravatar.cc/150?u=traveler" class="avatar" alt="Traveler">
-                }
-              </div>
+            <div class="card-actions">
+              <button class="btn-view-itinerary" (click)="previewItinerary(itinerary)">
+                <i class="bi bi-eye"></i>
+                <span>Visualizza</span>
+              </button>
+              <button class="btn-edit-itinerary" (click)="editItinerary(itinerary)">
+                <i class="bi bi-pencil-square"></i>
+                <span>Modifica</span>
+              </button>
               <button class="btn-more">
                 <i class="bi bi-three-dots"></i>
               </button>
             </div>
           </div>
         </div>
+      </div>
       }
     </div>
   </div>

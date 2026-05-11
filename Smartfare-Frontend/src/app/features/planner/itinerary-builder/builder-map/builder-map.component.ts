@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 import Location from '../../../../core/models/location.model';
+import { Itinerary } from '../../../../core/models/itinerary.model';
 import { BuilderPoi } from '../../../../core/models/builder.types';
 import { UIStateService } from '../../../../core/services/ui-state.service';
 import { environment } from '../../../../../environments/environment';
@@ -31,6 +32,8 @@ import { environment } from '../../../../../environments/environment';
 export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('mapRoot', { static: true }) mapRoot!: ElementRef<HTMLDivElement>;
 
+  @Input() itinerary: Itinerary | null = null;
+  @Input() isPreview = false;
   @Input() location: Location | null = null;
   @Input() savedPois: BuilderPoi[] = [];
   @Input() routePois: BuilderPoi[] = [];
@@ -134,7 +137,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     // Robust detection for MarkerClusterGroup (Vite/ESM production fix)
     let clusterFn: any = (L as any).markerClusterGroup || (L as any).MarkerClusterGroup;
-    
+
     // Fallback: Check if it's attached to the global L or needs manual reference
     if (!clusterFn && typeof window !== 'undefined' && (window as any).L) {
       clusterFn = (window as any).L.markerClusterGroup || (window as any).L.MarkerClusterGroup;
@@ -645,7 +648,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     // Fallback image for hotels if imageUrl is missing
     let finalImageUrl = poi.imageUrl;
-    
+
     // Check if imageUrl is relative
     if (finalImageUrl && !finalImageUrl.startsWith('http') && !finalImageUrl.startsWith('data:')) {
       finalImageUrl = `${environment.apiUrl}${finalImageUrl.startsWith('/') ? '' : '/'}${finalImageUrl}`;

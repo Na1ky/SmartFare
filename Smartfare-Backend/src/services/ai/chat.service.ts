@@ -213,7 +213,10 @@ export class ChatService {
     if (!plannerState.locationId) {
       throw new AppError('Destinazione non ancora collegata a una location supportata dal builder.', 400);
     }
-
+    // Idempotency: if an itinerary has already been generated for this session, return it
+    if (sessionMetadata.generatedItinerary && (sessionMetadata.generatedItinerary as any).id) {
+      return sessionMetadata.generatedItinerary;
+    }
     const workspace = await this.itineraryService.getWorkspaceData(plannerState.locationId, userId);
     if (!workspace.location) {
       throw new AppError('Workspace destinazione non disponibile.', 404);

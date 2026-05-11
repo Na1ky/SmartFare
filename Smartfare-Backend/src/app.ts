@@ -46,6 +46,7 @@ export function createApp() {
     max: 50,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.method === 'OPTIONS', // Escludi le richieste preflight CORS
     message: { error: 'Troppe richieste. Riprova più tardi.' }
   });
   app.use(globalLimiter);

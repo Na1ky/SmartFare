@@ -13,6 +13,7 @@ const authLimiter = rateLimit({
     max: 30,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.method === 'OPTIONS', // Escludi le richieste preflight CORS
     message: {
         error: 'Troppi tentativi. Riprova tra 1 minuto.'
     }
