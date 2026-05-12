@@ -266,16 +266,18 @@ export class ItineraryService {
   // Copy an existing itinerary (create a new one with same content)
   copyItinerary(itinerary: Itinerary): Observable<Itinerary | null> {
     if (!this.authService.IsAuthenticated()) return of(null);
+    if (!itinerary.id) {
+      console.error('Cannot copy itinerary without ID');
+      return of(null);
+    }
 
-    // Create a new copy without the ID
-    const copy: Itinerary = {
-      ...JSON.parse(JSON.stringify(itinerary)),
-      id: undefined,
-      name: `${itinerary.name} (Copia)`
-    };
-
-    // Save the copy as a new itinerary
-    return this.saveDraftRequest(copy);
+    // Call the dedicated copy endpoint
+    return this.http.post<Itinerary>(`${this.API_URL}/copy/${itinerary.id}`, {}).pipe(
+      catchError(err => {
+        console.error('Error copying itinerary', err);
+        return of(null);
+      })
+    );
   }
 }
 

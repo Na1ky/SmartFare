@@ -244,7 +244,7 @@ export class ItineraryService {
 
     async saveItinerary(userId: number, data: any) {
         try {
-            const { id, locationId } = data;
+            const { id, copyFromId, locationId } = data;
             const draftPayload = this.normalizeDraftIdentity(data);
             const rawItems = this.buildItemData(data);
             const { items, droppedItems } = await this.sanitizeItemReferences(draftPayload.locationId, rawItems);
@@ -259,6 +259,89 @@ export class ItineraryService {
 
             if (rawItems.length > 0 && items.length === 0) {
                 throw new Error('Tutti gli item dell’itinerario sono stati scartati perché non validi per la destinazione selezionata');
+            }
+
+            if (copyFromId) {
+                const cloned = await prisma.$transaction(async (tx) => {
+                    const source = await tx.itinerary.findFirst({
+                        where: {
+                            id: Number(copyFromId),
+                            OR: [
+                                { userId },
+                                { isPublished: true },
+                                { visibilityCode: 'PUBLIC' }
+                            ]
+                        },
+                        include: {
+                            items: {
+                                orderBy: [
+                                    { dayNumber: 'asc' as const },
+                                    { orderInt: 'asc' as const }
+                                ]
+                            }
+                        }
+                    });
+
+                    if (!source) {
+                        throw new Error('Itinerario non trovato o non autorizzato');
+                    }
+
+                    const sourceIdentity = this.normalizeDraftIdentity({
+                        name: data?.name || `${source.name} (Copia)`,
+                        description: data?.description ?? source.description,
+                        startDate: data?.startDate ?? source.startDate,
+                        endDate: data?.endDate ?? source.endDate,
+                        isPublished: data?.isPublished ?? false,
+                        visibilityCode: data?.visibilityCode || 'PRIVATE',
+                        locationId: data?.locationId ?? source.locationId,
+                        chatSessionId: data?.chatSessionId ?? null,
+                        imageUrl: data?.imageUrl || source.imageUrl || DEFAULT_ITINERARY_IMAGE_URL
+                    });
+
+                    const sourceItems = this.reindexItems(this.buildItemData({ items: source.items }));
+                    const clonedItems = (await this.sanitizeItemReferences(sourceIdentity.locationId, sourceItems)).items;
+
+                    const createData: any = {
+                        name: sourceIdentity.name,
+                        description: sourceIdentity.description,
+                        startDate: sourceIdentity.startDate,
+                        endDate: sourceIdentity.endDate,
+                        isPublished: sourceIdentity.isPublished,
+                        imageUrl: sourceIdentity.imageUrl,
+                        user: {
+                            connect: { id: userId }
+                        },
+                        visibility: {
+                            connect: { code: sourceIdentity.visibilityCode }
+                        }
+                    };
+
+                    if (sourceIdentity.locationId) {
+                        createData.location = { connect: { id: sourceIdentity.locationId } };
+                    }
+
+                    if (sourceIdentity.chatSessionId) {
+                        createData.chatSession = { connect: { id: sourceIdentity.chatSessionId } };
+                    }
+
+                    const created = await tx.itinerary.create({ data: createData });
+
+                    if (clonedItems.length > 0) {
+                        await tx.itineraryItem.createMany({
+                            data: clonedItems.map((item: DraftItemPayload) => ({
+                                ...item,
+                                itineraryId: created.id
+                            }))
+                        });
+                    }
+
+                    return tx.itinerary.findUnique({
+                        where: { id: created.id },
+                        include: this.getItineraryInclude()
+                    });
+                }, { maxWait: 10000, timeout: 15000 });
+
+                return this.withLocation(cloned);
             }
 
             // If an ID is provided, we try to update
@@ -438,6 +521,91 @@ export class ItineraryService {
             return this.withLocation(createdWithItems);
         } catch (error) {
             console.error("Errore salvataggio itinerario:", error);
+            throw error;
+        }
+    }
+
+    async cloneItineraryById(sourceId: number, userId: number) {
+        try {
+            const cloned = await prisma.$transaction(async (tx) => {
+                // Fetch the source itinerary (can be public or owned by user)
+                const source = await tx.itinerary.findFirst({
+                    where: {
+                        id: Number(sourceId),
+                        OR: [
+                            { userId },
+                            { isPublished: true },
+                            { visibilityCode: 'PUBLIC' }
+                        ]
+                    },
+                    include: {
+                        items: {
+                            orderBy: [
+                                { dayNumber: 'asc' as const },
+                                { orderInt: 'asc' as const }
+                            ]
+                        }
+                    }
+                });
+
+                if (!source) {
+                    throw new Error("Itinerario non trovato o non autorizzato");
+                }
+
+                // Build the new itinerary data
+                const createData: any = {
+                    name: `${source.name} (Copia)`,
+                    description: source.description,
+                    startDate: source.startDate,
+                    endDate: source.endDate,
+                    isPublished: false,
+                    visibilityCode: 'PRIVATE',
+                    imageUrl: source.imageUrl || DEFAULT_ITINERARY_IMAGE_URL,
+                    user: {
+                        connect: { id: userId }
+                    },
+                    visibility: {
+                        connect: { code: 'PRIVATE' }
+                    }
+                };
+
+                if (source.locationId) {
+                    createData.location = { connect: { id: source.locationId } };
+                }
+
+                // Create the new itinerary
+                const created = await tx.itinerary.create({ data: createData });
+
+                // Clone all items from source to new itinerary
+                if (source.items && source.items.length > 0) {
+                    await tx.itineraryItem.createMany({
+                        data: source.items.map((item: any) => ({
+                            itemTypeCode: item.itemTypeCode,
+                            dayNumber: item.dayNumber,
+                            orderInt: item.orderInt,
+                            note: item.note,
+                            plannedStartAt: item.plannedStartAt,
+                            plannedEndAt: item.plannedEndAt,
+                            groupName: item.groupName,
+                            groupStartAt: item.groupStartAt,
+                            groupEndAt: item.groupEndAt,
+                            activityId: item.activityId,
+                            accommodationId: item.accommodationId,
+                            itineraryId: created.id
+                        }))
+                    });
+                }
+
+                // Return the complete cloned itinerary
+                return tx.itinerary.findUnique({
+                    where: { id: created.id },
+                    include: this.getItineraryInclude()
+                });
+            }, { maxWait: 10000, timeout: 15000 });
+
+            return this.withLocation(cloned);
+        } catch (error) {
+            console.error("Errore clonazione itinerario:", error);
             throw error;
         }
     }

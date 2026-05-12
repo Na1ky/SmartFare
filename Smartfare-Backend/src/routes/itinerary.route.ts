@@ -58,6 +58,22 @@ router.get("/public/:id", optionalAuthenticateJWT, async (req: AuthRequest, res:
     }
 });
 
+// POST /api/itineraries/copy/:id - Clone an itinerary (public or owned) to current user
+router.post("/copy/:id", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.userId);
+        if (!userId || Number.isNaN(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+        const sourceId = Number(req.params.id);
+        if (!sourceId || Number.isNaN(sourceId)) return res.status(400).json({ error: "ID non valido" });
+
+        const cloned = await itineraryService.cloneItineraryById(sourceId, userId);
+        res.status(200).json(cloned);
+    } catch (error) {
+        next(error);
+    }
+});
+
 // POST /api/itineraries - Create or update an itinerary
 router.post("/", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
