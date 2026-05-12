@@ -59,12 +59,15 @@ export class BuilderSummaryComponent {
   // Modalità Anteprima
   previewItinerary = signal<Itinerary | null>(null);
   isPreviewMode = computed(() => !!this.previewItinerary() || this.isPreviewInput());
+  isReadOnlyPreview = computed(() => this.isPreviewMode());
+  showPreviewBanner = computed(() => !!this.previewItinerary() && !this.isPreviewInput());
 
   constructor() {
-    // Sincronizza l'input preview all'interno del signal interno
+    // Sincronizza l'input preview all'interno del signal interno solo quando
+    // la preview è aperta dall'esplora (non dalla pagina di anteprima dedicata).
     effect(() => {
       const input = this.previewItineraryInput();
-      if (input) {
+      if (!this.isPreviewInput() && input) {
         this.previewItinerary.set(input);
       }
     });

@@ -21,6 +21,7 @@ export class BuilderSummaryPoiCardComponent {
   @Input({ required: true }) dayColor!: string;
   @Input({ required: true }) isSelected = false;
   @Input() totalDaysCount = 1;
+  @Input() readOnly = false;
 
   @Output() toggleSelect = new EventEmitter<void>();
   @Output() remove = new EventEmitter<void>();
@@ -60,20 +61,24 @@ export class BuilderSummaryPoiCardComponent {
 
   onToggleSelection(event: Event) {
     event.stopPropagation();
+    if (this.readOnly) return;
     this.toggleSelect.emit();
   }
 
   onRemove(event: Event) {
     event.stopPropagation();
+    if (this.readOnly) return;
     this.remove.emit();
   }
 
   updateNote(newNote: string) {
+    if (this.readOnly) return;
     this.poiUpdate.emit({ note: newNote });
   }
 
   openTimePopup(event: Event) {
     event.stopPropagation();
+    if (this.readOnly) return;
 
     let start = '';
     let end = '';
@@ -127,6 +132,7 @@ export class BuilderSummaryPoiCardComponent {
   }
 
   saveTime() {
+    if (this.readOnly) return;
     const startStr = this.popupStartTime();
     const endStr = this.popupEndTime();
 
@@ -155,6 +161,7 @@ export class BuilderSummaryPoiCardComponent {
   }
 
   clearTime() {
+    if (this.readOnly) return;
     this.poiUpdate.emit({ plannedStartAt: null as any, plannedEndAt: null as any });
     this.isTimePopupOpen.set(false);
   }

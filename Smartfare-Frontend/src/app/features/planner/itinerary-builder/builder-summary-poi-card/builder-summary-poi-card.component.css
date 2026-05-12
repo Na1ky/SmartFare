@@ -18,6 +18,10 @@
   margin-bottom: 8px;
 }
 
+.wl-drag-handle:hover {
+  color: #cbd5e1;
+}
+
 .wl-poi-pin {
   position: relative;
   width: 32px;
@@ -59,7 +63,7 @@
   background: #0f172a;
   border-radius: 20px;
   display: flex;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   min-height: 140px;
   position: relative;
@@ -203,11 +207,25 @@
   font-style: italic;
 }
 
-.wl-poi-notes-box input:focus, .wl-poi-notes-box input.is-editing {
+.wl-poi-notes-box input:focus,
+.wl-poi-notes-box input.is-editing {
   outline: none;
   border-color: #3b82f6;
   background: rgba(15, 23, 42, 0.8);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.wl-poi-notes-readonly {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  color: #cbd5e1;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .wl-poi-actions-row {
@@ -241,6 +259,11 @@
 .wl-time-pill:hover {
   background: rgba(59, 130, 246, 0.2);
   border-color: rgba(59, 130, 246, 0.5);
+}
+
+.wl-time-pill--readonly {
+  cursor: default;
+  pointer-events: none;
 }
 
 .wl-time-segment {
@@ -317,7 +340,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
   z-index: 100;
   width: max-content;
   min-width: 320px;
@@ -379,7 +402,8 @@
   padding-top: 16px;
 }
 
-.wl-btn-cancel, .wl-btn-save {
+.wl-btn-cancel,
+.wl-btn-save {
   padding: 8px 16px;
   border-radius: 8px;
   font-weight: 600;
@@ -409,8 +433,14 @@
 }
 
 @keyframes popIn {
-  0% { opacity: 0; transform: translateY(-10px) scale(0.95); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ── Mobile Responsive ─────────────────────────────────── */
@@ -570,4 +600,3 @@
     display: none;
   }
 }
-

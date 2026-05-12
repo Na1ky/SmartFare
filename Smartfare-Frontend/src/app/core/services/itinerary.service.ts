@@ -255,5 +255,27 @@ export class ItineraryService {
       })
     );
   }
+
+  getMyFavorites(): Observable<Itinerary[]> {
+    if (!this.authService.IsAuthenticated()) return of([]);
+    return this.http.get<Itinerary[]>(`${this.API_URL}/favorites`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  // Copy an existing itinerary (create a new one with same content)
+  copyItinerary(itinerary: Itinerary): Observable<Itinerary | null> {
+    if (!this.authService.IsAuthenticated()) return of(null);
+
+    // Create a new copy without the ID
+    const copy: Itinerary = {
+      ...JSON.parse(JSON.stringify(itinerary)),
+      id: undefined,
+      name: `${itinerary.name} (Copia)`
+    };
+
+    // Save the copy as a new itinerary
+    return this.saveDraftRequest(copy);
+  }
 }
 

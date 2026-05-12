@@ -87,4 +87,75 @@ router.get("/me", authenticateJWT, async (req: AuthRequest, res: Response, next:
     }
 });
 
+// GET /api/itineraries/favorites - Get all favorited itineraries for the logged user
+router.get("/favorites", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.userId);
+        if (!userId || Number.isNaN(userId)) return res.status(401).json({ error: "Unauthorized" });
+
+        const favorites = await itineraryService.getUserFavorites(userId);
+        res.status(200).json(favorites);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// POST /api/itineraries/:id/favorite - Add an itinerary to favorites
+router.post("/:id/favorite", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.userId);
+        const itineraryId = Number(req.params.id);
+        if (!userId || !itineraryId) return res.status(400).json({ error: "Parametri non validi" });
+
+        await itineraryService.addFavorite(userId, itineraryId);
+        res.status(200).json({ message: "Aggiunto ai preferiti" });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// DELETE /api/itineraries/:id/favorite - Remove an itinerary from favorites
+router.delete("/:id/favorite", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.userId);
+        const itineraryId = Number(req.params.id);
+        if (!userId || !itineraryId) return res.status(400).json({ error: "Parametri non validi" });
+
+        await itineraryService.removeFavorite(userId, itineraryId);
+        res.status(200).json({ message: "Rimosso dai preferiti" });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/itineraries/:id/favorite-status - Check if an itinerary is favorited
+router.get("/:id/favorite-status", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.userId);
+        const itineraryId = Number(req.params.id);
+        if (!userId || !itineraryId) return res.status(400).json({ error: "Parametri non validi" });
+
+        const isFavorite = await itineraryService.getFavoriteStatus(userId, itineraryId);
+        res.status(200).json({ isFavorite });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// GET /api/itineraries/:id - Get a single itinerary by ID (owner only)
+router.get("/:id", authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.user?.userId);
+        const id = Number(req.params.id);
+        if (!userId || !id) return res.status(400).json({ error: "Parametri non validi" });
+
+        const itinerary = await itineraryService.getItineraryById(id, userId);
+        if (!itinerary) return res.status(404).json({ error: "Itinerario non trovato" });
+        res.status(200).json(itinerary);
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;
+

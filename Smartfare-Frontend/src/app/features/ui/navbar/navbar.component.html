@@ -42,7 +42,8 @@
             </a>
           </li>
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/favorites']">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+              [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}">
               <i class="bi bi-heart"></i>
               <span>Itinerari Preferiti</span>
             </a>
@@ -76,7 +77,8 @@
             </a>
           </li>
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/favorites']">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+              [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}">
               <i class="bi bi-heart"></i>
               <span>Itinerari Preferiti</span>
             </a>
@@ -145,7 +147,7 @@
           <span>I miei Itinerari</span>
         </a>
         <a class="btn btn-outline-secondary w-100 mt-2 d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="['/favorites']" (click)="closeMobileMenu()">
+          [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}" (click)="closeMobileMenu()">
           <i class="bi bi-heart"></i>
           <span>Itinerari Preferiti</span>
         </a>

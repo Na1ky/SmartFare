@@ -1,64 +1,99 @@
-<div class="preview-container">
-    <!-- Header -->
-    <div class="preview-header">
-        <div class="header-content">
-            <button class="btn-back" (click)="goBack()">
-                <i class="bi bi-chevron-left"></i>
-                <span>Indietro</span>
-            </button>
+<div class="preview-shell">
 
-            <div class="header-title">
-                <h1>{{ isLoading() ? 'Caricamento...' : 'Anteprima Itinerario' }}</h1>
-            </div>
+  <!-- ── Atmospheric glow (same as builder) ── -->
+  <div class="preview-atmosphere" aria-hidden="true">
+    <span class="glow glow-a"></span>
+    <span class="glow glow-b"></span>
+    <span class="glow glow-c"></span>
+  </div>
 
-            <div class="header-actions">
-                @if (!isLoading()) {
-                @if (!isOwner()) {
-                <button class="btn-favorite" [class.is-favorite]="isFavorite()" (click)="toggleFavorite()"
-                    [disabled]="isSaving()">
-                    <i [class]="isFavorite() ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-                    <span>{{ isFavorite() ? 'Preferito' : 'Aggiungi ai preferiti' }}</span>
-                </button>
-                }
+  <!-- ══════════════════ HEADER BAR ══════════════════ -->
+  <header class="preview-header">
+    <div class="top-toolbar">
 
-                @if (isOwner()) {
-                <button class="btn-edit" (click)="saveAndEdit()" [disabled]="isSaving()">
-                    <i class="bi bi-pencil-square"></i>
-                    <span>{{ isSaving() ? 'Salvataggio...' : 'Modifica' }}</span>
-                </button>
-                }
-                }
-            </div>
+      <div class="toolbar-left">
+        <a [routerLink]="['/home']" class="brand anchor-reset">
+          <img src="favicon.png" alt="logo" class="logo-small">
+          <div class="brand-copy">
+            <span class="brand-name">SMARTFARE</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="toolbar-center">
+        <div class="preview-itinerary-name-container">
+          <h1 class="preview-itinerary-title">{{ itinerary()?.name || 'Anteprima Itinerario' }}</h1>
         </div>
-    </div>
+      </div>
 
-    <!-- Content -->
-    <div class="preview-content">
-        @if (isLoading()) {
-        <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Caricamento itinerario in corso...</p>
-        </div>
-        } @else if (itinerary()) {
-        <div class="content-grid">
-            <!-- Map Section -->
-            <div class="map-section">
-                <app-builder-map [itinerary]="itinerary()" [isPreview]="true" [location]="itinerary()?.location || null"
-                    [savedPois]="[]">
-                </app-builder-map>
-            </div>
+      <div class="toolbar-right">
+        @if (!isLoading() && itinerary()) {
+        <button class="preview-action-btn preview-action-btn--favorite" [class.is-favorited]="isFavorite()"
+          (click)="toggleFavorite()" [disabled]="isSaving() || isCopying()" id="preview-favorite-btn">
+          <i [class]="isFavorite() ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+          <span>{{ isFavorite() ? 'Preferito' : 'Aggiungi ai preferiti' }}</span>
+        </button>
 
-            <!-- Summary Section -->
-            <div class="summary-section">
-                <app-builder-summary [previewItineraryInput]="itinerary()" [isPreviewInput]="true">
-                </app-builder-summary>
-            </div>
-        </div>
-        } @else {
-        <div class="empty-state">
-            <i class="bi bi-inbox"></i>
-            <p>Itinerario non trovato</p>
-        </div>
+        <button class="preview-action-btn preview-action-btn--primary" (click)="copyItinerary()"
+          [disabled]="isSaving() || isCopying()" id="preview-save-btn">
+          <i [class]="isCopying() ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+          <span>{{ isCopying() ? 'Salvataggio…' : 'Incorpora' }}</span>
+        </button>
         }
+      </div>
+
     </div>
+  </header>
+
+  <!-- ══════════════════ WORKSPACE ══════════════════ -->
+  @if (isLoading()) {
+  <div class="preview-loading">
+    <div class="preview-spinner"></div>
+    <p>Caricamento itinerario…</p>
+  </div>
+  } @else if (itinerary()) {
+
+  <main class="preview-workspace">
+
+    <!-- Summary panel (left on desktop) -->
+    <section class="preview-panel preview-panel--summary" [class.panel-active]="mobileActivePanel() === 'summary'">
+      <!-- No workspace passed when null — summary still renders from service signal -->
+      <app-builder-summary [workspace]="workspace()" [previewItineraryInput]="itinerary()" [isPreviewInput]="true">
+      </app-builder-summary>
+    </section>
+
+    <!-- Resizable divider (desktop only) -->
+    <div class="preview-resize-handle d-none d-lg-block" (mousedown)="onResizeStart($event)"
+      [class.resizing]="isResizing()"></div>
+
+    <!-- Map panel (right on desktop) -->
+    <section class="preview-panel preview-panel--map" [class.panel-active]="mobileActivePanel() === 'map'">
+      <app-builder-map [itinerary]="itinerary()" [isPreview]="true" [location]="previewLocation()"
+        [savedPois]="previewSavedPois()" [routePois]="previewSavedPois()" [availablePois]="[]">
+      </app-builder-map>
+    </section>
+
+  </main>
+
+  <!-- Mobile bottom nav -->
+  <nav class="preview-mobile-bar d-lg-none">
+    <button class="mobile-tab-btn" [class.active]="mobileActivePanel() === 'summary'"
+      (click)="setMobilePanel('summary')">
+      <i class="bi bi-list-ul"></i>
+      <span>Riepilogo</span>
+    </button>
+    <button class="mobile-tab-btn" [class.active]="mobileActivePanel() === 'map'" (click)="setMobilePanel('map')">
+      <i class="bi bi-map"></i>
+      <span>Mappa</span>
+    </button>
+  </nav>
+
+  } @else {
+  <div class="preview-empty">
+    <i class="bi bi-inbox"></i>
+    <p>Itinerario non trovato</p>
+    <button class="hdr-btn hdr-btn--primary" (click)="goBack()">Torna indietro</button>
+  </div>
+  }
+
 </div>

@@ -609,4 +609,66 @@ export class ItineraryService {
             throw error;
         }
     }
+
+    // ─── Favorites ────────────────────────────────────────────────────────────
+
+    async getUserFavorites(userId: number) {
+        try {
+            const favorites = await prisma.itineraryFavorite.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    itinerary: {
+                        include: {
+                            location: true,
+                            user: { include: { profile: true } },
+                            _count: { select: { items: true } }
+                        }
+                    }
+                }
+            });
+            return favorites.map(fav => fav.itinerary);
+        } catch (error) {
+            console.error("Errore recupero preferiti:", error);
+            throw error;
+        }
+    }
+
+    async addFavorite(userId: number, itineraryId: number) {
+        try {
+            await prisma.itineraryFavorite.upsert({
+                where: { userId_itineraryId: { userId, itineraryId } },
+                create: { userId, itineraryId },
+                update: {}
+            });
+        } catch (error) {
+            console.error("Errore aggiunta preferito:", error);
+            throw error;
+        }
+    }
+
+    async removeFavorite(userId: number, itineraryId: number) {
+        try {
+            await prisma.itineraryFavorite.deleteMany({
+                where: { userId, itineraryId }
+            });
+        } catch (error) {
+            console.error("Errore rimozione preferito:", error);
+            throw error;
+        }
+    }
+
+    async getFavoriteStatus(userId: number, itineraryId: number): Promise<boolean> {
+        const record = await prisma.itineraryFavorite.findUnique({
+            where: { userId_itineraryId: { userId, itineraryId } }
+        });
+        return !!record;
+    }
+
+    async getItineraryById(id: number, userId: number) {
+        return prisma.itinerary.findFirst({
+            where: { id, userId },
+            include: this.getItineraryInclude()
+        });
+    }
 }

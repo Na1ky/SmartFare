@@ -1,8 +1,10 @@
 <div class="wl-poi-left">
+  @if (!readOnly) {
   <div class="wl-drag-handle" cdkDragHandle><i class="bi bi-grid-3x2-gap-fill"></i></div>
   <div class="wl-poi-checkbox" (click)="onToggleSelection($event)" [class.checked]="isSelected">
     <i class="bi" [class.bi-check-circle-fill]="isSelected" [class.bi-circle]="!isSelected"></i>
   </div>
+  }
   <div class="wl-poi-pin">
     <svg viewBox="0 0 24 34" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C5.37258 0 0 5.37258 0 12C0 21 12 34 12 34C12 34 24 21 24 12C24 5.37258 18.6274 0 12 0Z"
@@ -12,7 +14,7 @@
   </div>
   <!-- Linea verticale che connette i pin -->
   @if (!isLast) {
-    <div class="wl-vertical-line" [style.background-color]="dayColor"></div>
+  <div class="wl-vertical-line" [style.background-color]="dayColor"></div>
   }
 </div>
 
@@ -29,19 +31,21 @@
           <div class="wl-poi-header">
             <h4 class="wl-poi-title">{{ poi.title }}</h4>
             <div class="wl-poi-header-actions">
-              <a [href]="'https://www.google.com/search?q=' + encode(poi.title + ' ' + (poi.subtitle || ''))" 
-                 target="_blank" class="wl-card-pill wl-card-pill--google" title="Cerca su Google">
+              <a [href]="'https://www.google.com/search?q=' + encode(poi.title + ' ' + (poi.subtitle || ''))"
+                target="_blank" class="wl-card-pill wl-card-pill--google" title="Cerca su Google">
                 <i class="bi bi-google"></i>
                 <span>Google</span>
               </a>
-              <a [href]="'https://www.google.com/maps/search/?api=1&query=' + poi.latitude + ',' + poi.longitude" 
-                 target="_blank" class="wl-card-pill wl-card-pill--maps" title="Vedi su Google Maps">
+              <a [href]="'https://www.google.com/maps/search/?api=1&query=' + poi.latitude + ',' + poi.longitude"
+                target="_blank" class="wl-card-pill wl-card-pill--maps" title="Vedi su Google Maps">
                 <i class="bi bi-geo-alt"></i>
                 <span>Maps</span>
               </a>
+              @if (!readOnly) {
               <button class="wl-card-btn-circle wl-card-btn-circle--delete" (click)="onRemove($event)" title="Elimina">
                 <i class="bi bi-trash3"></i>
               </button>
+              }
             </div>
           </div>
           <div class="wl-poi-subtitle">
@@ -53,10 +57,15 @@
 
       <!-- Note -->
       <div class="wl-poi-notes-box">
-        <input type="text" placeholder="Aggiungi note per questa tappa..." [ngModel]="poi.note"
-          (ngModelChange)="updateNote($event)" [ngModelOptions]="{updateOn: 'blur'}"
-          (focus)="isEditingNote.set(true)" (blur)="isEditingNote.set(false)"
-          [class.is-editing]="isEditingNote()" />
+        @if (readOnly) {
+        <div class="wl-poi-notes-readonly">
+          {{ poi.note || 'Nessuna nota' }}
+        </div>
+        } @else {
+        <input type="text" placeholder="Aggiungi note per questa tappa..." title="Modifica note" [ngModel]="poi.note"
+          (ngModelChange)="updateNote($event)" [ngModelOptions]="{updateOn: 'blur'}" (focus)="isEditingNote.set(true)"
+          (blur)="isEditingNote.set(false)" [readonly]="readOnly" [class.is-editing]="isEditingNote()" />
+        }
       </div>
 
 
@@ -65,33 +74,50 @@
 
         @if (!poi.groupName) {
         <div class="wl-time-wrapper">
-            <div class="wl-poi-time-row">
-              <div class="wl-time-pill" (click)="openTimePopup($event)">
-                <i class="bi bi-calendar-check"></i>
-                <div class="wl-time-segment">
-                  <span class="wl-time-label">Check-in</span>
-                  <span class="wl-time-val">{{ formatTimeString(poi.plannedStartAt, true) || '--' }}</span>
-                </div>
-                <i class="bi bi-arrow-right wl-time-arrow"></i>
-                <div class="wl-time-segment">
-                  <span class="wl-time-label">Check-out</span>
-                  <span class="wl-time-val">{{ formatTimeString(poi.plannedEndAt, true) || '--' }}</span>
-                </div>
+          @if (!readOnly) {
+          <div class="wl-poi-time-row">
+            <div class="wl-time-pill" [class.is-readonly]="readOnly" (click)="openTimePopup($event)">
+              <i class="bi bi-calendar-check"></i>
+              <div class="wl-time-segment">
+                <span class="wl-time-label">Check-in</span>
+                <span class="wl-time-val">{{ formatTimeString(poi.plannedStartAt, true) || '--' }}</span>
+              </div>
+              <i class="bi bi-arrow-right wl-time-arrow"></i>
+              <div class="wl-time-segment">
+                <span class="wl-time-label">Check-out</span>
+                <span class="wl-time-val">{{ formatTimeString(poi.plannedEndAt, true) || '--' }}</span>
               </div>
             </div>
+          </div>
+          } @else {
+          <div class="wl-time-pill wl-time-pill--readonly">
+            <i class="bi bi-calendar-check"></i>
+            <div class="wl-time-segment">
+              <span class="wl-time-label">Check-in</span>
+              <span class="wl-time-val">{{ formatTimeString(poi.plannedStartAt, true) || '--' }}</span>
+            </div>
+            <i class="bi bi-arrow-right wl-time-arrow"></i>
+            <div class="wl-time-segment">
+              <span class="wl-time-label">Check-out</span>
+              <span class="wl-time-val">{{ formatTimeString(poi.plannedEndAt, true) || '--' }}</span>
+            </div>
+          </div>
+          }
 
-          @if (isTimePopupOpen()) {
+          @if (!readOnly && isTimePopupOpen()) {
           <div class="wl-time-popup" (click)="onPopupClick($event)">
             <div class="wl-time-inputs">
               <div class="wl-time-field">
                 <label>{{ poi.type === 'accommodation' ? 'Check-in' : 'Inizio' }}</label>
                 <div class="wl-datetime-inputs">
                   @if (poi.type === 'accommodation') {
-                  <select [ngModel]="popupStartDay()" (ngModelChange)="popupStartDay.set($event)">
+                  <select [ngModel]="popupStartDay()" (ngModelChange)="popupStartDay.set($event)"
+                    title="Giorno check-in">
                     @for (d of dayOptions; track d) { <option [value]="d">Giorno {{ d }}</option> }
                   </select>
                   }
-                  <select [ngModel]="popupStartTime()" (ngModelChange)="popupStartTime.set($event)">
+                  <select [ngModel]="popupStartTime()" (ngModelChange)="popupStartTime.set($event)"
+                    title="Ora check-in">
                     <option value="">--:--</option>
                     @for (opt of timeOptions; track opt) { <option [value]="opt">{{ opt }}</option> }
                   </select>
@@ -104,11 +130,11 @@
                 <label>{{ poi.type === 'accommodation' ? 'Check-out' : 'Fine' }}</label>
                 <div class="wl-datetime-inputs">
                   @if (poi.type === 'accommodation') {
-                  <select [ngModel]="popupEndDay()" (ngModelChange)="popupEndDay.set($event)">
+                  <select [ngModel]="popupEndDay()" (ngModelChange)="popupEndDay.set($event)" title="Giorno check-out">
                     @for (d of dayOptions; track d) { <option [value]="d">Giorno {{ d }}</option> }
                   </select>
                   }
-                  <select [ngModel]="popupEndTime()" (ngModelChange)="popupEndTime.set($event)">
+                  <select [ngModel]="popupEndTime()" (ngModelChange)="popupEndTime.set($event)" title="Ora check-out">
                     <option value="">--:--</option>
                     @for (opt of timeOptions; track opt) { <option [value]="opt">{{ opt }}</option> }
                   </select>
@@ -129,7 +155,7 @@
     </div>
 
     <div class="wl-poi-image">
-      <img [src]="poi.imageUrl || '/assets/home-section.avif'" [alt]="poi.title">
+      <img [src]="poi.imageUrl || '/assets/home-section.avif'" [alt]="poi.title" title="Immagine della tappa">
     </div>
   </div>
 </div>

@@ -165,6 +165,8 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private bindPopupActions(popup: L.Popup) {
+    if (this.isPreview) return;
+
     // Wait for the next macro-task to ensure Leaflet has finished rendering the popup content
     setTimeout(() => {
       const container = popup.getElement();
@@ -699,7 +701,12 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
                </a>
              </div>
 
-             ${isSaved ? `
+             ${this.isPreview ? `
+               <div class="popup-note" style="margin-top: 6px;">
+                 <i class="bi bi-lock-fill"></i>
+                 <span>Anteprima sola lettura</span>
+               </div>
+             ` : (isSaved ? `
                <button class="popup-action-btn popup-action-btn--remove" data-poi-key="${poi.key}">
                  <i class="bi bi-dash-circle"></i> Rimuovi dal percorso
                </button>
@@ -707,7 +714,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
                <button class="popup-action-btn popup-action-btn--add" data-poi-key="${poi.key}">
                  <i class="bi bi-plus-circle"></i> Aggiungi al percorso
                </button>
-             `}
+             `)}
           </div>
           ${poi.groupName ? `
             <div class="popup-group" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
