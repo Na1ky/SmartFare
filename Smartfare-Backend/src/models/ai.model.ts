@@ -46,10 +46,26 @@ export interface AiItineraryChatSuggestion {
   title: string;
   description?: string;
   type?: 'poi' | 'day' | 'food' | 'evening' | 'route' | 'general';
+  poiId?: number | null;
+  poiType?: 'activity' | 'accommodation' | null;
 }
 
 export interface AiItineraryChatAction {
-  type: 'suggest' | 'ask_clarification' | 'add_item' | 'remove_item' | 'update_item' | 'reorder_items';
+  type:
+  | 'suggest'
+  | 'ask_clarification'
+  | 'add_item'
+  | 'remove_item'
+  | 'update_item'
+  | 'reorder_items'
+  | 'add_day'
+  | 'create_nostalgic_day'
+  | 'reorder_route'
+  | 'optimize_route'
+  | 'add_stop'
+  | 'remove_stop'
+  | 'focus_poi'
+  | 'generate_itinerary';
   payload?: Record<string, unknown>;
 }
 

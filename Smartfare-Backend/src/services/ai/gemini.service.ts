@@ -109,10 +109,12 @@ export class GeminiItineraryChatService {
             'Usa solo i POI presenti nel workspace fornito.',
             'Non inventare luoghi, hotel o attività che non esistono nel contesto.',
             'Se il messaggio dell\'utente richiede una modifica, proponi un piano chiaro e operazioni sicure.',
+            'Quando possibile, restituisci suggerimenti come card operative: usa titoli brevi, descrizioni concise e, se puoi, collega la card a un POI reale con poiId e poiType.',
+            'Se l\'utente chiede modifiche pratiche, usa azioni come add_day, create_nostalgic_day, reorder_route, optimize_route, add_stop, remove_stop o focus_poi.',
             'Se mancano informazioni, fai domande brevi e specifiche.',
             'Restituisci SOLO JSON valido, senza markdown, senza backticks e senza testo extra.',
             'Formato richiesto:',
-            '{"reply":"string","suggestions":[{"title":"string","description":"string","type":"poi|day|food|evening|route|general"}],"actions":[{"type":"suggest|ask_clarification|add_item|remove_item|update_item|reorder_items","payload":{}}],"followUpQuestions":["string"],"needsConfirmation":true}',
+            '{"reply":"string","suggestions":[{"title":"string","description":"string","type":"poi|day|food|evening|route|general","poiId":123,"poiType":"activity"}],"actions":[{"type":"suggest|ask_clarification|add_item|remove_item|update_item|reorder_items|add_day|create_nostalgic_day|reorder_route|optimize_route|add_stop|remove_stop|focus_poi|generate_itinerary","payload":{}}],"followUpQuestions":["string"],"needsConfirmation":true}',
             '',
             `Messaggio utente: ${userInput.message}`,
             userInput.preferences ? `Preferenze: ${JSON.stringify(userInput.preferences)}` : 'Preferenze: non fornite',
@@ -204,9 +206,9 @@ export class GeminiItineraryChatService {
         try {
             const result = await this.callGeminiWithRetry(model, systemPrompt);
             const text = this.extractText(result.response.candidates?.[0]?.content?.parts ?? []);
-            
+
             if (text.toLowerCase().includes('null')) return null;
-            
+
             const identifiedName = text.trim().toLowerCase();
             const found = locations.find(l => l.name.toLowerCase() === identifiedName || identifiedName.includes(l.name.toLowerCase()));
             return found ? found.id : null;

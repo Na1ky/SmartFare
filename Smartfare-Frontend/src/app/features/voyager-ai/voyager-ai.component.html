@@ -16,15 +16,24 @@
         }
 
         <div class="sidebar-tools">
-          <button class="new-chat-btn" (click)="createNewChat()">
-            <i class="bi bi-plus-lg"></i>
-            @if (chatService.isSidebarOpen()) {
-            <span>Nuova chat</span>
-            }
-          </button>
+          <div class="mode-launchers">
+            <button class="mode-launcher mode-launcher--planner" (click)="createNewChat('planner')">
+              <i class="bi bi-bookmarks"></i>
+              @if (chatService.isSidebarOpen()) {
+              <span>Planner</span>
+              }
+            </button>
+            <button class="mode-launcher mode-launcher--assistant" (click)="createNewChat('assistant')">
+              <i class="bi bi-chat-left-dots"></i>
+              @if (chatService.isSidebarOpen()) {
+              <span>Assistant</span>
+              }
+            </button>
+          </div>
           <button class="toggle-btn desktop-only" type="button" title="Apri o chiudi sidebar"
             aria-label="Apri o chiudi sidebar" (click)="toggleSidebar()">
-            <i class="bi" [ngClass]="chatService.isSidebarOpen() ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar'"></i>
+            <i class="bi" [class.bi-layout-sidebar-inset]="chatService.isSidebarOpen()"
+              [class.bi-layout-sidebar]="!chatService.isSidebarOpen()"></i>
           </button>
           <button class="toggle-btn mobile-only" type="button" title="Chiudi menu" aria-label="Chiudi menu"
             (click)="toggleMobileSidebar()">
@@ -40,19 +49,35 @@
           (input)="onSearch(($any($event.target)).value)" />
       </div>
 
+      @if (chatService.isLoadingSessions()) {
+      <div class="sidebar-loading">
+        <div class="sidebar-loading__spinner"></div>
+        <div>
+          <strong>Carico le chat</strong>
+          <p>Sto recuperando le conversazioni salvate.</p>
+        </div>
+      </div>
+      }
+
       <div class="sessions-list">
         @if (pinnedSessions().length > 0) {
         <div class="section">
           <label>In evidenza</label>
           @for (session of pinnedSessions(); track session.id) {
           <button type="button" class="session-item" [class.active]="chatService.activeSession()?.id === session.id"
-            (click)="selectSession(session)">
+            [class.session-item--planner]="session.mode === 'planner'"
+            [class.session-item--assistant]="session.mode === 'assistant'" (click)="selectSession(session)">
             <div class="session-icon">
               <i class="bi bi-pin-angle-fill"></i>
             </div>
             <div class="session-copy">
               <strong>{{ session.title || 'Nuova conversazione' }}</strong>
-              <span>{{ session.mode === 'planner' ? 'Planner Mode' : 'Assistant Mode' }}</span>
+              <span class="session-badge" [class.session-badge--planner]="session.mode === 'planner'"
+                [class.session-badge--assistant]="session.mode === 'assistant'">
+                <i class="bi" [class.bi-bookmarks]="session.mode === 'planner'"
+                  [class.bi-chat-left-dots]="session.mode !== 'planner'"></i>
+                {{ session.mode === 'planner' ? 'Planner' : 'Assistant' }}
+              </span>
             </div>
             <div class="actions">
               <button type="button" title="Rimuovi pin" aria-label="Rimuovi pin" (click)="togglePin($event, session)">
@@ -73,17 +98,24 @@
           <label>{{ group.label }}</label>
           @for (session of group.items; track session.id) {
           <button type="button" class="session-item" [class.active]="chatService.activeSession()?.id === session.id"
-            (click)="selectSession(session)">
+            [class.session-item--planner]="session.mode === 'planner'"
+            [class.session-item--assistant]="session.mode === 'assistant'" (click)="selectSession(session)">
             <div class="session-icon">
-              <i class="bi" [ngClass]="session.mode === 'planner' ? 'bi-bookmarks' : 'bi-chat-left-dots'"></i>
+              <i class="bi" [class.bi-bookmarks]="session.mode === 'planner'"
+                [class.bi-chat-left-dots]="session.mode !== 'planner'"></i>
             </div>
             <div class="session-copy">
               <strong>{{ session.title || 'Nuova conversazione' }}</strong>
-              <span>{{ session.mode === 'planner' ? 'Planner Mode' : 'Assistant Mode' }}</span>
+              <span class="session-badge" [class.session-badge--planner]="session.mode === 'planner'"
+                [class.session-badge--assistant]="session.mode === 'assistant'">
+                <i class="bi" [class.bi-bookmarks]="session.mode === 'planner'"
+                  [class.bi-chat-left-dots]="session.mode !== 'planner'"></i>
+                {{ session.mode === 'planner' ? 'Planner' : 'Assistant' }}
+              </span>
             </div>
             <div class="actions">
               <button type="button" title="Gestisci pin" aria-label="Gestisci pin" (click)="togglePin($event, session)">
-                <i class="bi" [ngClass]="session.isPinned ? 'bi-pin-angle-fill' : 'bi-pin-angle'"></i>
+                <i class="bi" [class.bi-pin-angle-fill]="session.isPinned" [class.bi-pin-angle]="!session.isPinned"></i>
               </button>
               <button type="button" title="Elimina conversazione" aria-label="Elimina conversazione"
                 (click)="deleteSession($event, session)">
@@ -120,24 +152,22 @@
             <i class="bi bi-list"></i>
           </button>
           <div>
-            <span class="header-kicker">{{ chatService.mode() === 'planner' ? 'Planner Mode' : 'Assistant Mode'
-              }}</span>
+            <span class="header-kicker">{{ currentModeLabel() }}</span>
             <h1>{{ chatService.activeSession()?.title || 'Voyager AI' }}</h1>
           </div>
         </div>
 
         <div class="header-right">
-          <div class="mode-toggle">
-            <button [class.active]="chatService.mode() === 'planner'" (click)="toggleMode('planner')">Planner</button>
-            <button [class.active]="chatService.mode() === 'assistant'"
-              (click)="toggleMode('assistant')">Assistant</button>
-          </div>
+          <button class="home-link" type="button" (click)="goHome()">
+            <i class="bi bi-house-door"></i>
+            <span>Home</span>
+          </button>
           <button class="action-btn" type="button" title="Condividi conversazione" aria-label="Condividi conversazione"
             (click)="shareConversation()" [disabled]="!chatService.activeSession()">
             <i class="bi bi-share"></i>
           </button>
           <div class="dropdown-tools">
-            <button class="action-btn" type="button" title="Altre azioni" aria-label="Altre azioni"
+            <button class="action-btn action-btn--subtle" type="button" title="Altre azioni" aria-label="Altre azioni"
               data-bs-toggle="dropdown">
               <i class="bi bi-three-dots"></i>
             </button>
@@ -152,8 +182,21 @@
 
       <section class="messages-viewport" #scrollContainer>
         <div class="messages-list">
+          @if (isSessionLoading()) {
+          <div class="session-loading-card">
+            <div class="session-loading-card__shine"></div>
+            <div class="session-loading-card__icon">
+              <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <div class="session-loading-card__copy">
+              <strong>Carico la conversazione</strong>
+              <p>Recupero messaggi e stato della chat.</p>
+            </div>
+          </div>
+          }
+
           <!-- EMPTY STATE -->
-          @if (chatService.messages().length === 0) {
+          @if (chatService.messages().length === 0 && !isSessionLoading()) {
           <div class="empty-state-shell">
             <div class="empty-state">
               <div class="hero-icon">
@@ -200,7 +243,7 @@
               </div>
               @if (msg.createdAt) {
               <div class="timestamp">
-                {{ msg.createdAt | date:'HH:mm' }}
+                {{ formatMessageTime(msg.createdAt) }}
               </div>
               }
             </div>
@@ -221,15 +264,17 @@
           @if (chatService.readyToGenerate() && chatService.messages().length > 0) {
           <div class="itinerary-ready-card">
             <div class="card-image-wrapper">
-              <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1000&auto=format&fit=crop"
-                alt="Destinazione" class="card-image">
+              <div class="card-image card-image--pulse" aria-hidden="true">
+                <i class="bi bi-globe-europe-africa"></i>
+              </div>
               <div class="card-badge">Itinerario Pronto</div>
             </div>
             <div class="card-body">
               <h3>Il tuo viaggio è pronto!</h3>
               <p>Ho raccolto tutti i dettagli necessari. Vuoi generare l'itinerario completo nel builder?</p>
               <button class="generate-btn" (click)="generateItinerary()" [disabled]="isGeneratingItinerary()">
-                <i class="bi" [ngClass]="isGeneratingItinerary() ? 'bi-hourglass-split' : 'bi-magic'"></i>
+                <i class="bi" [class.bi-hourglass-split]="isGeneratingItinerary()"
+                  [class.bi-magic]="!isGeneratingItinerary()"></i>
                 @if (!isGeneratingItinerary()) {
                 <span>Genera Itinerario</span>
                 } @else {
@@ -271,7 +316,7 @@
           @if (isVoiceSupported()) {
           <button class="action-btn" type="button" title="Attiva o disattiva input vocale"
             aria-label="Attiva o disattiva input vocale" (click)="toggleVoiceInput()" [class.active]="isListening()">
-            <i class="bi" [ngClass]="isListening() ? 'bi-stop-fill' : 'bi-mic'"></i>
+            <i class="bi" [class.bi-stop-fill]="isListening()" [class.bi-mic]="!isListening()"></i>
           </button>
           }
 
@@ -280,7 +325,8 @@
 
           <button class="send-btn" type="button" title="Invia messaggio" aria-label="Invia messaggio"
             [disabled]="!message().trim() || chatService.isStreaming()" (click)="sendMessage()">
-            <i class="bi" [ngClass]="chatService.isStreaming() ? 'bi-hourglass-split' : 'bi-arrow-up-short'"></i>
+            <i class="bi" [class.bi-hourglass-split]="chatService.isStreaming()"
+              [class.bi-arrow-up-short]="!chatService.isStreaming()"></i>
           </button>
         </div>
 

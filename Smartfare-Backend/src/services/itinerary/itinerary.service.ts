@@ -243,7 +243,8 @@ export class ItineraryService {
                         };
                     }
 
-                    // If not cached, fetch from Unsplash and save to Location
+                    // If not cached, fetch from Unsplash and save to Location.
+                    // If Unsplash is unavailable, use a destination-aware fallback without caching it.
                     const fetchedImageUrl = await this.imageService.getLocationImage(location.name);
                     if (fetchedImageUrl) {
                         // Cache it in Location.image for future use
@@ -257,6 +258,11 @@ export class ItineraryService {
                             imageUrl: fetchedImageUrl
                         };
                     }
+
+                    return {
+                        ...draftPayload,
+                        imageUrl: this.imageService.getDefaultLocationImage(location.name)
+                    };
                 }
             } catch (error) {
                 console.warn(

@@ -22,6 +22,21 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*.woff2",
+                "input": "node_modules/bootstrap-icons/font",
+                "output": "/bootstrap-icons/fonts"
+              },
+              {
+                "glob": "**/*.woff",
+                "input": "node_modules/bootstrap-icons/font",
+                "output": "/bootstrap-icons/fonts"
+              },
+              {
+                "glob": "**/*.ttf",
+                "input": "node_modules/bootstrap-icons/font",
+                "output": "/bootstrap-icons/fonts"
               }
             ],
             "styles": [

@@ -59,5 +59,25 @@ export interface ChatStreamResponse {
     plannerState?: PlannerState;
     readyToGenerate?: boolean;
     itineraryData?: any;
+    suggestions?: Array<{
+      title: string;
+      description?: string;
+      type: 'poi' | 'day' | 'food' | 'evening' | 'route' | 'general';
+      poiId?: number | null;
+      poiType?: 'activity' | 'accommodation' | null;
+    }>;
+    actions?: Array<{
+      type:
+      | 'add_day'
+      | 'create_nostalgic_day'
+      | 'reorder_route'
+      | 'optimize_route'
+      | 'add_stop'
+      | 'remove_stop'
+      | 'focus_poi'
+      | 'generate_itinerary';
+      label: string;
+      payload?: Record<string, unknown>;
+    }>;
   };
 }

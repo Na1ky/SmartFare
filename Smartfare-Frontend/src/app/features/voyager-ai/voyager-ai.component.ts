@@ -9,7 +9,6 @@ import {
   inject,
   signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,7 +37,7 @@ type SessionGroup = {
 @Component({
   selector: 'app-voyager-ai',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './voyager-ai.component.html',
   styleUrls: ['./voyager-ai.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -63,9 +62,32 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
   readonly isVoiceSupported = signal(false);
   readonly isListening = signal(false);
   readonly showMobileSidebar = signal(false);
+  readonly isSwitchingSession = signal(false);
+
+  readonly isSessionLoading = computed(
+    () => this.chatService.isLoadingSessions() || this.chatService.isLoadingMessages() || this.isSwitchingSession()
+  );
+
+  readonly currentModeLabel = computed(() => (this.chatService.mode() === 'planner' ? 'Planner Mode' : 'Assistant Mode'));
 
   private speechRecognition: any = null;
   private lastPromptHandled: string | null = null;
+
+  formatMessageTime(value: string | Date | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    const parsedDate = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return '';
+    }
+
+    return parsedDate.toLocaleTimeString('it-IT', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 
   readonly plannerTemplates = [
     { label: 'Weekend Escape', text: 'Voglio organizzare un weekend escape di 3 giorni con ritmo rilassato e focus food.' },
@@ -139,14 +161,14 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
         if (requestedSessionId) {
           const existing = sessions.find((session) => session.id === requestedSessionId);
           if (existing) {
-            this.selectSession(existing);
+            void this.selectSession(existing);
             return;
           }
         }
 
         if (initialPrompt && this.lastPromptHandled !== initialPrompt) {
           this.lastPromptHandled = initialPrompt;
-          this.startNewChatWithPrompt(initialPrompt);
+          void this.startNewChatWithPrompt(initialPrompt);
           return;
         }
 
@@ -189,29 +211,30 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
     const hasNoMessages = this.chatService.messages().length === 0;
     const hasDraftInput = !this.message().trim() && !this.pendingAttachmentName();
 
-    if (active && hasNoMessages && hasDraftInput) {
-      if (active.mode !== mode) {
-        this.chatService.updateSession(active.id, { mode }).subscribe(() => {
-          this.chatService.setActiveSession({ ...active, mode });
-        });
-      }
-
+    if (active && hasNoMessages && hasDraftInput && active.mode === mode) {
       this.showMobileSidebar.set(false);
       this.router.navigate([], { queryParams: { sessionId: active.id }, queryParamsHandling: 'merge' });
       return;
     }
 
-    const session = await firstValueFrom(
-      this.chatService.createSession({
-        mode,
-        title: mode === 'planner' ? 'Nuova sessione Planner' : 'Nuova sessione Assistant'
-      })
-    ).catch((error) => {
+    this.isSwitchingSession.set(true);
+    let session: ChatSession;
+    try {
+      session = await firstValueFrom(
+        this.chatService.createSession({
+          mode,
+          title: mode === 'planner' ? 'Nuova sessione Planner' : 'Nuova sessione Assistant'
+        })
+      );
+    } catch (error) {
+      this.isSwitchingSession.set(false);
       this.handleChatAccessError(error);
-      throw error;
-    });
+      return;
+    }
 
     this.chatService.setActiveSession(session);
+    this.chatService.messages.set([]);
+    this.isSwitchingSession.set(false);
     this.showMobileSidebar.set(false);
     this.router.navigate([], { queryParams: { sessionId: session.id }, queryParamsHandling: 'merge' });
   }
@@ -224,10 +247,19 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
     this.enterCleanLandingState('assistant');
   }
 
-  selectSession(session: ChatSession) {
+  async selectSession(session: ChatSession) {
+    this.isSwitchingSession.set(true);
+    this.chatService.messages.set([]);
     this.chatService.setActiveSession(session);
     this.showMobileSidebar.set(false);
-    this.chatService.getSessionMessages(session.id).subscribe();
+    try {
+      await firstValueFrom(this.chatService.getSessionMessages(session.id));
+    } catch (error) {
+      this.handleChatAccessError(error);
+      return;
+    } finally {
+      this.isSwitchingSession.set(false);
+    }
     this.router.navigate([], { queryParams: { sessionId: session.id }, queryParamsHandling: 'merge' });
   }
 
@@ -260,10 +292,12 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
       return;
     }
 
-    this.chatService.updateSession(active.id, { mode }).subscribe(() => {
-      this.chatService.mode.set(mode);
-      this.chatService.setActiveSession({ ...active, mode });
-    });
+    if (this.chatService.messages().length === 0) {
+      await this.createNewChat(mode);
+      return;
+    }
+
+    this.enterCleanLandingState(mode);
   }
 
   async sendMessage() {
@@ -274,15 +308,19 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
 
     let active = this.chatService.activeSession();
     if (!active) {
-      active = await firstValueFrom(
-        this.chatService.createSession({
-          mode: this.chatService.mode(),
-          title: this.chatService.mode() === 'planner' ? 'Nuova sessione Planner' : 'Nuova sessione Assistant'
-        })
-      ).catch((error) => {
+      this.isSwitchingSession.set(true);
+      try {
+        active = await firstValueFrom(
+          this.chatService.createSession({
+            mode: this.chatService.mode(),
+            title: this.chatService.mode() === 'planner' ? 'Nuova sessione Planner' : 'Nuova sessione Assistant'
+          })
+        );
+      } catch (error) {
+        this.isSwitchingSession.set(false);
         this.handleChatAccessError(error);
-        throw error;
-      });
+        return;
+      }
     }
 
     await this.chatService.sendMessageStreaming(active.id, content, (data) => {
@@ -291,7 +329,8 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
       }
     }).catch((error) => {
       this.handleChatAccessError(error);
-      throw error;
+    }).finally(() => {
+      this.isSwitchingSession.set(false);
     });
   }
 
@@ -301,15 +340,20 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
   }
 
   async startNewChatWithPrompt(prompt: string) {
-    const session = await firstValueFrom(
-      this.chatService.createSession({
-        title: 'Voyager AI',
-        mode: 'planner'
-      })
-    ).catch((error) => {
+    this.isSwitchingSession.set(true);
+    let session: ChatSession;
+    try {
+      session = await firstValueFrom(
+        this.chatService.createSession({
+          title: 'Voyager AI',
+          mode: 'planner'
+        })
+      );
+    } catch (error) {
+      this.isSwitchingSession.set(false);
       this.handleChatAccessError(error);
-      throw error;
-    });
+      return;
+    }
 
     this.chatService.setActiveSession(session);
     this.router.navigate([], {
@@ -319,7 +363,8 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
 
     await this.chatService.sendMessageStreaming(session.id, prompt, () => { }).catch((error) => {
       this.handleChatAccessError(error);
-      throw error;
+    }).finally(() => {
+      this.isSwitchingSession.set(false);
     });
   }
 
@@ -458,6 +503,7 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
     this.chatService.clearActiveConversation(mode);
     this.message.set('');
     this.pendingAttachmentName.set(null);
+    this.isSwitchingSession.set(false);
     this.router.navigate([], {
       queryParams: {
         sessionId: null,
@@ -475,6 +521,7 @@ export class VoyagerAiComponent implements OnInit, AfterViewChecked {
 
     this.authService.Logout();
     this.chatService.clearActiveConversation(this.chatService.mode());
+    this.isSwitchingSession.set(false);
     this.alertService.error('La sessione è scaduta. Accedi di nuovo per usare Voyager AI.');
     void this.router.navigate(['/login'], {
       queryParams: { returnUrl: '/voyager' }

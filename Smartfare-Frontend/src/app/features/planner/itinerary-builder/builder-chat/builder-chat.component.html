@@ -1,55 +1,104 @@
 <div class="chat-container">
   <header class="chat-header">
-    <div class="mode-toggle">
-      <button [class.active]="chatService.mode() === 'planner'" (click)="toggleMode('planner')">Planner</button>
-      <button [class.active]="chatService.mode() === 'assistant'" (click)="toggleMode('assistant')">Assistant</button>
+    <div class="chat-header__copy">
+      <span class="chat-header__kicker">Builder Chat</span>
+      <strong>{{ chatService.activeSession()?.title || 'Planner' }}</strong>
+      <small>Solo Planner Mode. La sessione resta collegata all'itinerario.</small>
     </div>
   </header>
 
   <div class="chat-body" #scrollContainer>
+    @if (isBusy()) {
+    <div class="chat-loading-bar">
+      <span class="chat-loading-bar__spinner"></span>
+      <div>
+        <strong>Carico la chat</strong>
+        <p>Recupero la sessione e i messaggi salvati.</p>
+      </div>
+    </div>
+    }
+
     @if (!hasContext && !chatService.activeSession()) {
-      <div class="placeholder-wrap">
-        <div class="placeholder-icon">
-          <i class="bi bi-stars"></i>
-        </div>
-        <div class="placeholder-copy">
-          <span class="placeholder-kicker">Voyager AI</span>
-          <p>Seleziona una destinazione per iniziare a costruire il tuo viaggio con l'IA.</p>
-          <small>L'IA userà il workspace del builder per rispondere e suggerire tappe reali.</small>
-        </div>
+    <div class="placeholder-wrap">
+      <div class="placeholder-icon">
+        <i class="bi bi-stars"></i>
       </div>
+      <div class="placeholder-copy">
+        <span class="placeholder-kicker">Voyager AI</span>
+        <p>Seleziona una destinazione per iniziare a costruire il tuo viaggio con l'IA.</p>
+        <small>L'IA userà il workspace del builder per rispondere e suggerire tappe reali.</small>
+      </div>
+    </div>
     } @else {
-      <div class="message-stream">
-        @for (msg of chatService.messages(); track $index) {
-          <article class="message-row" [class.message-row--assistant]="msg.role === 'assistant'" [class.message-row--user]="msg.role === 'user'">
-            <div class="message-bubble">
-              <div class="message-bubble__meta">
-                <span>{{ msg.role === 'assistant' ? 'Voyager AI' : 'Tu' }}</span>
-              </div>
-              <div class="message-text" [innerHTML]="formatMessage(msg.content)"></div>
-              
-              @if (msg.isStreaming && msg.content === '') {
-                <div class="typing-indicator">
-                  <span></span><span></span><span></span>
-                </div>
-              }
-            </div>
-          </article>
-        }
+    <div class="message-stream">
+      @for (msg of chatService.messages(); track $index) {
+      <article class="message-row" [class.message-row--assistant]="msg.role === 'assistant'"
+        [class.message-row--user]="msg.role === 'user'">
+        <div class="message-bubble">
+          <div class="message-bubble__meta">
+            <span>{{ msg.role === 'assistant' ? 'Voyager AI' : 'Tu' }}</span>
+          </div>
+          <div class="message-text" [innerHTML]="formatMessage(msg.content)"></div>
+
+          @if (msg.isStreaming && msg.content === '') {
+          <div class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+          }
+        </div>
+      </article>
+      }
+    </div>
+    }
+
+    @if (suggestedActions.length > 0 || suggestedPois.length > 0) {
+    <div class="suggestion-stack">
+      @if (suggestedPois.length > 0) {
+      <div class="suggestion-section">
+        <div class="suggestion-section__head">
+          <span>Card suggerite</span>
+          <small>Click per evidenziare il marker</small>
+        </div>
+        <div class="suggestion-card-grid">
+          @for (poi of suggestedPois; track poi.key) {
+          <button type="button" class="suggestion-card" (click)="focusPoi(poi)">
+            <span class="suggestion-card__eyebrow">{{ poi.type === 'activity' ? 'POI' : 'Hotel' }}</span>
+            <strong>{{ poi.title }}</strong>
+            <small>{{ poi.subtitle }}</small>
+          </button>
+          }
+        </div>
       </div>
+      }
+
+      @if (suggestedActions.length > 0) {
+      <div class="suggestion-section">
+        <div class="suggestion-section__head">
+          <span>Azioni rapide</span>
+          <small>Per trasformare la chat in operazioni utili</small>
+        </div>
+        <div class="suggestion-action-row">
+          @for (action of suggestedActions; track action.label) {
+          <button type="button" class="suggestion-action" (click)="applyAction(action)">
+            {{ action.label }}
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
     }
   </div>
 
   <div class="composer-shell" [class.composer-shell--disabled]="!hasContext && !chatService.activeSession()">
     <div class="composer-shell__input">
-      <textarea
-        [(ngModel)]="draftMessage"
-        rows="1"
-        [disabled]="(!hasContext && !chatService.activeSession()) || chatService.isStreaming()"
-        placeholder="Chiedi a Voyager AI..."
-        (keydown.enter)="handleEnter($event)"></textarea>
-      <button class="send-button" type="button" aria-label="Invia" [disabled]="!draftMessage.trim() || chatService.isStreaming()" (click)="sendMessage()">
-        <i class="bi" [ngClass]="chatService.isStreaming() ? 'bi-hourglass-split' : 'bi-send-fill'"></i>
+      <textarea [(ngModel)]="draftMessage" rows="1"
+        [disabled]="isBusy() || ((!hasContext && !chatService.activeSession()) || chatService.isStreaming())"
+        placeholder="Chiedi a Voyager AI..." (keydown.enter)="handleEnter($event)"></textarea>
+      <button class="send-button" type="button" aria-label="Invia"
+        [disabled]="isBusy() || !draftMessage.trim() || chatService.isStreaming()" (click)="sendMessage()">
+        <i class="bi" [class.bi-hourglass-split]="chatService.isStreaming()"
+          [class.bi-send-fill]="!chatService.isStreaming()"></i>
       </button>
     </div>
   </div>

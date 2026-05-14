@@ -3,6 +3,14 @@ import axios from 'axios';
 export class ImageService {
     private unsplashAccessKey: string;
     private readonly UNSPLASH_API_BASE = 'https://api.unsplash.com/search/photos';
+    private readonly fallbackImages = [
+        'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1600&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1503220317375-aaad61436b1b?q=80&w=1600&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1600&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1600&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1500673922987-e212871fec22?q=80&w=1600&auto=format&fit=crop',
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop'
+    ];
 
     constructor() {
         this.unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY || '';
@@ -57,5 +65,28 @@ export class ImageService {
     ): Promise<string> {
         const imageUrl = await this.getLocationImage(locationName);
         return imageUrl || fallbackUrl;
+    }
+
+    getDefaultLocationImage(locationName: string): string {
+        const normalized = locationName.toLowerCase();
+
+        if (normalized.includes('spiaggia') || normalized.includes('mare') || normalized.includes('isola')) {
+            return this.fallbackImages[5];
+        }
+
+        if (normalized.includes('mont') || normalized.includes('alp') || normalized.includes('dolom') || normalized.includes('lake')) {
+            return this.fallbackImages[4];
+        }
+
+        if (normalized.includes('muse') || normalized.includes('arte') || normalized.includes('stor')) {
+            return this.fallbackImages[3];
+        }
+
+        if (normalized.includes('borg') || normalized.includes('mediev') || normalized.includes('centro') || normalized.includes('citt')) {
+            return this.fallbackImages[1];
+        }
+
+        const hash = Array.from(normalized).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return this.fallbackImages[hash % this.fallbackImages.length];
     }
 }

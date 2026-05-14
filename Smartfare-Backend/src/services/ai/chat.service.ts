@@ -15,6 +15,28 @@ type SessionWithMessages = Awaited<ReturnType<ChatService['getSessionOrThrow']>>
 
 const DEFAULT_TITLE = 'Nuova conversazione';
 
+type ChatHintSuggestion = {
+  title: string;
+  description?: string;
+  type: 'poi' | 'day' | 'food' | 'evening' | 'route' | 'general';
+  poiId?: number | null;
+  poiType?: 'activity' | 'accommodation' | null;
+};
+
+type ChatHintAction = {
+  type:
+  | 'add_day'
+  | 'create_nostalgic_day'
+  | 'reorder_route'
+  | 'optimize_route'
+  | 'add_stop'
+  | 'remove_stop'
+  | 'focus_poi'
+  | 'generate_itinerary';
+  label: string;
+  payload?: Record<string, unknown>;
+};
+
 export class ChatService {
   private readonly apiKey = process.env.GEMINI_API_KEY;
   private readonly modelName = this.resolveModelName(process.env.GEMINI_MODEL);
@@ -146,6 +168,17 @@ export class ChatService {
         { role: 'assistant', content: fullReply, createdAt: new Date() }
       ]);
 
+      const hintWorkspace = finalState.locationId
+        ? await this.itineraryService.getWorkspaceData(finalState.locationId, userId)
+        : null;
+      const chatHints = this.buildChatHints(
+        session.mode as ChatMode,
+        finalState,
+        transcript,
+        fullReply,
+        hintWorkspace
+      );
+
       const readyToGenerate = this.isReadyToGenerate(session.mode as ChatMode, finalState);
       const suggestedTitle = await this.suggestTitle(
         session.title,
@@ -168,6 +201,8 @@ export class ChatService {
         ...sessionMetadata,
         plannerState: finalState,
         readyToGenerate,
+        suggestions: chatHints.suggestions,
+        actions: chatHints.actions,
         lastUserPrompt: userMessage,
         lastAssistantReply: fullReply
       };
@@ -188,7 +223,9 @@ export class ChatService {
         metadata: {
           plannerState: finalState,
           readyToGenerate,
-          suggestedTitle
+          suggestedTitle,
+          suggestions: chatHints.suggestions,
+          actions: chatHints.actions
         }
       });
     } catch (error) {
@@ -351,6 +388,8 @@ export class ChatService {
       'Raccogli in modo conversazionale: destinazione, giorni, travel type, viaggiatori, interessi, ritmo, stile, periodo, mezzi preferiti, hotel style.',
       'Fai una sola domanda principale per volta, salvo quando mancano solo 1-2 dettagli molto collegati.',
       'Quando hai abbastanza dati, dillo esplicitamente con una frase simile a: "Il tuo itinerario è pronto".',
+      'Quando l’utente chiede musei, food, notte, natura o percorsi, proponi tappe reali, concrete e immediatamente utilizzabili.',
+      'Se è utile, accompagna la risposta con una piccola azione pratica come aggiungere un giorno, riordinare le tappe o rendere il percorso più nostalgico.',
       'Non inventare disponibilità reali o prezzi.',
       `Stato strutturato corrente: ${JSON.stringify(plannerState)}`,
       `Campi ancora mancanti: ${missingFields.join(', ') || 'nessuno'}`,
@@ -576,6 +615,112 @@ export class ChatService {
     ].filter(Boolean);
 
     return parts.length > 0 ? parts.join(' · ') : 'Itinerario generato da Voyager AI';
+  }
+
+  private buildChatHints(
+    mode: ChatMode,
+    plannerState: PlannerState,
+    transcript: string,
+    assistantReply: string,
+    workspace: Awaited<ReturnType<ItineraryService['getWorkspaceData']>> | null
+  ): { suggestions: ChatHintSuggestion[]; actions: ChatHintAction[] } {
+    if (mode !== 'planner' || !workspace?.location) {
+      return { suggestions: [], actions: [] };
+    }
+
+    const context = `${transcript} ${assistantReply}`.toLowerCase();
+    const suggestions: ChatHintSuggestion[] = [];
+    const actions: ChatHintAction[] = [];
+
+    const pushSuggestion = (
+      poi: { id: number; name: string },
+      type: ChatHintSuggestion['type'],
+      poiType: 'activity' | 'accommodation' = 'activity',
+      description?: string
+    ) => {
+      if (suggestions.some((entry) => entry.poiId === poi.id && entry.poiType === poiType)) {
+        return;
+      }
+
+      suggestions.push({
+        title: poi.name,
+        description,
+        type,
+        poiId: poi.id,
+        poiType
+      });
+    };
+
+    const matches = (keywords: string[]) => keywords.some((keyword) => context.includes(keyword));
+
+    const museumLike = workspace.activities.filter((activity) => {
+      const name = activity.name.toLowerCase();
+      const category = activity.category?.name?.toLowerCase() || '';
+      return category.includes('muse') || category.includes('monument') || category.includes('landmark') || category.includes('arte') || category.includes('chiese') || category.includes('castelli') || name.includes('acquario') || name.includes('museum');
+    });
+
+    const foodLike = workspace.activities.filter((activity) => {
+      const category = activity.category?.name?.toLowerCase() || '';
+      return ['ristoranti', 'caffe', 'panetterie', 'bar', 'enoteche', 'gelaterie'].includes(category);
+    });
+
+    const relaxLike = workspace.activities.filter((activity) => {
+      const category = activity.category?.name?.toLowerCase() || '';
+      return ['parchi', 'punti panoramici', 'mercati'].includes(category);
+    });
+
+    if (matches(['muse', 'cultur', 'arte', 'monument', 'acquario'])) {
+      museumLike.slice(0, 3).forEach((activity) => pushSuggestion(activity, 'poi', 'activity', 'Tappa culturale reale nel workspace'));
+      actions.push({
+        type: 'add_stop',
+        label: 'Aggiungi una tappa culturale',
+        payload: { focus: 'culture' }
+      });
+    }
+
+    if (matches(['food', 'ristor', 'pranzo', 'cena', 'aperitivo'])) {
+      foodLike.slice(0, 3).forEach((activity) => pushSuggestion(activity, 'food', 'activity', 'Suggerimento food reale'));
+      actions.push({
+        type: 'optimize_route',
+        label: 'Ottimizza il giro food',
+        payload: { focus: 'food' }
+      });
+    }
+
+    if (matches(['notte', 'night', 'sera', 'aperitivo'])) {
+      foodLike.slice(0, 2).forEach((activity) => pushSuggestion(activity, 'evening', 'activity', 'Idea per la parte serale'));
+      actions.push({
+        type: 'create_nostalgic_day',
+        label: 'Crea un giorno nostalgico',
+        payload: { mood: 'nostalgic' }
+      });
+    }
+
+    if (matches(['relax', 'natura', 'lento', 'nostalg', 'panorama'])) {
+      relaxLike.slice(0, 3).forEach((activity) => pushSuggestion(activity, 'route', 'activity', 'Percorso più lento e panoramico'));
+      actions.push({
+        type: 'add_day',
+        label: 'Aggiungi un giorno slow',
+        payload: { pace: 'slow' }
+      });
+    }
+
+    if (plannerState.days && plannerState.days < 5) {
+      actions.push({
+        type: 'add_day',
+        label: 'Aggiungi un giorno extra',
+        payload: { days: plannerState.days + 1 }
+      });
+    }
+
+    if (suggestions.length === 0) {
+      workspace.activities.slice(0, 3).forEach((activity) => pushSuggestion(activity, 'general', 'activity', 'Suggerimento utile dal workspace'));
+    }
+
+    return {
+      suggestions: suggestions.slice(0, 3),
+      actions: actions.slice(0, 3)
+    };
   }
 
   private suggestItineraryName(state: PlannerState): string {

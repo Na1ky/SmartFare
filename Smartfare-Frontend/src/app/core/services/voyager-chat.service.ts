@@ -33,6 +33,18 @@ export interface ChatSession {
     plannerState?: PlannerState;
     readyToGenerate?: boolean;
     generatedItinerary?: Itinerary;
+    suggestions?: Array<{
+      title: string;
+      description?: string;
+      type: 'poi' | 'day' | 'food' | 'evening' | 'route' | 'general';
+      poiId?: number | null;
+      poiType?: 'activity' | 'accommodation' | null;
+    }>;
+    actions?: Array<{
+      type: string;
+      label: string;
+      payload?: Record<string, unknown>;
+    }>;
   } | null;
   lastMessageAt: string | null;
   createdAt: string;
@@ -269,7 +281,9 @@ export class VoyagerChatService {
       metadata: {
         ...(active.metadata || {}),
         plannerState: metadata.plannerState || active.metadata?.plannerState,
-        readyToGenerate: Boolean(metadata.readyToGenerate)
+        readyToGenerate: Boolean(metadata.readyToGenerate),
+        suggestions: Array.isArray(metadata.suggestions) ? metadata.suggestions : active.metadata?.suggestions,
+        actions: Array.isArray(metadata.actions) ? metadata.actions : active.metadata?.actions
       },
       lastMessageAt: new Date().toISOString()
     };
