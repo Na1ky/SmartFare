@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import type SMTPTransport from 'nodemailer/lib/smtp-transport';
 import dns from 'dns';
+import axios from 'axios';
 
 
 // Force IPv4 as priority for DNS resolution (critical for Render/Gmail SMTP)
@@ -9,6 +10,9 @@ dns.setDefaultResultOrder('ipv4first');
 export class EmailService {
     private transporter: nodemailer.Transporter | null = null;
     private initPromise: Promise<void> | null = null;
+    private useSendgrid = false;
+    private sendgridApiKey: string | undefined;
+    private defaultFromEmail: string | undefined;
     
     constructor() {
         this.initPromise = this.init();
@@ -17,7 +21,22 @@ export class EmailService {
     public async init() {
         if (this.transporter) return;
 
-        // Usa le variabili d'ambiente in produzione, altrimenti crea un test account con Ethereal
+        // Determine if we're running on Render (or a similar hosted env).
+        // Render sets env vars like RENDER, RENDER_SERVICE_ID or RENDER_INTERNAL_HOSTNAME.
+        const runningOnRender = !!(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.RENDER_INTERNAL_HOSTNAME);
+
+        // Prefer HTTP-based provider (SendGrid) when on Render and API key is provided.
+        // Locally we'll keep using nodemailer (SMTP or Ethereal) unless explicitly forced.
+        const forceSendGrid = process.env.FORCE_SENDGRID === 'true';
+        if ((runningOnRender || forceSendGrid) && process.env.SENDGRID_API_KEY) {
+            this.useSendgrid = true;
+            this.sendgridApiKey = process.env.SENDGRID_API_KEY;
+            this.defaultFromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'support@smartfare.com';
+            console.log('✅ SendGrid provider abilitato (HTTP API) - runningOnRender=', runningOnRender, 'force=', forceSendGrid);
+            return;
+        }
+
+        // Usa le variabili d'ambiente in produzione via SMTP, altrimenti crea un test account con Ethereal
         if (process.env.SMTP_HOST && process.env.SMTP_PORT) {
             const port = parseInt(process.env.SMTP_PORT);
             const options: any = {
@@ -76,7 +95,8 @@ export class EmailService {
             }
         }
         
-        if (!this.transporter) {
+        // If SendGrid is enabled we don't require a nodemailer transporter
+        if (!this.transporter && !this.useSendgrid) {
             throw new Error("Transporter email non inizializzato");
         }
     }
@@ -84,7 +104,7 @@ export class EmailService {
     
     public async sendPasswordResetEmail(to: string, resetLink: string) {
         await this.ensureTransporter();
-        if (!this.transporter) return;
+        if (!this.transporter && !this.useSendgrid) return;
 
 
         const htmlTemplate = `
@@ -188,8 +208,28 @@ export class EmailService {
 
             const path = require('path');
             const logoPath = path.resolve(process.cwd(), 'assets', 'logo.png');
+            // If SendGrid is configured, send via HTTP API instead of SMTP
+            if (this.useSendgrid && this.sendgridApiKey) {
+                const sgFrom = this.defaultFromEmail || 'support@smartfare.com';
+                const payload = {
+                    personalizations: [{ to: [{ email: to }] }],
+                    from: { email: sgFrom, name: 'SmartFare Support' },
+                    subject: 'Recupero Password Account - SmartFare Tickets',
+                    content: [{ type: 'text/html', value: htmlTemplate }]
+                };
 
-            const info = await this.transporter.sendMail({
+                const resp = await axios.post('https://api.sendgrid.com/v3/mail/send', payload, {
+                    headers: {
+                        Authorization: `Bearer ${this.sendgridApiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Message sent via SendGrid, status:', resp.status);
+                return;
+            }
+
+            const info = await this.transporter!.sendMail({
                 from: fromEmail,
                 to: to,
                 subject: "Recupero Password Account - SmartFare Tickets",
@@ -216,7 +256,7 @@ export class EmailService {
 
     public async sendVerificationEmail(to: string, verificationLink: string) {
         await this.ensureTransporter();
-        if (!this.transporter) return;
+        if (!this.transporter && !this.useSendgrid) return;
 
 
         const htmlTemplate = `
@@ -324,8 +364,28 @@ export class EmailService {
 
             const path = require('path');
             const logoPath = path.resolve(process.cwd(), 'assets', 'logo.png');
+            // Send via SendGrid if configured
+            if (this.useSendgrid && this.sendgridApiKey) {
+                const sgFrom = this.defaultFromEmail || 'support@smartfare.com';
+                const payload = {
+                    personalizations: [{ to: [{ email: to }] }],
+                    from: { email: sgFrom, name: 'SmartFare Support' },
+                    subject: 'Verifica il tuo indirizzo email - SmartFare Tickets',
+                    content: [{ type: 'text/html', value: htmlTemplate }]
+                };
 
-            const info = await this.transporter.sendMail({
+                const resp = await axios.post('https://api.sendgrid.com/v3/mail/send', payload, {
+                    headers: {
+                        Authorization: `Bearer ${this.sendgridApiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Message sent via SendGrid, status:', resp.status);
+                return;
+            }
+
+            const info = await this.transporter!.sendMail({
                 from: fromEmail,
                 to: to,
                 subject: "Verifica il tuo indirizzo email - SmartFare Tickets",
