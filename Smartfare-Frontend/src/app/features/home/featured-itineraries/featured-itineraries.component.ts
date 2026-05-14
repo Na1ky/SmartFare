@@ -26,4 +26,19 @@ export class FeaturedItinerariesComponent {
   getItemCount(itinerary: Itinerary): number {
     return itinerary._count?.items ?? itinerary.items?.length ?? 0;
   }
+
+  getCreatorName(itinerary: Itinerary): string {
+    const p = itinerary.user?.profile;
+    if (p?.name || p?.surname) {
+      return `${p.name ?? ''} ${p.surname ?? ''}`.trim();
+    }
+    return 'Utente SmartFare';
+  }
+
+  getCreatorInitials(itinerary: Itinerary): string {
+    const p = itinerary.user?.profile;
+    const first = p?.name?.[0] ?? '';
+    const last = p?.surname?.[0] ?? '';
+    return (first + last).toUpperCase() || 'SF';
+  }
 }

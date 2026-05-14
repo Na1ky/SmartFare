@@ -92,7 +92,7 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoadingPublicItineraries.set(true);
     this.itineraryService.getPublicItineraries().subscribe({
       next: (itineraries) => {
-        this.publicItineraries.set(itineraries.filter(i => i.isPublished));
+        this.publicItineraries.set(itineraries.filter(i => i.isPublished).slice(0, 3));
         this.isLoadingPublicItineraries.set(false);
         this.cdr.markForCheck();
       },

@@ -6,8 +6,9 @@
         <p>Viaggi selezionati a mano per ispirare la tua anima.</p>
       </div>
       <div class="section-nav">
-        <button class="nav-btn"><i class="bi bi-chevron-left"></i></button>
-        <button class="nav-btn"><i class="bi bi-chevron-right"></i></button>
+        <a routerLink="/itineraries" class="see-more-btn">
+          Vedi di più <i class="bi bi-arrow-right"></i>
+        </a>
       </div>
     </div>
 
@@ -47,10 +48,19 @@
           </div>
 
           <div class="card-footer">
-            <span class="days-info">
-              <i class="bi bi-clock"></i>
-              {{ getDuration(itinerary) }}
-            </span>
+            <div class="card-footer-left">
+              <div class="creator-avatar" [title]="getCreatorName(itinerary)">
+                @if (itinerary.user?.profile?.avatarUrl) {
+                  <img [src]="itinerary.user!.profile!.avatarUrl" [alt]="getCreatorName(itinerary)" class="creator-img">
+                } @else {
+                  <span class="creator-initials">{{ getCreatorInitials(itinerary) }}</span>
+                }
+              </div>
+              <span class="days-info">
+                <i class="bi bi-clock"></i>
+                {{ getDuration(itinerary) }}
+              </span>
+            </div>
             <a [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itinerary.id }" class="view-plan">
               Vai al Piano <i class="bi bi-arrow-right"></i>
             </a>
