@@ -11,14 +11,18 @@
 
   <main class="builder-workspace" [class.builder-workspace--chat]="ui.showChat()" [class.builder-workspace--no-sidebar]="!ui.showSidebar()">
     @if (ui.showSidebar()) {
-      <aside class="workspace-sidebar workspace-panel" aria-label="Esplora punti di interesse">
+      <aside class="workspace-sidebar workspace-panel" 
+             [class.mobile-active]="ui.mobileActiveTab() === 'tools'"
+             aria-label="Esplora punti di interesse">
         <app-builder-sidebar [workspace]="workspace()" [savedPoiKeys]="savedPoiKeys()" (focusSidebar)="onSidebarFocused()"
           (previewPoi)="onPreviewPoi($event)" (addPoi)="onAddPoi($event)">
         </app-builder-sidebar>
       </aside>
     }
 
-    <section class="workspace-map workspace-panel" aria-label="Mappa itinerario">
+    <section class="workspace-map workspace-panel" 
+             [class.mobile-active]="ui.mobileActiveTab() === 'map' || ui.mobileActiveTab() === 'summary'"
+             aria-label="Mappa itinerario">
       @if (!ui.showSummary()) {
       <app-builder-map [location]="workspace()?.location || null" [savedPois]="filteredSavedPois()"
         [routePois]="savedPois()" [availablePois]="mapAvailablePois()" [previewPoi]="previewPoi()"
@@ -34,11 +38,33 @@
     </section>
 
     @if (ui.showChat()) {
-    <aside class="workspace-chat workspace-panel" aria-label="Area assistente AI">
+    <aside class="workspace-chat workspace-panel" 
+           [class.mobile-active]="ui.mobileActiveTab() === 'ai'"
+           aria-label="Area assistente AI">
       <app-builder-chat [workspace]="workspace()" [itinerary]="itineraryService.itinerary()"></app-builder-chat>
     </aside>
     }
   </main>
+
+  <!-- Mobile Bottom Toolbar -->
+  <nav class="mobile-bottom-bar d-lg-none">
+    <button class="mobile-tab-btn" [class.active]="ui.mobileActiveTab() === 'map'" (click)='setMobileTab("map")'>
+      <i class="bi bi-map"></i>
+      <span>Mappa</span>
+    </button>
+    <button class="mobile-tab-btn" [class.active]="ui.mobileActiveTab() === 'summary'" (click)='setMobileTab("summary")'>
+      <i class="bi bi-list-ul"></i>
+      <span>Riepilogo</span>
+    </button>
+    <button class="mobile-tab-btn" [class.active]="ui.mobileActiveTab() === 'ai'" (click)='setMobileTab("ai")'>
+      <i class="bi bi-robot"></i>
+      <span>AI</span>
+    </button>
+    <button class="mobile-tab-btn" [class.active]="ui.mobileActiveTab() === 'tools'" (click)='setMobileTab("tools")'>
+      <i class="bi bi-grid"></i>
+      <span>Attività</span>
+    </button>
+  </nav>
 
   @if (workspaceError()) {
   <div class="builder-overlay builder-overlay-error">

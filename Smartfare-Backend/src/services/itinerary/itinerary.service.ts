@@ -15,6 +15,17 @@ type DraftItemPayload = {
     accommodationId: number | null;
 };
 
+type SanitizedItemsResult = {
+    items: DraftItemPayload[];
+    droppedItems: Array<{
+        index: number;
+        reason: string;
+        itemTypeCode: string;
+        activityId: number | null;
+        accommodationId: number | null;
+    }>;
+};
+
 type NormalizedDraftIdentity = {
     name: string;
     description: string | null;
@@ -23,6 +34,7 @@ type NormalizedDraftIdentity = {
     isPublished: boolean;
     visibilityCode: string;
     locationId: number | null;
+    chatSessionId: number | null;
     imageUrl: string;
 };
 
@@ -75,6 +87,99 @@ export class ItineraryService {
         }));
     }
 
+    private async sanitizeItemReferences(locationId: number | null, items: DraftItemPayload[]): Promise<SanitizedItemsResult> {
+        if (!locationId || items.length === 0) {
+            return { items, droppedItems: [] };
+        }
+
+        const requestedActivityIds = Array.from(
+            new Set(items.map((item) => item.activityId).filter((value): value is number => Boolean(value)))
+        );
+        const requestedAccommodationIds = Array.from(
+            new Set(items.map((item) => item.accommodationId).filter((value): value is number => Boolean(value)))
+        );
+
+        const [activities, accommodations] = await Promise.all([
+            requestedActivityIds.length > 0
+                ? prisma.activity.findMany({
+                    where: {
+                        id: { in: requestedActivityIds },
+                        locationId
+                    },
+                    select: { id: true }
+                })
+                : Promise.resolve([]),
+            requestedAccommodationIds.length > 0
+                ? prisma.accommodation.findMany({
+                    where: {
+                        id: { in: requestedAccommodationIds },
+                        locationId
+                    },
+                    select: { id: true }
+                })
+                : Promise.resolve([])
+        ]);
+
+        const validActivityIds = new Set(activities.map((entry) => entry.id));
+        const validAccommodationIds = new Set(accommodations.map((entry) => entry.id));
+        const droppedItems: SanitizedItemsResult['droppedItems'] = [];
+
+        const validItems = items.filter((item, index) => {
+            if (item.itemTypeCode === 'ACTIVITY') {
+                if (!item.activityId || !validActivityIds.has(item.activityId)) {
+                    droppedItems.push({
+                        index,
+                        reason: 'invalid_activity_reference',
+                        itemTypeCode: item.itemTypeCode,
+                        activityId: item.activityId,
+                        accommodationId: item.accommodationId
+                    });
+                    return false;
+                }
+            }
+
+            if (item.itemTypeCode === 'ACCOMMODATION') {
+                if (!item.accommodationId || !validAccommodationIds.has(item.accommodationId)) {
+                    droppedItems.push({
+                        index,
+                        reason: 'invalid_accommodation_reference',
+                        itemTypeCode: item.itemTypeCode,
+                        activityId: item.activityId,
+                        accommodationId: item.accommodationId
+                    });
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        const normalizedItems = this.reindexItems(validItems);
+        return {
+            items: normalizedItems,
+            droppedItems
+        };
+    }
+
+    private reindexItems(items: DraftItemPayload[]): DraftItemPayload[] {
+        const counters = new Map<number, number>();
+
+        return items
+            .slice()
+            .sort((left, right) => {
+                if (left.dayNumber !== right.dayNumber) return left.dayNumber - right.dayNumber;
+                return left.orderInt - right.orderInt;
+            })
+            .map((item) => {
+                const nextOrder = (counters.get(item.dayNumber) || 0) + 1;
+                counters.set(item.dayNumber, nextOrder);
+                return {
+                    ...item,
+                    orderInt: nextOrder
+                };
+            });
+    }
+
     private async withLocation(itinerary: any) {
         if (!itinerary) return itinerary;
         if (!itinerary.locationId) return { ...itinerary, location: null };
@@ -92,6 +197,7 @@ export class ItineraryService {
             isPublished: data?.isPublished === true,
             visibilityCode: data?.visibilityCode || "PRIVATE",
             locationId: data?.locationId ? Number(data.locationId) : null,
+            chatSessionId: data?.chatSessionId ? Number(data.chatSessionId) : null,
             imageUrl: data?.imageUrl || DEFAULT_ITINERARY_IMAGE_URL
         };
     }
@@ -118,7 +224,8 @@ export class ItineraryService {
             identity: {
                 ...identity,
                 startDate: identity.startDate?.toISOString() ?? null,
-                endDate: identity.endDate?.toISOString() ?? null
+                endDate: identity.endDate?.toISOString() ?? null,
+                chatSessionId: identity.chatSessionId
             },
             items: items
                 .slice()
@@ -137,9 +244,105 @@ export class ItineraryService {
 
     async saveItinerary(userId: number, data: any) {
         try {
-            const { id, locationId } = data;
-            const items = this.buildItemData(data);
+            const { id, copyFromId, locationId } = data;
             const draftPayload = this.normalizeDraftIdentity(data);
+            const rawItems = this.buildItemData(data);
+            const { items, droppedItems } = await this.sanitizeItemReferences(draftPayload.locationId, rawItems);
+
+            if (droppedItems.length > 0) {
+                console.warn('Itinerary items dropped because of invalid POI references', {
+                    userId,
+                    locationId: draftPayload.locationId,
+                    droppedItems
+                });
+            }
+
+            if (rawItems.length > 0 && items.length === 0) {
+                throw new Error('Tutti gli item dell’itinerario sono stati scartati perché non validi per la destinazione selezionata');
+            }
+
+            if (copyFromId) {
+                const cloned = await prisma.$transaction(async (tx) => {
+                    const source = await tx.itinerary.findFirst({
+                        where: {
+                            id: Number(copyFromId),
+                            OR: [
+                                { userId },
+                                { isPublished: true },
+                                { visibilityCode: 'PUBLIC' }
+                            ]
+                        },
+                        include: {
+                            items: {
+                                orderBy: [
+                                    { dayNumber: 'asc' as const },
+                                    { orderInt: 'asc' as const }
+                                ]
+                            }
+                        }
+                    });
+
+                    if (!source) {
+                        throw new Error('Itinerario non trovato o non autorizzato');
+                    }
+
+                    const sourceIdentity = this.normalizeDraftIdentity({
+                        name: data?.name || `${source.name} (Copia)`,
+                        description: data?.description ?? source.description,
+                        startDate: data?.startDate ?? source.startDate,
+                        endDate: data?.endDate ?? source.endDate,
+                        isPublished: data?.isPublished ?? false,
+                        visibilityCode: data?.visibilityCode || 'PRIVATE',
+                        locationId: data?.locationId ?? source.locationId,
+                        chatSessionId: data?.chatSessionId ?? null,
+                        imageUrl: data?.imageUrl || source.imageUrl || DEFAULT_ITINERARY_IMAGE_URL
+                    });
+
+                    const sourceItems = this.reindexItems(this.buildItemData({ items: source.items }));
+                    const clonedItems = (await this.sanitizeItemReferences(sourceIdentity.locationId, sourceItems)).items;
+
+                    const createData: any = {
+                        name: sourceIdentity.name,
+                        description: sourceIdentity.description,
+                        startDate: sourceIdentity.startDate,
+                        endDate: sourceIdentity.endDate,
+                        isPublished: sourceIdentity.isPublished,
+                        imageUrl: sourceIdentity.imageUrl,
+                        user: {
+                            connect: { id: userId }
+                        },
+                        visibility: {
+                            connect: { code: sourceIdentity.visibilityCode }
+                        }
+                    };
+
+                    if (sourceIdentity.locationId) {
+                        createData.location = { connect: { id: sourceIdentity.locationId } };
+                    }
+
+                    if (sourceIdentity.chatSessionId) {
+                        createData.chatSession = { connect: { id: sourceIdentity.chatSessionId } };
+                    }
+
+                    const created = await tx.itinerary.create({ data: createData });
+
+                    if (clonedItems.length > 0) {
+                        await tx.itineraryItem.createMany({
+                            data: clonedItems.map((item: DraftItemPayload) => ({
+                                ...item,
+                                itineraryId: created.id
+                            }))
+                        });
+                    }
+
+                    return tx.itinerary.findUnique({
+                        where: { id: created.id },
+                        include: this.getItineraryInclude()
+                    });
+                }, { maxWait: 10000, timeout: 15000 });
+
+                return this.withLocation(cloned);
+            }
 
             // If an ID is provided, we try to update
             if (id) {
@@ -152,20 +355,31 @@ export class ItineraryService {
                 }
 
                 const updated = await prisma.$transaction(async (tx) => {
+                    const updateData: any = {
+                        name: draftPayload.name,
+                        description: draftPayload.description,
+                        startDate: draftPayload.startDate,
+                        endDate: draftPayload.endDate,
+                        isPublished: draftPayload.isPublished,
+                        imageUrl: draftPayload.imageUrl,
+                        visibility: {
+                            connect: { code: draftPayload.visibilityCode }
+                        }
+                    };
+
+                    if (locationId) {
+                        updateData.location = { connect: { id: Number(locationId) } };
+                    } else {
+                        updateData.location = { disconnect: true };
+                    }
+
+                    if (draftPayload.chatSessionId) {
+                        updateData.chatSession = { connect: { id: draftPayload.chatSessionId } };
+                    }
+
                     await tx.itinerary.update({
                         where: { id: Number(id) },
-                        data: {
-                            name: draftPayload.name,
-                            description: draftPayload.description,
-                            startDate: draftPayload.startDate,
-                            endDate: draftPayload.endDate,
-                            isPublished: draftPayload.isPublished,
-                            imageUrl: draftPayload.imageUrl,
-                            location: locationId ? { connect: { id: Number(locationId) } } : { disconnect: true },
-                            visibility: {
-                                connect: { code: draftPayload.visibilityCode }
-                            }
-                        }
+                        data: updateData
                     });
 
                     await tx.itineraryItem.deleteMany({
@@ -204,6 +418,7 @@ export class ItineraryService {
                         isPublished: draftPayload.isPublished,
                         visibilityCode: draftPayload.visibilityCode,
                         locationId: draftPayload.locationId,
+                        chatSessionId: draftPayload.chatSessionId,
                         imageUrl: draftPayload.imageUrl
                     },
                     orderBy: { updatedAt: 'desc' },
@@ -211,22 +426,31 @@ export class ItineraryService {
                 });
 
                 if (matchingDraft) {
+                    const updateData: any = {
+                        name: draftPayload.name,
+                        description: draftPayload.description,
+                        startDate: draftPayload.startDate,
+                        endDate: draftPayload.endDate,
+                        isPublished: draftPayload.isPublished,
+                        imageUrl: draftPayload.imageUrl,
+                        visibility: {
+                            connect: { code: draftPayload.visibilityCode }
+                        }
+                    };
+
+                    if (draftPayload.locationId) {
+                        updateData.location = { connect: { id: draftPayload.locationId } };
+                    } else {
+                        updateData.location = { disconnect: true };
+                    }
+
+                    if (draftPayload.chatSessionId) {
+                        updateData.chatSession = { connect: { id: draftPayload.chatSessionId } };
+                    }
+
                     await tx.itinerary.update({
                         where: { id: matchingDraft.id },
-                        data: {
-                            name: draftPayload.name,
-                            description: draftPayload.description,
-                            startDate: draftPayload.startDate,
-                            endDate: draftPayload.endDate,
-                            isPublished: draftPayload.isPublished,
-                            imageUrl: draftPayload.imageUrl,
-                            ...(draftPayload.locationId
-                                ? { location: { connect: { id: draftPayload.locationId } } }
-                                : { location: { disconnect: true } }),
-                            visibility: {
-                                connect: { code: draftPayload.visibilityCode }
-                            }
-                        }
+                        data: updateData
                     });
 
                     await tx.itineraryItem.deleteMany({
@@ -258,13 +482,20 @@ export class ItineraryService {
                     }
                 };
 
-                // Remove visibilityCode and locationId from createData since we use relations instead
+                // Remove visibilityCode, locationId and chatSessionId from createData since we use relations instead
                 delete createData.visibilityCode;
                 delete createData.locationId;
+                delete createData.chatSessionId;
 
                 if (draftPayload.locationId) {
                     createData.location = {
                         connect: { id: draftPayload.locationId }
+                    };
+                }
+
+                if (draftPayload.chatSessionId) {
+                    createData.chatSession = {
+                        connect: { id: draftPayload.chatSessionId }
                     };
                 }
 
@@ -290,6 +521,91 @@ export class ItineraryService {
             return this.withLocation(createdWithItems);
         } catch (error) {
             console.error("Errore salvataggio itinerario:", error);
+            throw error;
+        }
+    }
+
+    async cloneItineraryById(sourceId: number, userId: number) {
+        try {
+            const cloned = await prisma.$transaction(async (tx) => {
+                // Fetch the source itinerary (can be public or owned by user)
+                const source = await tx.itinerary.findFirst({
+                    where: {
+                        id: Number(sourceId),
+                        OR: [
+                            { userId },
+                            { isPublished: true },
+                            { visibilityCode: 'PUBLIC' }
+                        ]
+                    },
+                    include: {
+                        items: {
+                            orderBy: [
+                                { dayNumber: 'asc' as const },
+                                { orderInt: 'asc' as const }
+                            ]
+                        }
+                    }
+                });
+
+                if (!source) {
+                    throw new Error("Itinerario non trovato o non autorizzato");
+                }
+
+                // Build the new itinerary data
+                const createData: any = {
+                    name: `${source.name} (Copia)`,
+                    description: source.description,
+                    startDate: source.startDate,
+                    endDate: source.endDate,
+                    isPublished: false,
+                    visibilityCode: 'PRIVATE',
+                    imageUrl: source.imageUrl || DEFAULT_ITINERARY_IMAGE_URL,
+                    user: {
+                        connect: { id: userId }
+                    },
+                    visibility: {
+                        connect: { code: 'PRIVATE' }
+                    }
+                };
+
+                if (source.locationId) {
+                    createData.location = { connect: { id: source.locationId } };
+                }
+
+                // Create the new itinerary
+                const created = await tx.itinerary.create({ data: createData });
+
+                // Clone all items from source to new itinerary
+                if (source.items && source.items.length > 0) {
+                    await tx.itineraryItem.createMany({
+                        data: source.items.map((item: any) => ({
+                            itemTypeCode: item.itemTypeCode,
+                            dayNumber: item.dayNumber,
+                            orderInt: item.orderInt,
+                            note: item.note,
+                            plannedStartAt: item.plannedStartAt,
+                            plannedEndAt: item.plannedEndAt,
+                            groupName: item.groupName,
+                            groupStartAt: item.groupStartAt,
+                            groupEndAt: item.groupEndAt,
+                            activityId: item.activityId,
+                            accommodationId: item.accommodationId,
+                            itineraryId: created.id
+                        }))
+                    });
+                }
+
+                // Return the complete cloned itinerary
+                return tx.itinerary.findUnique({
+                    where: { id: created.id },
+                    include: this.getItineraryInclude()
+                });
+            }, { maxWait: 10000, timeout: 15000 });
+
+            return this.withLocation(cloned);
+        } catch (error) {
+            console.error("Errore clonazione itinerario:", error);
             throw error;
         }
     }
@@ -460,5 +776,67 @@ export class ItineraryService {
             console.error("Errore recupero itinerari utente:", error);
             throw error;
         }
+    }
+
+    // ─── Favorites ────────────────────────────────────────────────────────────
+
+    async getUserFavorites(userId: number) {
+        try {
+            const favorites = await prisma.itineraryFavorite.findMany({
+                where: { userId },
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    itinerary: {
+                        include: {
+                            location: true,
+                            user: { include: { profile: true } },
+                            _count: { select: { items: true } }
+                        }
+                    }
+                }
+            });
+            return favorites.map(fav => fav.itinerary);
+        } catch (error) {
+            console.error("Errore recupero preferiti:", error);
+            throw error;
+        }
+    }
+
+    async addFavorite(userId: number, itineraryId: number) {
+        try {
+            await prisma.itineraryFavorite.upsert({
+                where: { userId_itineraryId: { userId, itineraryId } },
+                create: { userId, itineraryId },
+                update: {}
+            });
+        } catch (error) {
+            console.error("Errore aggiunta preferito:", error);
+            throw error;
+        }
+    }
+
+    async removeFavorite(userId: number, itineraryId: number) {
+        try {
+            await prisma.itineraryFavorite.deleteMany({
+                where: { userId, itineraryId }
+            });
+        } catch (error) {
+            console.error("Errore rimozione preferito:", error);
+            throw error;
+        }
+    }
+
+    async getFavoriteStatus(userId: number, itineraryId: number): Promise<boolean> {
+        const record = await prisma.itineraryFavorite.findUnique({
+            where: { userId_itineraryId: { userId, itineraryId } }
+        });
+        return !!record;
+    }
+
+    async getItineraryById(id: number, userId: number) {
+        return prisma.itinerary.findFirst({
+            where: { id, userId },
+            include: this.getItineraryInclude()
+        });
     }
 }

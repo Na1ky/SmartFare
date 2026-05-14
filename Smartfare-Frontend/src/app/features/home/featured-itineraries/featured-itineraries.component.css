@@ -56,7 +56,7 @@
 
 .itinerary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
   gap: 30px;
   min-height: 400px;
   position: relative;
@@ -117,18 +117,35 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .itinerary-card {
@@ -277,4 +294,45 @@
 .view-plan:hover {
   gap: 12px;
   color: #3b82f6;
+}
+@media (max-width: 640px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .section-title h2 {
+    font-size: 2rem;
+  }
+
+  .card-image-wrap {
+    height: 200px;
+  }
+
+  .card-content {
+    padding: 20px;
+  }
+
+  .itinerary-card h3 {
+    font-size: 1.25rem;
+  }
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  color: #94a3b8;
+  font-weight: 500;
 }

@@ -48,7 +48,7 @@ export class ItineraryService {
       .subscribe((saved) => {
         if (saved) {
           this.autosaveStatusSignal.set('saved');
-          
+
           // CRITICAL: If the local itinerary didn't have an ID, we MUST update it
           // with the ID assigned by the backend to prevent duplicate creations on next save.
           const current = this.itinerarySignal();
@@ -72,7 +72,7 @@ export class ItineraryService {
       const newHist = currentHist.slice(0, currentIndex + 1);
       // Deep copy to prevent reference mutation issues
       newHist.push(JSON.parse(JSON.stringify(data)));
-      
+
       // Limit history to last 50 changes to avoid memory leaks
       if (newHist.length > 50) {
         newHist.shift();
@@ -212,4 +212,72 @@ export class ItineraryService {
       catchError(() => of([]))
     );
   }
+
+  getItineraryById(id: number): Observable<Itinerary | null> {
+    // Prima prova a caricare dal backend (sia pubblici che privati se autenticato)
+    if (this.authService.IsAuthenticated()) {
+      return this.http.get<Itinerary>(`${this.API_URL}/${id}`).pipe(
+        catchError(() => this.getPublicItineraryById(id))
+      );
+    }
+    return this.getPublicItineraryById(id);
+  }
+
+  saveItinerary(itinerary: Itinerary): Observable<Itinerary | null> {
+    return this.saveToBackend(itinerary);
+  }
+
+  // Preferiti
+  isItineraryFavorite(itineraryId: number): Observable<boolean> {
+    if (!this.authService.IsAuthenticated()) return of(false);
+    return this.http.get<{ isFavorite: boolean }>(`${this.API_URL}/${itineraryId}/favorite-status`).pipe(
+      catchError(() => of({ isFavorite: false })),
+      switchMap(res => of(res.isFavorite))
+    );
+  }
+
+  addToFavorites(itineraryId: number): Observable<void> {
+    if (!this.authService.IsAuthenticated()) return of(void 0);
+    return this.http.post<void>(`${this.API_URL}/${itineraryId}/favorite`, {}).pipe(
+      catchError(err => {
+        console.error('Error adding to favorites', err);
+        throw err;
+      })
+    );
+  }
+
+  removeFromFavorites(itineraryId: number): Observable<void> {
+    if (!this.authService.IsAuthenticated()) return of(void 0);
+    return this.http.delete<void>(`${this.API_URL}/${itineraryId}/favorite`).pipe(
+      catchError(err => {
+        console.error('Error removing from favorites', err);
+        throw err;
+      })
+    );
+  }
+
+  getMyFavorites(): Observable<Itinerary[]> {
+    if (!this.authService.IsAuthenticated()) return of([]);
+    return this.http.get<Itinerary[]>(`${this.API_URL}/favorites`).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  // Copy an existing itinerary (create a new one with same content)
+  copyItinerary(itinerary: Itinerary): Observable<Itinerary | null> {
+    if (!this.authService.IsAuthenticated()) return of(null);
+    if (!itinerary.id) {
+      console.error('Cannot copy itinerary without ID');
+      return of(null);
+    }
+
+    // Call the dedicated copy endpoint
+    return this.http.post<Itinerary>(`${this.API_URL}/copy/${itinerary.id}`, {}).pipe(
+      catchError(err => {
+        console.error('Error copying itinerary', err);
+        return of(null);
+      })
+    );
+  }
 }
+

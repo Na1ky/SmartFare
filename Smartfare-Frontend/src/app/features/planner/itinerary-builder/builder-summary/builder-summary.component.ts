@@ -1,4 +1,4 @@
-// Forced rebuild      
+// Forced rebuild
 import { ChangeDetectionStrategy, Component, EventEmitter, Output, computed, inject, input, signal, HostListener, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -44,6 +44,8 @@ interface ExploreCard {
 })
 export class BuilderSummaryComponent {
   workspace = input<ItineraryWorkspace | null>(null);
+  previewItineraryInput = input<Itinerary | null>(null);
+  isPreviewInput = input<boolean>(false);
 
   @Output() showOnMap = new EventEmitter<BuilderPoi>();
 
@@ -56,7 +58,20 @@ export class BuilderSummaryComponent {
 
   // Modalità Anteprima
   previewItinerary = signal<Itinerary | null>(null);
-  isPreviewMode = computed(() => !!this.previewItinerary());
+  isPreviewMode = computed(() => !!this.previewItinerary() || this.isPreviewInput());
+  isReadOnlyPreview = computed(() => this.isPreviewMode());
+  showPreviewBanner = computed(() => !!this.previewItinerary() && !this.isPreviewInput());
+
+  constructor() {
+    // Sincronizza l'input preview all'interno del signal interno solo quando
+    // la preview è aperta dall'esplora (non dalla pagina di anteprima dedicata).
+    effect(() => {
+      const input = this.previewItineraryInput();
+      if (!this.isPreviewInput() && input) {
+        this.previewItinerary.set(input);
+      }
+    });
+  }
 
   // ---- Sezione percorso giorno selezionato ----
   /** Giorno attualmente visibile nella mappa (number | 'all') */
@@ -821,7 +836,14 @@ export class BuilderSummaryComponent {
   private withNormalizedEndDate(itin: Itinerary, items: Itinerary['items']): Itinerary {
     const safeItems = items || [];
     const maxDay = safeItems.reduce((max, item) => Math.max(max, item.dayNumber || 1), 1);
-    const start = itin.startDate ? new Date(itin.startDate) : new Date();
+    if (!itin.startDate) {
+      return {
+        ...itin,
+        items: safeItems
+      };
+    }
+
+    const start = new Date(itin.startDate);
     const end = new Date(start);
     end.setDate(end.getDate() + maxDay - 1);
 
@@ -836,8 +858,13 @@ export class BuilderSummaryComponent {
     const current = this.itinerary();
     if (!current) return;
 
+    if (!current.startDate) {
+      this.alertService.warning('Imposta prima una data di inizio per aggiungere altri giorni.');
+      return;
+    }
+
     const maxDay = this.getDaysCount();
-    const startDate = current.startDate ? new Date(current.startDate) : new Date();
+    const startDate = new Date(current.startDate);
     const newEndDate = new Date(startDate);
     newEndDate.setDate(startDate.getDate() + maxDay);
 

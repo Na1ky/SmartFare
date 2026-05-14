@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from "../../ui/navbar/navbar.component";
 import { AlertService } from '../../../core/services/alert.service';
-import { AuthService } from '../../../core/auth/auth.service';
+import { AuthService, PendingSocialRegistration } from '../../../core/auth/auth.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { GoogleSigninButtonModule, SocialAuthService } from '@abacritt/angularx-social-login';
+import { GoogleLoginProvider, SocialAuthService, GoogleSigninButtonModule } from '@abacritt/angularx-social-login';
 
 @Component({
   selector: 'app-login.component',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FormsModule, GoogleSigninButtonModule, RouterLink],
+  imports: [CommonModule, NavbarComponent, FormsModule, RouterLink, GoogleSigninButtonModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
@@ -39,16 +39,19 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.returnUrl = this.authService.sanitizeReturnUrl(this.route.snapshot.queryParams['returnUrl'] || '/');
     this.socialAuthService.authState.subscribe((user) => {
       if (user && user.idToken && !this.googleLoginInProgress && !this.authService.IsAuthenticated()) {
         this.googleLoginInProgress = true;
 
         this.authService.LoginWithGoogle(user.idToken).subscribe({
           next: (res) => {
-            if (res.needsRegistration && res.userData) {
-              this.alertService.success('Completa la registrazione per continuare');
-              this.router.navigate(['/register'], { state: { googleData: res.userData } });
+            if (res.needsRegistration && res.userData && res.registrationToken) {
+              this.handlePendingSocialRegistration({
+                ...res.userData,
+                provider: res.userData.provider || 'google',
+                registrationToken: res.registrationToken
+              });
             } else if (res.token) {
               this.alertService.success(res.message || 'Accesso effettuato con successo!');
               this.authService.saveAuth(res.token);
@@ -174,6 +177,21 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     draw();
+  }
+
+  private handlePendingSocialRegistration(data: PendingSocialRegistration) {
+    this.authService.savePendingSocialRegistration(data);
+    this.alertService.success('Completa la registrazione per continuare');
+    this.router.navigate(['/register'], {
+      queryParams: {
+        returnUrl: this.returnUrl,
+        social: data.provider,
+      }
+    });
+  }
+
+  startGithubLogin() {
+    this.authService.startGithubAuth('login', this.returnUrl);
   }
 
   Login() {

@@ -26,7 +26,7 @@
     </div>
 
     <!-- Center: compact map controls (absolutely centered) -->
-    <div class="toolbar-center">
+    <div class="toolbar-center" [class.mobile-show]="ui.mobileActiveTab() === 'map'">
       <div class="map-ctrl-group">
 
         <!-- Undo/Redo Controls -->
@@ -111,13 +111,14 @@
             (input)="onDayColorChange($event)" class="hidden-color-input">
           <span class="color-swatch"
             [style.background-color]="ui.dayRouteColors()[ui.selectedDay()] || ui.getDefaultDayColor(ui.selectedDay())">
+            <i class="bi bi-brush color-swatch-icon"></i>
           </span>
         </label>
 
-        <div class="map-ctrl-separator"></div>
+        <div class="map-ctrl-separator d-none d-lg-block"></div>
 
-        <!-- Layout toggles -->
-        <div class="layout-toggles">
+        <!-- Layout toggles (hidden on mobile) -->
+        <div class="layout-toggles d-none d-lg-flex">
           <button class="toggle-btn" [class.active]="ui.showSidebar()" (click)="ui.toggleSidebar()"
             title="Mostra/Nascondi scelte attività">
             <i class="bi bi-layout-sidebar"></i>
@@ -217,7 +218,7 @@
   </div>
 
   <!-- ═══ CATEGORY BAR (bottom toolbar) ════════════════════════════════════ -->
-  <div class="category-bar-wrap">
+  <div class="category-bar-wrap" [class.mobile-hide]="ui.mobileActiveTab() !== 'tools'">
     <!-- Fade left -->
     <div class="cat-fade cat-fade--left" aria-hidden="true"></div>
 

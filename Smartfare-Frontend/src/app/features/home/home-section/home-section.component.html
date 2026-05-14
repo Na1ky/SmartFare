@@ -1,5 +1,8 @@
 <div class="travel-hero-page position-relative min-vh-100 d-flex flex-column">
-  <div class="background-layer w-100 h-100 position-absolute top-0 start-0">
+  <!-- Hero Loader -->
+  <app-loader [show]="!isInitialVideoReady()"></app-loader>
+
+  <div class="background-layer w-100 h-100 position-absolute top-0 start-0" [class.is-ready]="isInitialVideoReady()">
     @for (videoSrc of videoLayers; track $index) {
     <video #backgroundVideo class="background-video" [class.is-active]="$index === activeVideoLayer"
       [attr.src]="videoSrc" [attr.autoplay]="$index === activeVideoLayer ? '' : null" muted
@@ -9,7 +12,8 @@
     <div class="overlay w-100 h-100 position-absolute top-0 start-0"></div>
   </div>
 
-  <div class="content-layer position-relative z-1 min-vh-100">
+  <div class="content-layer position-relative z-1 min-vh-100" [class.is-ready]="isInitialVideoReady()">
+
     <app-navbar></app-navbar>
 
     <main class="container hero-content-wrap">

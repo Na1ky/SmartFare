@@ -166,9 +166,9 @@
 .mobile-menu {
   position: fixed;
   inset: 0;
-  width: 100vw;
+  width: 100%;
   min-height: 100dvh;
-  background: linear-gradient(180deg, rgba(8, 12, 20, 0.98) 0%, rgba(10, 15, 26, 1) 100%);
+  background: linear-gradient(180deg, rgba(6, 10, 18, 0.995) 0%, rgba(8, 12, 20, 1) 100%);
   display: flex;
   flex-direction: column;
   padding: 2rem 1.5rem;
@@ -181,7 +181,8 @@
     transform 0.3s ease,
     opacity 0.3s ease,
     visibility 0.3s ease;
-  z-index: 2000;
+  z-index: 5000;
+  isolation: isolate;
 }
 .mobile-menu.open {
   transform: translateX(0);
@@ -190,11 +191,16 @@
   pointer-events: auto;
 }
 .mobile-menu-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 1.2rem;
   font-weight: 700;
+  padding-bottom: 1rem;
+  background: linear-gradient(180deg, rgba(8, 12, 20, 1) 0%, rgba(8, 12, 20, 0.92) 100%);
 }
 .close-btn {
   background: transparent;
@@ -205,6 +211,8 @@
 }
 .mobile-nav-links {
   margin-top: 2rem;
+  position: relative;
+  z-index: 1;
 }
 .mobile-nav-links .nav-item {
   font-size: 1.1rem;

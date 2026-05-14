@@ -1,0 +1,295 @@
+<div class="voyager-shell" [class.sidebar-closed]="!chatService.isSidebarOpen()">
+  <div class="ambient-bg">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+  </div>
+
+  <div class="voyager-content">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" [class.collapsed]="!chatService.isSidebarOpen()" [class.mobile-open]="showMobileSidebar()">
+      <div class="sidebar-header">
+        @if (chatService.isSidebarOpen()) {
+        <div class="sidebar-brand">
+          <span class="sidebar-kicker">Voyager AI</span>
+          <h2>Travel Copilot</h2>
+        </div>
+        }
+
+        <div class="sidebar-tools">
+          <button class="new-chat-btn" (click)="createNewChat()">
+            <i class="bi bi-plus-lg"></i>
+            @if (chatService.isSidebarOpen()) {
+            <span>Nuova chat</span>
+            }
+          </button>
+          <button class="toggle-btn desktop-only" type="button" title="Apri o chiudi sidebar"
+            aria-label="Apri o chiudi sidebar" (click)="toggleSidebar()">
+            <i class="bi" [ngClass]="chatService.isSidebarOpen() ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar'"></i>
+          </button>
+          <button class="toggle-btn mobile-only" type="button" title="Chiudi menu" aria-label="Chiudi menu"
+            (click)="toggleMobileSidebar()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (chatService.isSidebarOpen()) {
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Cerca chat" [value]="searchTerm()"
+          (input)="onSearch(($any($event.target)).value)" />
+      </div>
+
+      <div class="sessions-list">
+        @if (pinnedSessions().length > 0) {
+        <div class="section">
+          <label>In evidenza</label>
+          @for (session of pinnedSessions(); track session.id) {
+          <button type="button" class="session-item" [class.active]="chatService.activeSession()?.id === session.id"
+            (click)="selectSession(session)">
+            <div class="session-icon">
+              <i class="bi bi-pin-angle-fill"></i>
+            </div>
+            <div class="session-copy">
+              <strong>{{ session.title || 'Nuova conversazione' }}</strong>
+              <span>{{ session.mode === 'planner' ? 'Planner Mode' : 'Assistant Mode' }}</span>
+            </div>
+            <div class="actions">
+              <button type="button" title="Rimuovi pin" aria-label="Rimuovi pin" (click)="togglePin($event, session)">
+                <i class="bi bi-pin-angle-fill"></i>
+              </button>
+              <button type="button" title="Elimina conversazione" aria-label="Elimina conversazione"
+                (click)="deleteSession($event, session)">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </button>
+          }
+        </div>
+        }
+
+        @for (group of recentSessionGroups(); track group.label) {
+        <div class="section">
+          <label>{{ group.label }}</label>
+          @for (session of group.items; track session.id) {
+          <button type="button" class="session-item" [class.active]="chatService.activeSession()?.id === session.id"
+            (click)="selectSession(session)">
+            <div class="session-icon">
+              <i class="bi" [ngClass]="session.mode === 'planner' ? 'bi-bookmarks' : 'bi-chat-left-dots'"></i>
+            </div>
+            <div class="session-copy">
+              <strong>{{ session.title || 'Nuova conversazione' }}</strong>
+              <span>{{ session.mode === 'planner' ? 'Planner Mode' : 'Assistant Mode' }}</span>
+            </div>
+            <div class="actions">
+              <button type="button" title="Gestisci pin" aria-label="Gestisci pin" (click)="togglePin($event, session)">
+                <i class="bi" [ngClass]="session.isPinned ? 'bi-pin-angle-fill' : 'bi-pin-angle'"></i>
+              </button>
+              <button type="button" title="Elimina conversazione" aria-label="Elimina conversazione"
+                (click)="deleteSession($event, session)">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </button>
+          }
+        </div>
+        }
+      </div>
+      }
+
+      <div class="sidebar-footer">
+        <button class="home-btn" type="button" (click)="goHome()">
+          <i class="bi bi-house-door"></i>
+          @if (chatService.isSidebarOpen()) {
+          <span>Torna alla home</span>
+          }
+        </button>
+      </div>
+    </aside>
+
+    @if (showMobileSidebar()) {
+    <div class="sidebar-backdrop" (click)="toggleMobileSidebar()"></div>
+    }
+
+    <!-- MAIN CHAT AREA -->
+    <main class="chat-main">
+      <header class="chat-header">
+        <div class="header-left">
+          <button class="toggle-btn mobile-only" type="button" title="Apri menu conversazioni"
+            aria-label="Apri menu conversazioni" (click)="toggleMobileSidebar()">
+            <i class="bi bi-list"></i>
+          </button>
+          <div>
+            <span class="header-kicker">{{ chatService.mode() === 'planner' ? 'Planner Mode' : 'Assistant Mode'
+              }}</span>
+            <h1>{{ chatService.activeSession()?.title || 'Voyager AI' }}</h1>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="mode-toggle">
+            <button [class.active]="chatService.mode() === 'planner'" (click)="toggleMode('planner')">Planner</button>
+            <button [class.active]="chatService.mode() === 'assistant'"
+              (click)="toggleMode('assistant')">Assistant</button>
+          </div>
+          <button class="action-btn" type="button" title="Condividi conversazione" aria-label="Condividi conversazione"
+            (click)="shareConversation()" [disabled]="!chatService.activeSession()">
+            <i class="bi bi-share"></i>
+          </button>
+          <div class="dropdown-tools">
+            <button class="action-btn" type="button" title="Altre azioni" aria-label="Altre azioni"
+              data-bs-toggle="dropdown">
+              <i class="bi bi-three-dots"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end voyager-dropdown">
+              <button class="dropdown-item" (click)="exportConversation('md')">Export Markdown</button>
+              <button class="dropdown-item" (click)="exportConversation('json')">Export JSON</button>
+              <button class="dropdown-item" (click)="createNewChat(chatService.mode())">Nuova chat</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="messages-viewport" #scrollContainer>
+        <div class="messages-list">
+          <!-- EMPTY STATE -->
+          @if (chatService.messages().length === 0) {
+          <div class="empty-state-shell">
+            <div class="empty-state">
+              <div class="hero-icon">
+                <i class="bi bi-stars"></i>
+              </div>
+              <h2>Benvenuto su Voyager AI</h2>
+              <p>Il tuo assistente di viaggio intelligente. Scegli come iniziare una nuova conversazione.</p>
+
+              <div class="entry-choice">
+                <button class="entry-card" [class.selected]="chatService.mode() === 'planner'"
+                  (click)="startFreshPlanner()">
+                  <span class="entry-kicker">Planner Mode</span>
+                  <strong>Crea un nuovo itinerario</strong>
+                  <p>Raccogliamo i dettagli del viaggio e prepariamo il builder già popolato.</p>
+                </button>
+                <button class="entry-card assistant" [class.selected]="chatService.mode() === 'assistant'"
+                  (click)="startFreshAssistant()">
+                  <span class="entry-kicker">Assistant Mode</span>
+                  <strong>Chiedi consigli mirati</strong>
+                  <p>Apri una nuova chat informativa per ristoranti, quartieri, musei e idee locali.</p>
+                </button>
+              </div>
+            </div>
+          </div>
+          }
+
+          <!-- MESSAGES -->
+          @for (msg of chatService.messages(); track $index) {
+          <div class="message-wrapper" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+            @if (msg.role === 'assistant') {
+            <div class="avatar-container assistant-avatar">
+              <i class="bi bi-stars"></i>
+            </div>
+            }
+
+            <div class="message-content">
+              <div class="bubble">
+                <div class="text" [innerHTML]="formatMessage(msg.content)"></div>
+                @if (msg.isStreaming && msg.content === '') {
+                <div class="typing-indicator">
+                  <span></span><span></span><span></span>
+                </div>
+                }
+              </div>
+              @if (msg.createdAt) {
+              <div class="timestamp">
+                {{ msg.createdAt | date:'HH:mm' }}
+              </div>
+              }
+            </div>
+
+            @if (msg.role === 'user') {
+            <div class="avatar-container user-avatar">
+              @if (userAvatar()) {
+              <img [src]="userAvatar()" alt="User" class="avatar-img">
+              } @else {
+              <span>{{ userInitial() }}</span>
+              }
+            </div>
+            }
+          </div>
+          }
+
+          <!-- ITINERARY READY CARD -->
+          @if (chatService.readyToGenerate() && chatService.messages().length > 0) {
+          <div class="itinerary-ready-card">
+            <div class="card-image-wrapper">
+              <img src="https://images.unsplash.com/photo-1467269204594-9661b134dd2b?q=80&w=1000&auto=format&fit=crop"
+                alt="Destinazione" class="card-image">
+              <div class="card-badge">Itinerario Pronto</div>
+            </div>
+            <div class="card-body">
+              <h3>Il tuo viaggio è pronto!</h3>
+              <p>Ho raccolto tutti i dettagli necessari. Vuoi generare l'itinerario completo nel builder?</p>
+              <button class="generate-btn" (click)="generateItinerary()" [disabled]="isGeneratingItinerary()">
+                <i class="bi" [ngClass]="isGeneratingItinerary() ? 'bi-hourglass-split' : 'bi-magic'"></i>
+                @if (!isGeneratingItinerary()) {
+                <span>Genera Itinerario</span>
+                } @else {
+                <span>Preparazione...</span>
+                }
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+      </section>
+
+      <!-- INPUT AREA -->
+      <footer class="chat-footer">
+        <div class="chat-input-container">
+          @if (chatService.messages().length < 3 && !message()) { <div class="quick-prompts">
+            @for (prompt of quickPrompts(); track prompt.label) {
+            <button (click)="usePrompt(prompt.text)">
+              {{ prompt.label }}
+            </button>
+            }
+        </div>
+        }
+
+        @if (pendingAttachmentName()) {
+        <div class="attachment-chip">
+          <span>{{ pendingAttachmentName() }}</span>
+          <button type="button" title="Rimuovi allegato" aria-label="Rimuovi allegato" (click)="clearAttachment()"><i
+              class="bi bi-x-lg"></i></button>
+        </div>
+        }
+
+        <div class="input-wrapper">
+          <label class="action-btn attach-btn">
+            <i class="bi bi-paperclip"></i>
+            <input type="file" hidden (change)="attachPlaceholder($event)">
+          </label>
+
+          @if (isVoiceSupported()) {
+          <button class="action-btn" type="button" title="Attiva o disattiva input vocale"
+            aria-label="Attiva o disattiva input vocale" (click)="toggleVoiceInput()" [class.active]="isListening()">
+            <i class="bi" [ngClass]="isListening() ? 'bi-stop-fill' : 'bi-mic'"></i>
+          </button>
+          }
+
+          <textarea [ngModel]="message()" (ngModelChange)="message.set($event)" placeholder="Messaggio a Voyager AI..."
+            (keydown.enter)="onEnter($event)" rows="1"></textarea>
+
+          <button class="send-btn" type="button" title="Invia messaggio" aria-label="Invia messaggio"
+            [disabled]="!message().trim() || chatService.isStreaming()" (click)="sendMessage()">
+            <i class="bi" [ngClass]="chatService.isStreaming() ? 'bi-hourglass-split' : 'bi-arrow-up-short'"></i>
+          </button>
+        </div>
+
+        <div class="footer-note">
+          Voyager AI usa memoria conversazionale e può sbagliare. Verifica le informazioni importanti prima di
+          finalizzare.
+        </div>
+  </div>
+  </footer>
+  </main>
+</div>
+</div>

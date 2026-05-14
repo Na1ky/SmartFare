@@ -1,5 +1,6 @@
 <div class="itineraries-page">
-  <!-- Sfondo animato a tema sito -->
+
+  <!-- Animated background -->
   <div class="animated-background">
     <div class="world-map-svg"></div>
     <div class="glow-sphere glow-sphere-1"></div>
@@ -10,78 +11,247 @@
     <app-navbar></app-navbar>
   </div>
 
-  <div class="content-wrapper">
-    <header class="page-header" data-aos="fade-up">
-      <div class="header-text">
-        <h1 class="premium-title">I Miei <span class="text-gradient">Itinerari</span></h1>
-        <p class="premium-subtitle">Gestisci i tuoi prossimi viaggi e rivivi le tue avventure passate.</p>
-      </div>
-      
-      <div class="header-actions">
-        <div class="premium-search">
-          <i class="bi bi-search"></i>
-          <input type="text" placeholder="Cerca tra i tuoi viaggi...">
+  <div class="page-layout">
+
+    <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+    <aside class="sidebar">
+
+      <!-- Filters card -->
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">
+          <i class="bi bi-sliders"></i> Filtri
+        </h3>
+
+        <!-- Trip Status -->
+        <div class="filter-group">
+          <p class="filter-label">Stato Viaggio</p>
+          <label class="filter-checkbox">
+            <input type="checkbox"
+              [checked]="filterUpcoming()"
+              (change)="filterUpcoming.set($any($event.target).checked)">
+            <span>In Programma</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox"
+              [checked]="filterInProgress()"
+              (change)="filterInProgress.set($any($event.target).checked)">
+            <span>In Corso</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox"
+              [checked]="filterCompleted()"
+              (change)="filterCompleted.set($any($event.target).checked)">
+            <span>Completati</span>
+          </label>
+          <label class="filter-checkbox">
+            <input type="checkbox"
+              [checked]="filterDrafts()"
+              (change)="filterDrafts.set($any($event.target).checked)">
+            <span>Bozze</span>
+          </label>
+        </div>
+
+        <!-- Timeframe -->
+        <div class="filter-group">
+          <p class="filter-label">Periodo</p>
+          <select class="filter-select"
+            [value]="filterTimeframe()"
+            (change)="filterTimeframe.set($any($event.target).value)">
+            <option value="all">Tutti i periodi</option>
+            <option value="next6months">Prossimi 6 mesi</option>
+            <option value="nextyear">Prossimo anno</option>
+            <option value="past">Passati</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button class="btn-apply-filters" (click)="applyFilters()">
+            Applica Filtri
+          </button>
+          @if (hasActiveFilters) {
+          <button class="btn-reset-filters" (click)="resetFilters()">
+            <i class="bi bi-x-circle"></i> Rimuovi filtri
+          </button>
+          }
         </div>
       </div>
-    </header>
 
-    <nav class="filter-tabs" data-aos="fade-up" data-aos-delay="100">
-      <button [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">Tutti</button>
-      <button [class.active]="activeFilter() === 'upcoming'" (click)="setFilter('upcoming')">In Programma</button>
-      <button [class.active]="activeFilter() === 'past'" (click)="setFilter('past')">Passati</button>
-      <button [class.active]="activeFilter() === 'drafts'" (click)="setFilter('drafts')">Bozze</button>
-    </nav>
-
-    <div class="itineraries-grid" data-aos="fade-up" data-aos-delay="200">
-      <!-- Card Nuovo Viaggio -->
-      <div class="itinerary-card new-trip-card" (click)="createNewTrip()">
-        <div class="card-glass-effect"></div>
-        <div class="new-trip-content">
-          <div class="icon-circle">
-            <i class="bi bi-plus-lg"></i>
-          </div>
-          <span>Inizia un nuovo viaggio</span>
-        </div>
+      <!-- Stats card -->
+      <div class="sidebar-card stats-card">
+        <p class="stats-label">TOTALE ITINERARI</p>
+        <div class="stats-number">{{ totalCount }}</div>
+        <p class="stats-sub">viaggi nel tuo account</p>
+        @if (favoritesCount > 0) {
+        <div class="stats-divider"></div>
+        <p class="stats-label">PREFERITI</p>
+        <div class="stats-number stats-number--accent">{{ favoritesCount }}</div>
+        <p class="stats-sub">itinerari salvati</p>
+        }
       </div>
 
-      <!-- Lista Itinerari -->
-      @for (itinerary of filteredItineraries(); track itinerary.id) {
-        <div class="itinerary-card">
-          <div class="card-image-wrap">
-            <img [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'" [alt]="itinerary.name">
-            <div class="image-overlay"></div>
-            @if (getStatusTag(itinerary)) {
-              <span class="status-tag" [class]="getStatusTag(itinerary).toLowerCase().replace(' ', '-')">
-                {{ getStatusTag(itinerary) }}
-              </span>
+    </aside>
+
+    <!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <header class="page-header">
+        <div class="header-left">
+          <h1 class="page-title">
+            @if (activeTab() === 'favorites') {
+              I Miei <span class="text-gradient">Preferiti</span>
+            } @else {
+              I Miei <span class="text-gradient">Itinerari</span>
             }
+          </h1>
+          <p class="page-subtitle">
+            @if (activeTab() === 'favorites') {
+              I viaggi che hai salvato e che ami di più.
+            } @else {
+              Gestisci i tuoi prossimi viaggi e rivivi le tue avventure passate.
+            }
+          </p>
+        </div>
+        <div class="header-right">
+          <div class="search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Cerca un viaggio…" (input)="onSearch($event)">
           </div>
-          
+          <button class="btn-new-itinerary" (click)="createNewTrip()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuovo Itinerario</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Tab switcher -->
+      <div class="tab-switcher">
+        <button class="tab-btn" [class.active]="activeTab() === 'itineraries'"
+          (click)="setTab('itineraries')">
+          <i class="bi bi-journal-bookmark"></i>
+          I miei Itinerari
+          @if (totalCount > 0) {
+          <span class="tab-count">{{ totalCount }}</span>
+          }
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'favorites'"
+          (click)="setTab('favorites')">
+          <i class="bi bi-heart"></i>
+          Preferiti
+          @if (favoritesCount > 0) {
+          <span class="tab-count tab-count--heart">{{ favoritesCount }}</span>
+          }
+        </button>
+      </div>
+
+      <!-- Loading -->
+      @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Caricamento in corso…</p>
+      </div>
+      }
+
+      <!-- Grid -->
+      @if (!isLoading()) {
+      <div class="itineraries-grid">
+
+        <!-- Itinerary cards -->
+        @for (itinerary of filteredItineraries(); track itinerary.id) {
+        <div class="itinerary-card" (click)="previewItinerary(itinerary, $event)">
+
+          <div class="card-image">
+            <img
+              [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'"
+              [alt]="itinerary.name"
+              loading="lazy">
+            <div class="image-overlay"></div>
+            <span class="status-badge status-badge--{{ getStatusClass(itinerary) }}">
+              {{ getStatusLabel(itinerary) }}
+            </span>
+            <button class="card-more-btn" (click)="$event.stopPropagation()">
+              <i class="bi bi-three-dots-vertical"></i>
+            </button>
+          </div>
+
           <div class="card-body">
-            <div class="card-meta">
+            <h3 class="card-title">{{ itinerary.name }}</h3>
+            <div class="card-date">
               <i class="bi bi-calendar3"></i>
               <span>{{ formatDateRange(itinerary) }}</span>
             </div>
-            <h3 class="itinerary-name">{{ itinerary.name }}</h3>
+            @if (itinerary.location?.name) {
             <div class="card-location">
               <i class="bi bi-geo-alt"></i>
-              <span>{{ itinerary.location?.name || 'Destinazione da definire' }}</span>
+              <span>{{ itinerary.location?.name }}</span>
             </div>
-            
-            <div class="card-footer">
-              <div class="avatar-stack">
-                <img [src]="itinerary.user?.profile?.avatarUrl || 'https://i.pravatar.cc/150?u=' + itinerary.id" class="avatar" alt="User">
-                @if (itinerary.id && itinerary.id % 2 === 0) {
-                  <img src="https://i.pravatar.cc/150?u=traveler" class="avatar" alt="Traveler">
-                }
-              </div>
-              <button class="btn-more">
-                <i class="bi bi-three-dots"></i>
-              </button>
+            }
+          </div>
+
+          <div class="card-footer">
+            @if (getStatusClass(itinerary) === 'completed') {
+            <button class="btn-action btn-secondary" (click)="editItinerary(itinerary, $event)">
+              <i class="bi bi-arrow-repeat"></i> Riprenota
+            </button>
+            <button class="btn-action btn-ghost" (click)="previewItinerary(itinerary, $event)">
+              <i class="bi bi-images"></i> Dettagli
+            </button>
+            } @else {
+            <button class="btn-action btn-primary" (click)="editItinerary(itinerary, $event)">
+              <i class="bi bi-pencil-square"></i> Modifica
+            </button>
+            <button class="btn-action btn-ghost" (click)="previewItinerary(itinerary, $event)">
+              <i class="bi bi-eye"></i> Visualizza
+            </button>
+            }
+          </div>
+
+        </div>
+        }
+
+        <!-- New voyage card (solo nel tab itinerari) -->
+        @if (activeTab() === 'itineraries') {
+        <div class="new-voyage-card" (click)="createNewTrip()">
+          <div class="new-voyage-inner">
+            <div class="new-voyage-icon">
+              <i class="bi bi-geo"></i>
             </div>
+            <h3>Inizia un Nuovo Viaggio</h3>
+            <p>L'avventura ti aspetta.<br>Dove vuoi andare?</p>
+            <button class="btn-browse">
+              <i class="bi bi-plus-lg"></i> Crea Itinerario
+            </button>
           </div>
         </div>
+        }
+
+        <!-- Empty: preferiti vuoti -->
+        @if (activeTab() === 'favorites' && filteredItineraries().length === 0) {
+        <div class="empty-state">
+          <i class="bi bi-heart"></i>
+          <h3>Nessun preferito</h3>
+          <p>Salva gli itinerari che ami per ritrovarli qui.</p>
+          <button class="btn-action btn-primary" (click)="setTab('itineraries')">
+            Sfoglia i miei itinerari
+          </button>
+        </div>
+        }
+
+        <!-- Empty: filtri attivi senza risultati -->
+        @if (activeTab() === 'itineraries' && filteredItineraries().length === 0 && hasActiveFilters) {
+        <div class="empty-state">
+          <i class="bi bi-funnel"></i>
+          <h3>Nessun risultato</h3>
+          <p>Nessun itinerario corrisponde ai filtri selezionati.</p>
+          <button class="btn-action btn-primary" (click)="resetFilters()">
+            Rimuovi filtri
+          </button>
+        </div>
+        }
+
+      </div>
       }
-    </div>
+
+    </main>
   </div>
 </div>

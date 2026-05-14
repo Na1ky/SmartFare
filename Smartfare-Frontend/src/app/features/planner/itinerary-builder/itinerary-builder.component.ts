@@ -43,6 +43,9 @@ export class ItineraryBuilderComponent implements OnInit {
   editingItem = signal<ItineraryItem | null>(null);
   showPoiEditor = signal(false);
 
+  // Mobile UX state
+  mobileActiveTab = signal<'summary' | 'map' | 'ai' | 'tools'>('summary');
+
   ui = inject(UIStateService);
   private exportService = inject(ItineraryExportService);
   private targetUrl: string | null = null;
@@ -194,10 +197,8 @@ export class ItineraryBuilderComponent implements OnInit {
       return;
     }
 
-    const start = query['in'] || new Date().toISOString().split('T')[0];
-    // A new itinerary starts with only day 1 visible.
-    // Extra days are added progressively from the summary/header controls.
-    const end = start;
+    const start = typeof query['in'] === 'string' && query['in'] ? query['in'] : null;
+    const end = typeof query['out'] === 'string' && query['out'] ? query['out'] : start;
 
     this.itineraryService.setCurrentItinerary(
       {
@@ -267,12 +268,33 @@ export class ItineraryBuilderComponent implements OnInit {
 
   onMapFocused() {
     this.ui.setActiveSurface('map');
+    this.mobileActiveTab.set('map');
+  }
+
+  setMobileTab(tab: 'summary' | 'map' | 'ai' | 'tools') {
+    this.ui.setMobileActiveTab(tab);
+    if (tab === 'map') {
+      this.ui.showSummary.set(false);
+      this.onMapFocused();
+    }
+    if (tab === 'summary') {
+      this.ui.showSummary.set(true);
+    }
+    if (tab === 'tools') {
+      this.onSidebarFocused();
+    }
+    if (tab === 'ai') {
+      this.ui.showChat.set(true);
+    }
   }
 
   onPreviewPoi(poi: BuilderPoi) {
     this.previewPoi.set(poi);
     this.ui.showSummary.set(false);
     this.ui.setActiveSurface('map');
+    if (window.innerWidth <= 992) {
+      this.setMobileTab('map');
+    }
   }
 
   onAddPoi(poi: BuilderPoi) {

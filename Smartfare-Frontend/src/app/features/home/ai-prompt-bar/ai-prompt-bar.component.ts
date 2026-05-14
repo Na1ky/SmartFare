@@ -76,33 +76,10 @@ export class AiPromptBarComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.isGenerating()) return;
-
-    this.isGenerating.set(true);
-
-    this.http.post<any>(`${environment.apiUrl}/api/ai/itinerary/generate`, {
-      prompt: this.travelQuery
-    }).pipe(
-      finalize(() => this.isGenerating.set(false))
-    ).subscribe({
-      next: (res) => {
-        if (res.success && res.itinerary) {
-          // Set the itinerary in the service
-          this.itineraryService.setCurrentItinerary(res.itinerary, { autosave: true });
-          
-          // Redirect to builder
-          this.router.navigate(['/itineraries', 'builder'], {
-            queryParams: { 
-              locationId: res.itinerary.locationId,
-              dest: res.itinerary.location?.name
-            }
-          });
-        }
-      },
-      error: (err) => {
-        console.error('AI Generation error:', err);
-        const msg = err.error?.error || "Non sono riuscito a generare l'itinerario. Riprova con un altro prompt.";
-        this.alertService.error(msg);
+    // Redirect to Voyager AI with the prompt
+    this.router.navigate(['/voyager'], {
+      queryParams: { 
+        prompt: this.travelQuery 
       }
     });
   }

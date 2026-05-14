@@ -1,0 +1,99 @@
+<div class="preview-shell">
+
+  <!-- ── Atmospheric glow (same as builder) ── -->
+  <div class="preview-atmosphere" aria-hidden="true">
+    <span class="glow glow-a"></span>
+    <span class="glow glow-b"></span>
+    <span class="glow glow-c"></span>
+  </div>
+
+  <!-- ══════════════════ HEADER BAR ══════════════════ -->
+  <header class="preview-header">
+    <div class="top-toolbar">
+
+      <div class="toolbar-left">
+        <a [routerLink]="['/home']" class="brand anchor-reset">
+          <img src="favicon.png" alt="logo" class="logo-small">
+          <div class="brand-copy">
+            <span class="brand-name">SMARTFARE</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="toolbar-center">
+        <div class="preview-itinerary-name-container">
+          <h1 class="preview-itinerary-title">{{ itinerary()?.name || 'Anteprima Itinerario' }}</h1>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        @if (!isLoading() && itinerary()) {
+        <button class="preview-action-btn preview-action-btn--favorite" [class.is-favorited]="isFavorite()"
+          (click)="toggleFavorite()" [disabled]="isSaving() || isCopying()" id="preview-favorite-btn">
+          <i [class]="isFavorite() ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+          <span>{{ isFavorite() ? 'Preferito' : 'Aggiungi ai preferiti' }}</span>
+        </button>
+
+        <button class="preview-action-btn preview-action-btn--primary" (click)="copyItinerary()"
+          [disabled]="isSaving() || isCopying()" id="preview-save-btn">
+          <i [class]="isCopying() ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+          <span>{{ isCopying() ? 'Salvataggio…' : 'Incorpora' }}</span>
+        </button>
+        }
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ══════════════════ WORKSPACE ══════════════════ -->
+  @if (isLoading()) {
+  <div class="preview-loading">
+    <div class="preview-spinner"></div>
+    <p>Caricamento itinerario…</p>
+  </div>
+  } @else if (itinerary()) {
+
+  <main class="preview-workspace">
+
+    <!-- Summary panel (left on desktop) -->
+    <section class="preview-panel preview-panel--summary" [class.panel-active]="mobileActivePanel() === 'summary'">
+      <!-- No workspace passed when null — summary still renders from service signal -->
+      <app-builder-summary [workspace]="workspace()" [previewItineraryInput]="itinerary()" [isPreviewInput]="true">
+      </app-builder-summary>
+    </section>
+
+    <!-- Resizable divider (desktop only) -->
+    <div class="preview-resize-handle d-none d-lg-block" (mousedown)="onResizeStart($event)"
+      [class.resizing]="isResizing()"></div>
+
+    <!-- Map panel (right on desktop) -->
+    <section class="preview-panel preview-panel--map" [class.panel-active]="mobileActivePanel() === 'map'">
+      <app-builder-map [itinerary]="itinerary()" [isPreview]="true" [location]="previewLocation()"
+        [savedPois]="previewSavedPois()" [routePois]="previewSavedPois()" [availablePois]="[]">
+      </app-builder-map>
+    </section>
+
+  </main>
+
+  <!-- Mobile bottom nav -->
+  <nav class="preview-mobile-bar d-lg-none">
+    <button class="mobile-tab-btn" [class.active]="mobileActivePanel() === 'summary'"
+      (click)="setMobilePanel('summary')">
+      <i class="bi bi-list-ul"></i>
+      <span>Riepilogo</span>
+    </button>
+    <button class="mobile-tab-btn" [class.active]="mobileActivePanel() === 'map'" (click)="setMobilePanel('map')">
+      <i class="bi bi-map"></i>
+      <span>Mappa</span>
+    </button>
+  </nav>
+
+  } @else {
+  <div class="preview-empty">
+    <i class="bi bi-inbox"></i>
+    <p>Itinerario non trovato</p>
+    <button class="hdr-btn hdr-btn--primary" (click)="goBack()">Torna indietro</button>
+  </div>
+  }
+
+</div>

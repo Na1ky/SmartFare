@@ -1,99 +1,56 @@
 <div class="chat-container">
-  <div class="chat-glow chat-glow--top" aria-hidden="true"></div>
-  <div class="chat-glow chat-glow--bottom" aria-hidden="true"></div>
+  <header class="chat-header">
+    <div class="mode-toggle">
+      <button [class.active]="chatService.mode() === 'planner'" (click)="toggleMode('planner')">Planner</button>
+      <button [class.active]="chatService.mode() === 'assistant'" (click)="toggleMode('assistant')">Assistant</button>
+    </div>
+  </header>
 
-
-
-  <div class="chat-body">
-    @if (!hasContext) {
+  <div class="chat-body" #scrollContainer>
+    @if (!hasContext && !chatService.activeSession()) {
       <div class="placeholder-wrap">
         <div class="placeholder-icon">
-          <i class="bi bi-magic"></i>
+          <i class="bi bi-stars"></i>
         </div>
-
         <div class="placeholder-copy">
-          <span class="placeholder-kicker">Assistant space</span>
-          <p>Seleziona una destinazione per iniziare a chattare con l'assistente del viaggio.</p>
+          <span class="placeholder-kicker">Voyager AI</span>
+          <p>Seleziona una destinazione per iniziare a costruire il tuo viaggio con l'IA.</p>
           <small>L'IA userà il workspace del builder per rispondere e suggerire tappe reali.</small>
         </div>
       </div>
     } @else {
       <div class="message-stream">
-        @for (message of messages(); track message.id) {
-          <article class="message-row" [class.message-row--assistant]="message.role === 'assistant'" [class.message-row--user]="message.role === 'user'">
+        @for (msg of chatService.messages(); track $index) {
+          <article class="message-row" [class.message-row--assistant]="msg.role === 'assistant'" [class.message-row--user]="msg.role === 'user'">
             <div class="message-bubble">
               <div class="message-bubble__meta">
-                <span>{{ message.role === 'assistant' ? 'SmartFare AI' : 'Tu' }}</span>
-                @if (message.role === 'assistant' && message.needsConfirmation) {
-                  <small>Richiede conferma</small>
-                }
+                <span>{{ msg.role === 'assistant' ? 'Voyager AI' : 'Tu' }}</span>
               </div>
-              <p>{{ message.content }}</p>
-
-              @if (message.suggestions?.length) {
-                <div class="message-suggestions">
-                  @for (suggestion of message.suggestions; track suggestion.title) {
-                    <button type="button" class="suggestion-chip" (click)="sendQuickPrompt(suggestion.title)">
-                      <i class="bi bi-lightning-charge"></i>
-                      <span>{{ suggestion.title }}</span>
-                    </button>
-                  }
-                </div>
-              }
-
-              @if (message.followUpQuestions?.length) {
-                <div class="follow-up-list" role="list">
-                  @for (question of message.followUpQuestions; track question) {
-                    <div role="listitem">{{ question }}</div>
-                  }
-                </div>
-              }
-
-              @if (message.actions?.length) {
-                <div class="actions-list">
-                  @for (action of message.actions; track $index) {
-                    <span class="action-pill">{{ action.type }}</span>
-                  }
+              <div class="message-text" [innerHTML]="formatMessage(msg.content)"></div>
+              
+              @if (msg.isStreaming && msg.content === '') {
+                <div class="typing-indicator">
+                  <span></span><span></span><span></span>
                 </div>
               }
             </div>
           </article>
         }
-
-        @if (loading()) {
-          <div class="message-row message-row--assistant">
-            <div class="message-bubble message-bubble--loading">
-              <span>Sto pensando alla tua richiesta...</span>
-            </div>
-          </div>
-        }
       </div>
     }
+  </div>
 
-    <div class="composer-shell" [class.composer-shell--disabled]="!hasContext">
-      <div class="quick-prompts-wrapper">
-        <div class="quick-prompts">
-          <button type="button" (click)="sendQuickPrompt('Cosa dovrei fare in questo posto?')">Cosa fare qui</button>
-          <button type="button" (click)="sendQuickPrompt('Suggeriscimi attività per la sera')">Serata</button>
-          <button type="button" (click)="sendQuickPrompt('Ottimizza il mio itinerario per essere più rilassante')">Più relax</button>
-        </div>
-      </div>
-
-      <div class="composer-shell__input">
-        <textarea
-          [(ngModel)]="draftMessage"
-          rows="1"
-          [disabled]="!hasContext || loading()"
-          placeholder="Scrivi una richiesta per l'assistente..."
-          (keydown.enter)="handleEnter($event)"></textarea>
-        <button class="send-button" type="button" aria-label="Invia prompt" [disabled]="!canSend" (click)="sendMessage()">
-          <i class="bi bi-send-fill"></i>
-        </button>
-      </div>
-
-      @if (errorMessage()) {
-        <p class="composer-error">{{ errorMessage() }}</p>
-      }
+  <div class="composer-shell" [class.composer-shell--disabled]="!hasContext && !chatService.activeSession()">
+    <div class="composer-shell__input">
+      <textarea
+        [(ngModel)]="draftMessage"
+        rows="1"
+        [disabled]="(!hasContext && !chatService.activeSession()) || chatService.isStreaming()"
+        placeholder="Chiedi a Voyager AI..."
+        (keydown.enter)="handleEnter($event)"></textarea>
+      <button class="send-button" type="button" aria-label="Invia" [disabled]="!draftMessage.trim() || chatService.isStreaming()" (click)="sendMessage()">
+        <i class="bi" [ngClass]="chatService.isStreaming() ? 'bi-hourglass-split' : 'bi-send-fill'"></i>
+      </button>
     </div>
   </div>
 </div>

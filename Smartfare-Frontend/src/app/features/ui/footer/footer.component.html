@@ -1,47 +1,70 @@
 <footer class="footer">
   <div class="container">
-    <div class="footer-grid">
+    <div class="footer-newsletter">
+      <div class="newsletter-content">
+        <h3 class="newsletter-title">Rimani Aggiornato</h3>
+        <p class="newsletter-desc">Ricevi le migliori offerte e consigli di viaggio direttamente nella tua casella di posta.</p>
+      </div>
+      <div class="newsletter-form">
+        <div class="input-group">
+          <input type="email" class="form-control" placeholder="Il tuo indirizzo email" aria-label="Email per newsletter">
+          <button class="btn btn-primary" type="button">Iscriviti</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-main">
       <div class="footer-brand">
         <h2 class="logo-text">Smart<span class="text-accent">fare</span></h2>
         <p class="brand-tagline">Il tuo compagno definitivo per scoprire, pianificare e condividere i viaggi più belli del mondo.</p>
         <div class="social-links">
-          <a href="#" class="social-link"><i class="bi bi-globe"></i></a>
-          <a href="#" class="social-link"><i class="bi bi-share"></i></a>
-          <a href="#" class="social-link"><i class="bi bi-chat-text"></i></a>
+          <a href="#" class="social-link" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="social-link" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="social-link" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+          <a href="#" class="social-link" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
         </div>
       </div>
 
-      <div class="footer-links">
-        <h3>Destinazioni</h3>
-        <ul>
-          <li><a routerLink="/">Costiera Amalfitana</a></li>
-          <li><a routerLink="/">Isole Greche</a></li>
-          <li><a routerLink="/">Via Atlantica</a></li>
-          <li><a routerLink="/">Pacific Highway</a></li>
-        </ul>
-      </div>
+      <div class="footer-links-wrapper">
+        <div class="footer-links">
+          <h3>Esplora</h3>
+          <ul>
+            <li><a routerLink="/">Destinazioni</a></li>
+            <li><a routerLink="/">Itinerari</a></li>
+            <li><a routerLink="/">Offerte</a></li>
+            <li><a routerLink="/">Blog</a></li>
+          </ul>
+        </div>
 
-      <div class="footer-links">
-        <h3>Pianifica</h3>
-        <ul>
-          <li><a routerLink="/">Assistente IA</a></li>
-          <li><a routerLink="/">Mappe Rotte</a></li>
-          <li><a routerLink="/">Consigli Community</a></li>
-        </ul>
-      </div>
+        <div class="footer-links">
+          <h3>Pianifica</h3>
+          <ul>
+            <li><a routerLink="/voyager">Assistente IA</a></li>
+            <li><a routerLink="/manual/planner">Crea Viaggio</a></li>
+            <li><a routerLink="/">Mappe Rotte</a></li>
+            <li><a routerLink="/">Community</a></li>
+          </ul>
+        </div>
 
-      <div class="footer-links">
-        <h3>Supporto</h3>
-        <ul>
-          <li><a routerLink="/">Centro Aiuto</a></li>
-          <li><a routerLink="/">Contattaci</a></li>
-          <li><a routerLink="/">Privacy Policy</a></li>
-        </ul>
+        <div class="footer-links">
+          <h3>Supporto</h3>
+          <ul>
+            <li><a routerLink="/">Centro Aiuto</a></li>
+            <li><a routerLink="/">Contattaci</a></li>
+            <li><a routerLink="/">Privacy Policy</a></li>
+            <li><a routerLink="/">Termini di Servizio</a></li>
+          </ul>
+        </div>
       </div>
     </div>
     
     <div class="footer-bottom">
       <p>&copy; {{ currentYear }} SmartFare. Tutti i diritti riservati.</p>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Cookies</a>
+      </div>
     </div>
   </div>
 </footer>

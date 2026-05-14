@@ -13,10 +13,17 @@
     <!-- NAV LINKS DESKTOP -->
     <div class="nav-center nav-links d-none d-lg-flex gap-4">
       @for (item of navItems; track item.label) {
+      @if (item.route === '/voyager') {
+      <a class="nav-item d-flex align-items-center gap-2" href="" (click)="openAiPlanner($event)">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+      } @else {
       <a class="nav-item d-flex align-items-center gap-2" [routerLink]="item.route">
         <i [class]="item.icon"></i>
         <span>{{ item.label }}</span>
       </a>
+      }
       }
     </div>
 
@@ -35,7 +42,8 @@
             </a>
           </li>
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/favorites']">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+              [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}">
               <i class="bi bi-heart"></i>
               <span>Itinerari Preferiti</span>
             </a>
@@ -69,7 +77,8 @@
             </a>
           </li>
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/favorites']">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+              [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}">
               <i class="bi bi-heart"></i>
               <span>Itinerari Preferiti</span>
             </a>
@@ -113,10 +122,17 @@
     </div>
     <div class="mobile-nav-links d-flex flex-column gap-3">
       @for (item of navItems; track item.label) {
+      @if (item.route === '/voyager') {
+      <a class="nav-item d-flex align-items-center gap-2" href="" (click)="openAiPlanner($event)">
+        <i [class]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+      } @else {
       <a class="nav-item d-flex align-items-center gap-2" [routerLink]="item.route" (click)="closeMobileMenu()">
         <i [class]="item.icon"></i>
         <span>{{ item.label }}</span>
       </a>
+      }
       }
       @if (isAuthenticated) {
       <div class="d-flex flex-column gap-2 align-items-center">
@@ -131,7 +147,7 @@
           <span>I miei Itinerari</span>
         </a>
         <a class="btn btn-outline-secondary w-100 mt-2 d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="['/favorites']" (click)="closeMobileMenu()">
+          [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}" (click)="closeMobileMenu()">
           <i class="bi bi-heart"></i>
           <span>Itinerari Preferiti</span>
         </a>

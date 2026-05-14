@@ -19,13 +19,36 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  /* translateZ(0) promotes to its own GPU compositor layer */
   transform: scale(1.02) translateZ(0);
   will-change: transform;
-  /* Contain layout & paint so changes here don't affect the rest of the page */
   contain: layout paint;
   background-size: cover;
   background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease-out;
+}
+
+.background-layer.is-ready {
+  opacity: 1;
+}
+
+.content-layer {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  row-gap: clamp(1.75rem, 4vh, 3.5rem);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 1.2s ease-out, transform 1.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.content-layer.is-ready {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .background-video {
@@ -135,6 +158,8 @@
 
 .booking-form-inner {
   max-width: 1140px;
+  width: 100%;
+  padding: 0 1rem;
 }
 
 .floating {

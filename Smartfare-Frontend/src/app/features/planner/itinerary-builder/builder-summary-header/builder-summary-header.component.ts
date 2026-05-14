@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, computed, inject, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -17,6 +17,7 @@ import { environment } from '../../../../../environments/environment';
 })
 export class BuilderSummaryHeaderComponent {
   workspace = input<ItineraryWorkspace | null>(null);
+  @Input() readOnly = false;
 
   private itineraryService = inject(ItineraryService);
   private alertService = inject(AlertService);
@@ -31,6 +32,8 @@ export class BuilderSummaryHeaderComponent {
   editDescriptionValue = signal<string>('');
 
   isUploadingImage = signal<boolean>(false);
+  isReadOnly = computed(() => this.readOnly);
+
 
   isPublic = computed(() => {
     const itin = this.itinerary();

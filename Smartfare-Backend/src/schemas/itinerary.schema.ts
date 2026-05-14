@@ -18,6 +18,7 @@ const itineraryItemSchema = z.object({
 
 export const itinerarySchema = z.object({
     id: z.coerce.number().optional(),
+    copyFromId: z.coerce.number().int().positive().optional(),
     name: z.string().min(3, "Il nome deve avere almeno 3 caratteri").optional(),
     description: z.string().nullish(),
     startDate: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).nullish(),
@@ -25,5 +26,6 @@ export const itinerarySchema = z.object({
     isPublished: z.boolean().optional(),
     visibilityCode: z.string().optional(),
     locationId: z.coerce.number().int().positive().optional().nullable(),
+    chatSessionId: z.coerce.number().int().positive().optional().nullable(),
     items: z.array(itineraryItemSchema).optional(),
 });

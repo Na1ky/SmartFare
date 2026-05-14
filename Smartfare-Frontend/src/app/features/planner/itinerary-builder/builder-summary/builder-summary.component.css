@@ -411,23 +411,21 @@
 }
 
 .wl-poi-row.in-group .wl-poi-card {
-  border-left: none;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15), inset 2px 0 0 rgba(59, 130, 246, 0.8);
-  transform: translateX(12px);
-  width: calc(100% - 12px);
-  background: rgba(30, 41, 59, 0.4);
+  border-left: 4px solid #3b82f6;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2), inset 0 0 15px rgba(59, 130, 246, 0.05);
+  transform: translateX(8px);
+  width: calc(100% - 8px);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border-top-left-radius: 4px; /* Make it look more "connected" if it's in a group */
+  border-bottom-left-radius: 4px;
+}
+
+.wl-poi-row.in-group:not(.group-last) {
+  margin-bottom: 4px; /* Reduce gap between cards in the same group */
 }
 
 .wl-poi-row.in-group::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 64px; /* Align precisely with the cards left edge */
-  width: 2px;
-  background: linear-gradient(to bottom, #3b82f6, rgba(59, 130, 246, 0.2));
-  z-index: 1;
-  border-radius: 2px;
+  display: none; /* Removed vertical line to avoid overlap with timeline pins */
 }
 
 .wl-poi-row.in-group.group-last::before {
@@ -780,3 +778,158 @@
   flex-shrink: 0;
   filter: drop-shadow(0 0 4px rgba(52, 168, 83, 0.5));
 }
+
+/* ── Mobile Responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .wl-section {
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+
+  .wl-section-header h2 {
+    font-size: 22px;
+    gap: 12px;
+  }
+
+  .wl-day-header-actions {
+    gap: 12px;
+  }
+
+  .wl-day-date {
+    font-size: 11px;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  .wl-section-header h2 {
+    font-size: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .wl-poi-row {
+    padding: 0 8px;
+    gap: 8px;
+  }
+
+  .wl-poi-row.in-group::before {
+    display: none;
+  }
+
+
+  .wl-empty-day {
+    margin-left: 40px;
+    margin-right: 8px;
+    padding: 24px 16px;
+    font-size: 13px;
+  }
+
+  .wl-group-header-container {
+    margin-left: 40px;
+    padding: 0 8px;
+  }
+
+  .wl-group-header {
+    padding: 10px 14px;
+  }
+
+  .wl-group-title h4 {
+    font-size: 15px;
+  }
+
+  .wl-selection-action-bar {
+    width: 90%;
+    padding: 10px 16px;
+    gap: 12px;
+    bottom: 80px; /* Alza per evitare la bottom bar mobile */
+  }
+
+  .wl-btn-group, .wl-btn-delete-selection {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .wl-day-route-bar {
+    flex-direction: column;
+    margin-top: -20px;
+    padding: 0 16px;
+    gap: 10px;
+  }
+
+  .wl-day-route-info, .wl-gmaps-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .wl-add-day-container {
+    margin: 30px 0 80px;
+  }
+
+  .wl-add-day-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+/* ── Very Small Devices (Tiny Mobile) ──────────────────── */
+@media (max-width: 480px) {
+  .wl-day-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .wl-day-header-actions {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 4px;
+  }
+  
+  .wl-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .wl-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .wl-group-title {
+    width: 100%;
+  }
+
+  .wl-group-name-input {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .wl-group-time-actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .wl-group-btn-time {
+    padding: 6px 12px;
+    font-size: 11px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .wl-selection-action-bar {
+    width: calc(100% - 32px);
+    bottom: 90px;
+    padding: 8px;
+  }
+
+  .wl-btn-group span {
+    display: none;
+  }
+}
+

@@ -10,6 +10,7 @@ export interface Itinerary {
     endDate?: string | null;
     visibilityCode?: string;
     locationId?: number | null;
+    chatSessionId?: number | null;
     location?: Location | null;
     userId?: number;
     items?: ItineraryItem[];

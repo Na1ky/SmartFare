@@ -1,6 +1,6 @@
 import { createApp } from './src/app';
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 2345;
 const app = createApp();
 
 function startServer() {

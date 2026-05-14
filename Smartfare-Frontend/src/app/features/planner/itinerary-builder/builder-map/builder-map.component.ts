@@ -17,6 +17,7 @@ import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 import Location from '../../../../core/models/location.model';
+import { Itinerary } from '../../../../core/models/itinerary.model';
 import { BuilderPoi } from '../../../../core/models/builder.types';
 import { UIStateService } from '../../../../core/services/ui-state.service';
 import { environment } from '../../../../../environments/environment';
@@ -31,6 +32,8 @@ import { environment } from '../../../../../environments/environment';
 export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy {
   @ViewChild('mapRoot', { static: true }) mapRoot!: ElementRef<HTMLDivElement>;
 
+  @Input() itinerary: Itinerary | null = null;
+  @Input() isPreview = false;
   @Input() location: Location | null = null;
   @Input() savedPois: BuilderPoi[] = [];
   @Input() routePois: BuilderPoi[] = [];
@@ -132,9 +135,14 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.routeLayer = L.layerGroup();
     this.endpointLayer = L.layerGroup();
 
-    // Use a check to ensure markerClusterGroup exists (important for production build)
-    const clusterFn = (L as any).markerClusterGroup || (L as any).MarkerClusterGroup;
-    
+    // Robust detection for MarkerClusterGroup (Vite/ESM production fix)
+    let clusterFn: any = (L as any).markerClusterGroup || (L as any).MarkerClusterGroup;
+
+    // Fallback: Check if it's attached to the global L or needs manual reference
+    if (!clusterFn && typeof window !== 'undefined' && (window as any).L) {
+      clusterFn = (window as any).L.markerClusterGroup || (window as any).L.MarkerClusterGroup;
+    }
+
     if (clusterFn) {
       this.availableLayer = clusterFn({
         chunkedLoading: true,
@@ -157,6 +165,8 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private bindPopupActions(popup: L.Popup) {
+    if (this.isPreview) return;
+
     // Wait for the next macro-task to ensure Leaflet has finished rendering the popup content
     setTimeout(() => {
       const container = popup.getElement();
@@ -237,7 +247,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     this.endpointLayer.clearLayers();
 
     if (this.location && recenterForLocation) {
-      this.map.setView([this.location.latitude, this.location.longitude], 12);
+      this.map.setView([this.location.latitude, this.location.longitude], 13);
     }
 
     const availableMarkers: L.Marker[] = [];
@@ -318,7 +328,18 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
       setTimeout(() => previewMarker.openPopup(), 50);
     }
 
-    void this.refreshRoute();
+    // If no route but we have saved POIs, zoom to them
+    if (this.savedPois.length > 0 && this.ui.visibleDayRoute() === 'all') {
+      const bounds = L.latLngBounds(this.savedPois.map(p => [p.latitude, p.longitude]));
+      this.map.fitBounds(bounds.pad(0.2));
+    } else if (this.savedPois.length === 0 && this.location && recenterForLocation) {
+      this.map.setView([this.location.latitude, this.location.longitude], 13);
+    }
+
+    // Defer route calculation to next tick
+    setTimeout(() => {
+      void this.refreshRoute();
+    }, 0);
   }
 
   private async refreshRoute() {
@@ -629,7 +650,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     // Fallback image for hotels if imageUrl is missing
     let finalImageUrl = poi.imageUrl;
-    
+
     // Check if imageUrl is relative
     if (finalImageUrl && !finalImageUrl.startsWith('http') && !finalImageUrl.startsWith('data:')) {
       finalImageUrl = `${environment.apiUrl}${finalImageUrl.startsWith('/') ? '' : '/'}${finalImageUrl}`;
@@ -680,7 +701,12 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
                </a>
              </div>
 
-             ${isSaved ? `
+             ${this.isPreview ? `
+               <div class="popup-note" style="margin-top: 6px;">
+                 <i class="bi bi-lock-fill"></i>
+                 <span>Anteprima sola lettura</span>
+               </div>
+             ` : (isSaved ? `
                <button class="popup-action-btn popup-action-btn--remove" data-poi-key="${poi.key}">
                  <i class="bi bi-dash-circle"></i> Rimuovi dal percorso
                </button>
@@ -688,7 +714,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
                <button class="popup-action-btn popup-action-btn--add" data-poi-key="${poi.key}">
                  <i class="bi bi-plus-circle"></i> Aggiungi al percorso
                </button>
-             `}
+             `)}
           </div>
           ${poi.groupName ? `
             <div class="popup-group" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">

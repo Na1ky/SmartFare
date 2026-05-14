@@ -18,6 +18,11 @@ export class UIStateService {
   readonly selectedDay = signal<number>(1);
   /** Modalità ordine percorso: fedele all'itinerario o ottimizzato geograficamente */
   readonly routeOrderMode = signal<'original' | 'optimized'>('original');
+  readonly mobileActiveTab = signal<'summary' | 'map' | 'ai' | 'tools'>('tools');
+
+  setMobileActiveTab(tab: 'summary' | 'map' | 'ai' | 'tools') {
+    this.mobileActiveTab.set(tab);
+  }
 
   setRouteOrderMode(mode: 'original' | 'optimized') {
     this.routeOrderMode.set(mode);

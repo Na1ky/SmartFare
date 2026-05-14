@@ -34,7 +34,7 @@ export class NavbarComponent {
     { icon: 'bi bi-house-door', label: 'Home', route: '/home' },
     { icon: 'bi bi-compass', label: 'Esplora', route: '/discover' },
     { icon: 'bi bi-journal-bookmark', label: 'Crea', route: '/itineraries/new' },
-    { icon: 'bi bi-magic', label: 'AI Planner', route: '/' }
+    { icon: 'bi bi-magic', label: 'AI Planner', route: '/voyager' }
   ];
 
   mobileMenuOpen = false;
@@ -79,6 +79,17 @@ export class NavbarComponent {
     this.itineraryService.clearDraft();
     this.alertService.show('Logout effettuato con successo!');
     this.router.navigate(['/']);
+  }
+
+  openAiPlanner(event?: Event) {
+    event?.preventDefault();
+    this.closeMobileMenu();
+    this.router.navigate(['/voyager'], {
+      queryParams: {
+        sessionId: null,
+        prompt: null
+      }
+    });
   }
 
   private syncBodyScroll(): void {

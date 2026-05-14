@@ -32,7 +32,6 @@ export const aiItineraryChatSchema = z.object({
   })).optional(),
   preferences: z.object({
     style: z.string().max(120).optional(),
-    budget: z.string().max(120).optional(),
     pace: z.string().max(120).optional(),
     interests: z.array(z.string().max(80)).max(12).optional(),
     language: z.string().max(12).optional(),

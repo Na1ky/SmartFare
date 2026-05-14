@@ -11,7 +11,8 @@ export const registerSchema = z.object({
     name: z.string().min(1, "Il nome è obbligatorio"),
     surname: z.string().min(1, "Il cognome è obbligatorio"),
     avatarUrl: z.string().url().optional().or(z.literal('')),
-    authProvider: z.string().optional()
+    authProvider: z.enum(["local", "google", "github"]).optional(),
+    oauthRegistrationToken: z.string().optional()
 });
 
 export const forgotPasswordSchema = z.object({
@@ -26,4 +27,3 @@ export const resetPasswordSchema = z.object({
 export const verifyEmailSchema = z.object({
     token: z.string().min(1, "Token mancante")
 });
-

@@ -2,8 +2,19 @@ import { Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthResponse } from '../models/response.model';
 import { HttpClient } from '@angular/common/http';
-import { SHA256 } from 'crypto-js';
 import { environment } from '../../../environments/environment';
+
+export type SocialProvider = 'google' | 'github';
+export type SocialAuthMode = 'login' | 'register';
+
+export interface PendingSocialRegistration {
+  email: string;
+  name?: string;
+  surname?: string;
+  avatarUrl?: string;
+  provider: SocialProvider;
+  registrationToken: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +22,7 @@ import { environment } from '../../../environments/environment';
 
 export class AuthService {
   private readonly TOKEN_KEY = 'authToken';
+  private readonly PENDING_SOCIAL_REGISTRATION_KEY = 'pendingSocialRegistration';
 
   private readonly tokenSignal = signal<string | null>(null);
 
@@ -32,6 +44,9 @@ export class AuthService {
   }
 
   Logout() {
+    this.http.post(`${this.AUTH_URL}/logout`, {}).subscribe({
+      error: () => undefined
+    });
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem('sf_itinerary_draft');
     this.tokenSignal.set(null);
@@ -46,6 +61,65 @@ export class AuthService {
     const token = this.tokenSignal();
     if (!token || this.isTokenExpired(token)) return null;
     return token;
+  }
+
+  sanitizeReturnUrl(returnUrl: string | null | undefined): string {
+    if (!returnUrl || !returnUrl.startsWith('/') || returnUrl.startsWith('//')) {
+      return '/';
+    }
+
+    return returnUrl;
+  }
+
+  startGithubAuth(mode: SocialAuthMode, returnUrl = '/'): void {
+    const safeReturnUrl = this.sanitizeReturnUrl(returnUrl);
+    const params = new URLSearchParams({
+      mode,
+      returnUrl: safeReturnUrl,
+    });
+
+    window.location.href = `${this.AUTH_URL}/github?${params.toString()}`;
+  }
+
+  savePendingSocialRegistration(data: PendingSocialRegistration): void {
+    sessionStorage.setItem(this.PENDING_SOCIAL_REGISTRATION_KEY, JSON.stringify(data));
+  }
+
+  getPendingSocialRegistration(): PendingSocialRegistration | null {
+    const rawValue = sessionStorage.getItem(this.PENDING_SOCIAL_REGISTRATION_KEY);
+
+    if (!rawValue) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(rawValue) as Partial<PendingSocialRegistration>;
+
+      if (
+        typeof parsed.email !== 'string' ||
+        typeof parsed.registrationToken !== 'string' ||
+        (parsed.provider !== 'google' && parsed.provider !== 'github')
+      ) {
+        this.clearPendingSocialRegistration();
+        return null;
+      }
+
+      return {
+        email: parsed.email,
+        name: parsed.name,
+        surname: parsed.surname,
+        avatarUrl: parsed.avatarUrl,
+        provider: parsed.provider,
+        registrationToken: parsed.registrationToken,
+      };
+    } catch (error) {
+      this.clearPendingSocialRegistration();
+      return null;
+    }
+  }
+
+  clearPendingSocialRegistration(): void {
+    sessionStorage.removeItem(this.PENDING_SOCIAL_REGISTRATION_KEY);
   }
 
   getUserData(): any {
@@ -87,8 +161,7 @@ export class AuthService {
   }
 
   Login(email: string, password: string): Observable<AuthResponse> {
-    const hashedPassword = SHA256(password).toString();
-    return this.http.post<any>(this.AUTH_URL + '/login', { email, password: hashedPassword });
+    return this.http.post<any>(this.AUTH_URL + '/login', { email, password });
   }
 
   LoginWithGoogle(idToken: string): Observable<AuthResponse> {
@@ -96,11 +169,7 @@ export class AuthService {
   }
 
   Register(data: any): Observable<any> {
-    const dataWithHashedPassword = {
-      ...data,
-      password: SHA256(data.password).toString(),
-    };
-    return this.http.post<any>(this.AUTH_URL + '/register', dataWithHashedPassword);
+    return this.http.post<any>(this.AUTH_URL + '/register', data);
   }
 
   ForgotPassword(email: string): Observable<any> {
@@ -108,8 +177,7 @@ export class AuthService {
   }
 
   ResetPassword(token: string, password: string): Observable<any> {
-    const hashedPassword = SHA256(password).toString();
-    return this.http.post<any>(`${this.AUTH_URL}/reset-password`, { token, newPassword: hashedPassword });
+    return this.http.post<any>(`${this.AUTH_URL}/reset-password`, { token, newPassword: password });
   }
 
   VerifyEmail(token: string): Observable<any> {
