@@ -49,12 +49,9 @@ export class ItineraryService {
         if (saved) {
           this.autosaveStatusSignal.set('saved');
 
-          // CRITICAL: If the local itinerary didn't have an ID, we MUST update it
-          // with the ID assigned by the backend to prevent duplicate creations on next save.
-          const current = this.itinerarySignal();
-          if (current && !current.id && saved.id) {
-            this.itinerarySignal.set({ ...current, id: saved.id });
-          }
+          // Update signal with complete response from backend
+          // This ensures imageUrl (auto-fetched from Location) is displayed immediately
+          this.itinerarySignal.set(saved);
           return;
         }
 

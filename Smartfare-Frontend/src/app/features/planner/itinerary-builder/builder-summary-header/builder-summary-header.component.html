@@ -1,6 +1,6 @@
 <section class="wl-header" [class.is-readonly]="isReadOnly()">
   <div class="wl-header-bg">
-    <img [src]="itinerary()?.imageUrl || '/assets/home-section.avif'" alt="Cover" />
+    <img [src]="itinerary()?.imageUrl" alt="Cover" />
     @if (!isReadOnly()) {
     <button class="wl-edit-bg-btn" (click)="coverInput.click()">
       @if (isUploadingImage()) {

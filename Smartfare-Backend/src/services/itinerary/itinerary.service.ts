@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import prisma from "../../config/prisma";
+import { ImageService } from "../image/image.service";
 
 type DraftItemPayload = {
     itemTypeCode: string;
@@ -41,6 +42,11 @@ type NormalizedDraftIdentity = {
 const DEFAULT_ITINERARY_IMAGE_URL = "https://images.trvl-media.com/place/6046257/dfc1097b-fb0b-4d2f-96f5-15d86e72f134.jpg";
 
 export class ItineraryService {
+    private imageService: ImageService;
+
+    constructor() {
+        this.imageService = new ImageService();
+    }
 
     private getItineraryInclude() {
         return {
@@ -188,7 +194,7 @@ export class ItineraryService {
         return { ...itinerary, location };
     }
 
-    private normalizeDraftIdentity(data: any): NormalizedDraftIdentity {
+    private normalizeDraftIdentity(data: any, oldImageUrl?: string): NormalizedDraftIdentity {
         return {
             name: data?.name || "Il mio Viaggio",
             description: data?.description ?? null,
@@ -198,8 +204,70 @@ export class ItineraryService {
             visibilityCode: data?.visibilityCode || "PRIVATE",
             locationId: data?.locationId ? Number(data.locationId) : null,
             chatSessionId: data?.chatSessionId ? Number(data.chatSessionId) : null,
-            imageUrl: data?.imageUrl || DEFAULT_ITINERARY_IMAGE_URL
+            imageUrl: data?.imageUrl || oldImageUrl || DEFAULT_ITINERARY_IMAGE_URL
         };
+    }
+
+    /**
+     * Enriches the draft payload with an image from Location.image (cached)
+     * If Location.image is null, fetches from Unsplash and caches it
+     * 
+     * This ensures:
+     * 1. First itinerary for a location → API call + cache
+     * 2. Subsequent itineraries → uses cached image (no API call)
+     */
+    private async enrichDraftPayloadWithImage(
+        draftPayload: NormalizedDraftIdentity,
+        locationId: number | null
+    ): Promise<NormalizedDraftIdentity> {
+        // Only fetch image if:
+        // 1. locationId exists
+        // 2. imageUrl is the DEFAULT (not customized by user)
+        if (
+            locationId &&
+            draftPayload.imageUrl === DEFAULT_ITINERARY_IMAGE_URL
+        ) {
+            try {
+                // Get location with cached image
+                const location = await prisma.location.findUnique({
+                    where: { id: locationId },
+                    select: { id: true, name: true, image: true }
+                });
+
+                if (location) {
+                    // If image is already cached, use it
+                    if (location.image) {
+                        return {
+                            ...draftPayload,
+                            imageUrl: location.image
+                        };
+                    }
+
+                    // If not cached, fetch from Unsplash and save to Location
+                    const fetchedImageUrl = await this.imageService.getLocationImage(location.name);
+                    if (fetchedImageUrl) {
+                        // Cache it in Location.image for future use
+                        await prisma.location.update({
+                            where: { id: location.id },
+                            data: { image: fetchedImageUrl }
+                        });
+
+                        return {
+                            ...draftPayload,
+                            imageUrl: fetchedImageUrl
+                        };
+                    }
+                }
+            } catch (error) {
+                console.warn(
+                    `Failed to enrich itinerary with automatic image for location ${locationId}:`,
+                    error instanceof Error ? error.message : 'Unknown error'
+                );
+                // Fall through to return original payload with default image
+            }
+        }
+
+        return draftPayload;
     }
 
     private normalizeItemForComparison(item: DraftItemPayload) {
@@ -245,14 +313,32 @@ export class ItineraryService {
     async saveItinerary(userId: number, data: any) {
         try {
             const { id, copyFromId, locationId } = data;
-            const draftPayload = this.normalizeDraftIdentity(data);
+
+            // If updating, preserve the old imageUrl if not explicitly provided
+            let oldImageUrl: string | undefined;
+            if (id) {
+                const existing = await prisma.itinerary.findUnique({
+                    where: { id: Number(id) },
+                    select: { imageUrl: true }
+                });
+                oldImageUrl = existing?.imageUrl;
+            }
+
+            const draftPayload = this.normalizeDraftIdentity(data, oldImageUrl);
+
+            // Enrich payload with automatic image from Google Places if locationId exists
+            const enrichedDraftPayload = await this.enrichDraftPayloadWithImage(
+                draftPayload,
+                draftPayload.locationId
+            );
+
             const rawItems = this.buildItemData(data);
-            const { items, droppedItems } = await this.sanitizeItemReferences(draftPayload.locationId, rawItems);
+            const { items, droppedItems } = await this.sanitizeItemReferences(enrichedDraftPayload.locationId, rawItems);
 
             if (droppedItems.length > 0) {
                 console.warn('Itinerary items dropped because of invalid POI references', {
                     userId,
-                    locationId: draftPayload.locationId,
+                    locationId: enrichedDraftPayload.locationId,
                     droppedItems
                 });
             }
@@ -356,14 +442,14 @@ export class ItineraryService {
 
                 const updated = await prisma.$transaction(async (tx) => {
                     const updateData: any = {
-                        name: draftPayload.name,
-                        description: draftPayload.description,
-                        startDate: draftPayload.startDate,
-                        endDate: draftPayload.endDate,
-                        isPublished: draftPayload.isPublished,
-                        imageUrl: draftPayload.imageUrl,
+                        name: enrichedDraftPayload.name,
+                        description: enrichedDraftPayload.description,
+                        startDate: enrichedDraftPayload.startDate,
+                        endDate: enrichedDraftPayload.endDate,
+                        isPublished: enrichedDraftPayload.isPublished,
+                        imageUrl: enrichedDraftPayload.imageUrl,
                         visibility: {
-                            connect: { code: draftPayload.visibilityCode }
+                            connect: { code: enrichedDraftPayload.visibilityCode }
                         }
                     };
 
@@ -373,8 +459,8 @@ export class ItineraryService {
                         updateData.location = { disconnect: true };
                     }
 
-                    if (draftPayload.chatSessionId) {
-                        updateData.chatSession = { connect: { id: draftPayload.chatSessionId } };
+                    if (enrichedDraftPayload.chatSessionId) {
+                        updateData.chatSession = { connect: { id: enrichedDraftPayload.chatSessionId } };
                     }
 
                     await tx.itinerary.update({
@@ -406,20 +492,20 @@ export class ItineraryService {
 
             // If no ID is provided, reuse the most recent matching draft instead of creating duplicates.
             const createdWithItems = await prisma.$transaction(async (tx) => {
-                await tx.$executeRaw`SELECT pg_advisory_xact_lock(${this.buildDraftLockKey(userId, draftPayload, items)})`;
+                await tx.$executeRaw`SELECT pg_advisory_xact_lock(${this.buildDraftLockKey(userId, enrichedDraftPayload, items)})`;
 
                 const matchingDraft = await tx.itinerary.findFirst({
                     where: {
                         userId,
-                        name: draftPayload.name,
-                        description: draftPayload.description,
-                        startDate: draftPayload.startDate,
-                        endDate: draftPayload.endDate,
-                        isPublished: draftPayload.isPublished,
-                        visibilityCode: draftPayload.visibilityCode,
-                        locationId: draftPayload.locationId,
-                        chatSessionId: draftPayload.chatSessionId,
-                        imageUrl: draftPayload.imageUrl
+                        name: enrichedDraftPayload.name,
+                        description: enrichedDraftPayload.description,
+                        startDate: enrichedDraftPayload.startDate,
+                        endDate: enrichedDraftPayload.endDate,
+                        isPublished: enrichedDraftPayload.isPublished,
+                        visibilityCode: enrichedDraftPayload.visibilityCode,
+                        locationId: enrichedDraftPayload.locationId,
+                        chatSessionId: enrichedDraftPayload.chatSessionId,
+                        imageUrl: enrichedDraftPayload.imageUrl
                     },
                     orderBy: { updatedAt: 'desc' },
                     include: this.getItineraryInclude()
@@ -427,25 +513,25 @@ export class ItineraryService {
 
                 if (matchingDraft) {
                     const updateData: any = {
-                        name: draftPayload.name,
-                        description: draftPayload.description,
-                        startDate: draftPayload.startDate,
-                        endDate: draftPayload.endDate,
-                        isPublished: draftPayload.isPublished,
-                        imageUrl: draftPayload.imageUrl,
+                        name: enrichedDraftPayload.name,
+                        description: enrichedDraftPayload.description,
+                        startDate: enrichedDraftPayload.startDate,
+                        endDate: enrichedDraftPayload.endDate,
+                        isPublished: enrichedDraftPayload.isPublished,
+                        imageUrl: enrichedDraftPayload.imageUrl,
                         visibility: {
-                            connect: { code: draftPayload.visibilityCode }
+                            connect: { code: enrichedDraftPayload.visibilityCode }
                         }
                     };
 
-                    if (draftPayload.locationId) {
-                        updateData.location = { connect: { id: draftPayload.locationId } };
+                    if (enrichedDraftPayload.locationId) {
+                        updateData.location = { connect: { id: enrichedDraftPayload.locationId } };
                     } else {
                         updateData.location = { disconnect: true };
                     }
 
-                    if (draftPayload.chatSessionId) {
-                        updateData.chatSession = { connect: { id: draftPayload.chatSessionId } };
+                    if (enrichedDraftPayload.chatSessionId) {
+                        updateData.chatSession = { connect: { id: enrichedDraftPayload.chatSessionId } };
                     }
 
                     await tx.itinerary.update({
@@ -473,12 +559,12 @@ export class ItineraryService {
                 }
 
                 const createData: any = {
-                    ...draftPayload,
+                    ...enrichedDraftPayload,
                     user: {
                         connect: { id: userId }
                     },
                     visibility: {
-                        connect: { code: draftPayload.visibilityCode }
+                        connect: { code: enrichedDraftPayload.visibilityCode }
                     }
                 };
 
@@ -487,15 +573,15 @@ export class ItineraryService {
                 delete createData.locationId;
                 delete createData.chatSessionId;
 
-                if (draftPayload.locationId) {
+                if (enrichedDraftPayload.locationId) {
                     createData.location = {
-                        connect: { id: draftPayload.locationId }
+                        connect: { id: enrichedDraftPayload.locationId }
                     };
                 }
 
-                if (draftPayload.chatSessionId) {
+                if (enrichedDraftPayload.chatSessionId) {
                     createData.chatSession = {
-                        connect: { id: draftPayload.chatSessionId }
+                        connect: { id: enrichedDraftPayload.chatSessionId }
                     };
                 }
 
