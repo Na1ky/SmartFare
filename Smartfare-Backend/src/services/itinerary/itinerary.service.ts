@@ -706,7 +706,6 @@ export class ItineraryService {
                     ...(locationId ? { locationId } : {}),
                     ...(excludeUserId ? { userId: { not: excludeUserId } } : {})
                 },
-                take: 12,
                 orderBy: { updatedAt: 'desc' },
                 include: {
                     location: true,
