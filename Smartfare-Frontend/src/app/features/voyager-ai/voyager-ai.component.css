@@ -51,7 +51,7 @@
   flex: 1;
   display: flex;
   position: relative;
-  z-index: 3000; /* Higher than navbar to allow sidebar overlay */
+  z-index: 10; /* Lowered to allow sidebar overlay on mobile */
   color: #e2e8f0;
   overflow: hidden;
 }
@@ -75,10 +75,29 @@
 }
 
 .sidebar-header {
-  padding: 24px 20px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+}
+
+.sidebar-brand {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.brand-logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4));
+  transition: all 0.3s ease;
+}
+
+.brand-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 15px rgba(99, 102, 241, 0.6));
 }
 
 .sidebar-brand .sidebar-kicker {
@@ -111,13 +130,13 @@
 }
 
 .mode-launcher {
-  height: 40px;
+  height: 36px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 8px;
   color: #94a3b8;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -205,10 +224,10 @@
 }
 
 .search-box {
-  margin: 0 20px 20px;
+  margin: 0 14px 14px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  padding: 10px 16px;
+  border-radius: 10px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -481,7 +500,7 @@
 }
 
 .chat-header {
-  padding: 16px 32px;
+  padding: 12px 24px;
   background: rgba(15, 17, 26, 0.4);
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
@@ -499,7 +518,7 @@
 }
 
 .header-kicker {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: #6366f1;
@@ -513,7 +532,7 @@
 }
 
 .chat-title-input {
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 700;
   color: white;
   margin: 0;
@@ -549,10 +568,10 @@
 .home-branded-btn {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 6px 16px 6px 6px;
+  padding: 4px 12px 4px 4px;
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -583,17 +602,25 @@
 }
 
 .brand-name {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: white;
   line-height: 1;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .back-text {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: #94a3b8;
   line-height: 1;
+}
+
+.home-logo {
+  width: 20px;
+  height: auto;
+  border-radius: 50%;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .mode-toggle {
@@ -679,6 +706,7 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
+  flex: 1;
 }
 
 /* MESSAGE BUBBLES */
@@ -779,21 +807,37 @@
 
 /* SESSION LOADING STATE */
 .session-loading-card {
+  align-self: center;
+  margin: auto;
   position: relative;
   overflow: hidden;
-  border-radius: 22px;
-  padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(9, 13, 26, 0.82);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 18px 35px rgba(0, 0, 0, 0.28);
-  animation: fadeInSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 24px;
+  padding: 30px 40px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent 60%),
+              linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(9, 13, 26, 0.95));
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  animation: fadeInSlideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin: 16px 0;
-  max-width: 300px;
+  gap: 24px;
+  max-width: 450px;
+  width: 100%;
+}
+
+.session-loading-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 26px;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), transparent 40%, rgba(14, 165, 233, 0.5));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .session-loading-card__shine {
@@ -802,29 +846,54 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 50%,
     transparent 100%
   );
-  animation: shimmer 2s infinite;
+  animation: shimmer 2.5s infinite;
   z-index: 1;
   pointer-events: none;
 }
 
 .session-loading-card__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(99, 102, 241, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.8rem;
-  color: #60a5fa;
+  color: #818cf8;
   position: relative;
   z-index: 2;
-  animation: spinSoft 3s cubic-bezier(0.4, 0.15, 0.6, 0.85) infinite;
-  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.4));
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
   flex-shrink: 0;
+}
+
+.session-loading-card__icon i {
+  animation: spinSoft 2s linear infinite;
 }
 
 .session-loading-card__copy {
   position: relative;
   z-index: 2;
+  flex: 1;
+}
+
+.session-loading-card__copy strong {
+  display: block;
+  font-size: 1.15rem;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+
+.session-loading-card__copy p {
+  margin: 0;
   font-size: 0.95rem;
-  color: #cbd5e1;
+  color: #94a3b8;
+  line-height: 1.5;
 }
 
 /* CARDS IN CHAT */
@@ -1295,16 +1364,21 @@ textarea {
     left: 0;
     top: 0;
     bottom: 0;
-    width: 300px;
-    height: 100vh; /* Full viewport height */
+    width: 280px !important; /* Force width on mobile */
+    height: 100vh;
     transform: translateX(-100%);
     box-shadow: 20px 0 50px rgba(0, 0, 0, 0.7);
-    z-index: 2000; /* Extremely high to be above navbar */
-    background: #0a0a0f; /* Solid background for mobile overlay */
+    z-index: 9999 !important; /* Ensure it's the top-most element */
+    background: #0a0a0f;
+    visibility: visible !important;
   }
 
   .sidebar.mobile-open {
     transform: translateX(0);
+  }
+
+  .brand-logo {
+    width: 100px;
   }
 
   .sidebar-backdrop {
@@ -1313,7 +1387,7 @@ textarea {
     background: rgba(0, 0, 0, 0.7);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
-    z-index: 1900; /* Just below the sidebar */
+    z-index: 9998; /* Just below the sidebar */
     animation: fadeIn 0.3s ease;
   }
 

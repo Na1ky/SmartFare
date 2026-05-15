@@ -8,12 +8,9 @@
     <!-- SIDEBAR -->
     <aside class="sidebar" [class.collapsed]="!chatService.isSidebarOpen()" [class.mobile-open]="showMobileSidebar()">
       <div class="sidebar-header">
-        @if (chatService.isSidebarOpen()) {
-        <div class="sidebar-brand" style="display: flex; align-items: center; gap: 10px;">
-          <i class="bi bi-robot" style="font-size: 1.6rem; color: #6366f1;"></i>
-          <div>
-            <h2 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: white; line-height: 1.1;">SmartFare AI</h2>
-          </div>
+        @if (chatService.isSidebarOpen() || showMobileSidebar()) {
+        <div class="sidebar-brand">
+          <img src="assets/logo_smartfare_ai-removebg-preview.png" alt="SmartFare AI Logo" class="brand-logo">
         </div>
         }
 
@@ -21,13 +18,13 @@
           <div class="mode-launchers">
             <button class="mode-launcher mode-launcher--planner" (click)="createNewChat('planner')">
               <i class="bi bi-bookmarks"></i>
-              @if (chatService.isSidebarOpen()) {
+              @if (chatService.isSidebarOpen() || showMobileSidebar()) {
               <span>Planner</span>
               }
             </button>
             <button class="mode-launcher mode-launcher--assistant" (click)="createNewChat('assistant')">
               <i class="bi bi-chat-left-dots"></i>
-              @if (chatService.isSidebarOpen()) {
+              @if (chatService.isSidebarOpen() || showMobileSidebar()) {
               <span>Assistant</span>
               }
             </button>
@@ -35,7 +32,7 @@
         </div>
       </div>
 
-      @if (chatService.isSidebarOpen()) {
+      @if (chatService.isSidebarOpen() || showMobileSidebar()) {
       <div class="search-box">
         <i class="bi bi-search"></i>
         <input type="text" placeholder="Cerca chat" [value]="searchTerm()"
@@ -131,7 +128,7 @@
             <div class="avatar-fallback">{{ userInitial() }}</div>
             }
           </div>
-          @if (chatService.isSidebarOpen()) {
+          @if (chatService.isSidebarOpen() || showMobileSidebar()) {
           <div class="user-info-small">
             <strong>{{ userName() }}</strong>
             <span>Impostazioni</span>
@@ -151,8 +148,8 @@
         <div class="header-left">
           <!-- Desktop toggle (visible when sidebar is closed) -->
           @if (!chatService.isSidebarOpen()) {
-          <button class="toggle-btn desktop-only" type="button" title="Apri/Chiudi menu"
-            aria-label="Apri/Chiudi menu" (click)="toggleSidebar()">
+          <button class="toggle-btn desktop-only" type="button" title="Apri/Chiudi menu" aria-label="Apri/Chiudi menu"
+            (click)="toggleSidebar()">
             <i class="bi bi-list"></i>
           </button>
           }
@@ -170,7 +167,7 @@
 
         <div class="header-right">
           <button class="home-branded-btn" type="button" (click)="goHome()">
-            <img src="favicon.png" alt="SmartFare Logo" style="width: 24px; height: auto;" />
+            <img src="favicon.png" alt="SmartFare Logo" class="home-logo" />
             <div class="home-text">
               <span class="brand-name">SMARTFARE</span>
               <span class="back-text">Torna alla home</span>
@@ -319,8 +316,8 @@
           </button>
           }
 
-          <textarea [ngModel]="message()" (ngModelChange)="message.set($event)" placeholder="Messaggio a SmartFare AI..."
-            (keydown.enter)="onEnter($event)" rows="1"></textarea>
+          <textarea [ngModel]="message()" (ngModelChange)="message.set($event)"
+            placeholder="Messaggio a SmartFare AI..." (keydown.enter)="onEnter($event)" rows="1"></textarea>
 
           <button class="send-btn" type="button" title="Invia messaggio" aria-label="Invia messaggio"
             [disabled]="!message().trim() || chatService.isStreaming()" (click)="sendMessage()">

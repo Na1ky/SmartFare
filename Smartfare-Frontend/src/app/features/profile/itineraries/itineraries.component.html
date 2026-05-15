@@ -13,83 +13,6 @@
 
   <div class="page-layout">
 
-    <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
-    <aside class="sidebar">
-
-      <!-- Filters card -->
-      <div class="sidebar-card">
-        <h3 class="sidebar-title">
-          <i class="bi bi-sliders"></i> Filtri
-        </h3>
-
-        <!-- Trip Status -->
-        <div class="filter-group">
-          <p class="filter-label">Stato Viaggio</p>
-          <label class="filter-checkbox">
-            <input type="checkbox"
-              [checked]="filterUpcoming()"
-              (change)="filterUpcoming.set($any($event.target).checked)">
-            <span>In Programma</span>
-          </label>
-          <label class="filter-checkbox">
-            <input type="checkbox"
-              [checked]="filterInProgress()"
-              (change)="filterInProgress.set($any($event.target).checked)">
-            <span>In Corso</span>
-          </label>
-          <label class="filter-checkbox">
-            <input type="checkbox"
-              [checked]="filterCompleted()"
-              (change)="filterCompleted.set($any($event.target).checked)">
-            <span>Completati</span>
-          </label>
-          <label class="filter-checkbox">
-            <input type="checkbox"
-              [checked]="filterDrafts()"
-              (change)="filterDrafts.set($any($event.target).checked)">
-            <span>Bozze</span>
-          </label>
-        </div>
-
-        <!-- Timeframe -->
-        <div class="filter-group">
-          <p class="filter-label">Periodo</p>
-          <select class="filter-select"
-            [value]="filterTimeframe()"
-            (change)="filterTimeframe.set($any($event.target).value)">
-            <option value="all">Tutti i periodi</option>
-            <option value="next6months">Prossimi 6 mesi</option>
-            <option value="nextyear">Prossimo anno</option>
-            <option value="past">Passati</option>
-          </select>
-        </div>
-
-        <div class="filter-actions">
-          <button class="btn-apply-filters" (click)="applyFilters()">
-            Applica Filtri
-          </button>
-          @if (hasActiveFilters) {
-          <button class="btn-reset-filters" (click)="resetFilters()">
-            <i class="bi bi-x-circle"></i> Rimuovi filtri
-          </button>
-          }
-        </div>
-      </div>
-
-      <!-- Stats card -->
-      <div class="sidebar-card stats-card">
-        <p class="stats-label">TOTALE ITINERARI</p>
-        <div class="stats-number">{{ totalCount }}</div>
-        <p class="stats-sub">viaggi nel tuo account</p>
-        @if (favoritesCount > 0) {
-        <div class="stats-divider"></div>
-        <p class="stats-label">PREFERITI</p>
-        <div class="stats-number stats-number--accent">{{ favoritesCount }}</div>
-        <p class="stats-sub">itinerari salvati</p>
-        }
-      </div>
-
-    </aside>
 
     <!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
     <main class="main-content">
@@ -152,60 +75,78 @@
       </div>
       }
 
-      <!-- Grid -->
+      <!-- Grouped Itineraries -->
       @if (!isLoading()) {
-      <div class="itineraries-grid">
+      <div class="itineraries-groups">
 
-        <!-- Itinerary cards -->
-        @for (itinerary of filteredItineraries(); track itinerary.id) {
-        <div class="itinerary-card" (click)="previewItinerary(itinerary, $event)">
+        @for (group of groupedItineraries(); track group.locationName) {
+        <div class="itinerary-group">
+          <h2 class="group-title">{{ group.locationName }}</h2>
+          
+          <div class="itineraries-grid">
+            <!-- Iterate over the limited items in the group -->
+            @for (itinerary of group.items.slice(0, getLimit(group.locationName)); track itinerary.id) {
+            <div class="itinerary-card" (click)="previewItinerary(itinerary, $event)">
 
-          <div class="card-image">
-            <img
-              [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'"
-              [alt]="itinerary.name"
-              loading="lazy">
-            <div class="image-overlay"></div>
-            <span class="status-badge status-badge--{{ getStatusClass(itinerary) }}">
-              {{ getStatusLabel(itinerary) }}
-            </span>
-            <button class="card-more-btn" (click)="$event.stopPropagation()">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-          </div>
+              <div class="card-image">
+                <img
+                  [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'"
+                  [alt]="itinerary.name"
+                  loading="lazy">
+                <div class="image-overlay"></div>
+                <button class="card-more-btn" (click)="$event.stopPropagation()">
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+              </div>
 
-          <div class="card-body">
-            <h3 class="card-title">{{ itinerary.name }}</h3>
-            <div class="card-date">
-              <i class="bi bi-calendar3"></i>
-              <span>{{ formatDateRange(itinerary) }}</span>
+              <div class="card-body">
+                <h3 class="card-title">{{ itinerary.name }}</h3>
+                <div class="card-date">
+                  <i class="bi bi-calendar3"></i>
+                  <span>{{ formatDateRange(itinerary) }}</span>
+                </div>
+                
+                <!-- Bottom row with Avatar and Action -->
+                <div class="card-bottom-row">
+                  <div class="user-avatar-small">
+                    @if (userAvatar()) {
+                      <img [src]="userAvatar()" alt="User Avatar" referrerpolicy="no-referrer">
+                    } @else {
+                      <div class="avatar-placeholder">{{ userInitial() }}</div>
+                    }
+                  </div>
+                  
+                  <button class="btn-quick-edit" (click)="editItinerary(itinerary, $event)" title="Modifica">
+                    <i class="bi bi-pencil-fill"></i> Modifica
+                  </button>
+                </div>
+              </div>
+
             </div>
-            @if (itinerary.location?.name) {
-            <div class="card-location">
-              <i class="bi bi-geo-alt"></i>
-              <span>{{ itinerary.location?.name }}</span>
+            }
+            
+            <!-- New trip in this location card -->
+            @if (group.locationName !== 'Altre Destinazioni') {
+            <div class="itinerary-card new-in-group-card" (click)="createNewTripInLocation(group.locationName)">
+              <div class="new-in-group-content">
+                <div class="icon-wrapper">
+                  <i class="bi bi-plus-lg"></i>
+                </div>
+                <h3>Nuovo a {{ group.locationName }}</h3>
+                <p>Pianifica un altro itinerario qui</p>
+              </div>
             </div>
             }
           </div>
 
-          <div class="card-footer">
-            @if (getStatusClass(itinerary) === 'completed') {
-            <button class="btn-action btn-secondary" (click)="editItinerary(itinerary, $event)">
-              <i class="bi bi-arrow-repeat"></i> Riprenota
+          <!-- Show more button -->
+          @if (group.items.length > getLimit(group.locationName)) {
+          <div class="group-actions">
+            <button class="btn-show-more" (click)="showMore(group.locationName)">
+              Mostra di più ({{ group.items.length - getLimit(group.locationName) }})
             </button>
-            <button class="btn-action btn-ghost" (click)="previewItinerary(itinerary, $event)">
-              <i class="bi bi-images"></i> Dettagli
-            </button>
-            } @else {
-            <button class="btn-action btn-primary" (click)="editItinerary(itinerary, $event)">
-              <i class="bi bi-pencil-square"></i> Modifica
-            </button>
-            <button class="btn-action btn-ghost" (click)="previewItinerary(itinerary, $event)">
-              <i class="bi bi-eye"></i> Visualizza
-            </button>
-            }
           </div>
-
+          }
         </div>
         }
 
@@ -226,7 +167,7 @@
         }
 
         <!-- Empty: preferiti vuoti -->
-        @if (activeTab() === 'favorites' && filteredItineraries().length === 0) {
+        @if (activeTab() === 'favorites' && groupedItineraries().length === 0) {
         <div class="empty-state">
           <i class="bi bi-heart"></i>
           <h3>Nessun preferito</h3>
@@ -237,15 +178,12 @@
         </div>
         }
 
-        <!-- Empty: filtri attivi senza risultati -->
-        @if (activeTab() === 'itineraries' && filteredItineraries().length === 0 && hasActiveFilters) {
+        <!-- Empty: nessun itinerario generico -->
+        @if (activeTab() === 'itineraries' && groupedItineraries().length === 0) {
         <div class="empty-state">
-          <i class="bi bi-funnel"></i>
+          <i class="bi bi-journal-x"></i>
           <h3>Nessun risultato</h3>
-          <p>Nessun itinerario corrisponde ai filtri selezionati.</p>
-          <button class="btn-action btn-primary" (click)="resetFilters()">
-            Rimuovi filtri
-          </button>
+          <p>Non hai ancora creato alcun itinerario qui.</p>
         </div>
         }
 

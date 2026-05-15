@@ -5,6 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ItineraryService } from '../../../core/services/itinerary.service';
 import { Itinerary } from '../../../core/models/itinerary.model';
 import { NavbarComponent } from '../../ui/navbar/navbar.component';
+import { AuthService } from '../../../core/auth/auth.service';
+
+interface ItineraryGroup {
+  locationName: string;
+  items: Itinerary[];
+}
 
 type TabType = 'itineraries' | 'favorites';
 
@@ -22,33 +28,24 @@ export class ItinerariesComponent implements OnInit {
   isLoading = signal(false);
   activeTab = signal<TabType>('itineraries');
 
-  // Sidebar filter state (pending, before Apply)
-  filterUpcoming = signal(false);
-  filterInProgress = signal(false);
-  filterCompleted = signal(false);
-  filterDrafts = signal(false);
-  filterTimeframe = signal('all');
+  // Pagination limits per group
+  limitByGroup = signal<Record<string, number>>({});
 
-  // Applied filters (activated on Apply click)
-  appliedUpcoming = signal(false);
-  appliedInProgress = signal(false);
-  appliedCompleted = signal(false);
-  appliedDrafts = signal(false);
-  appliedTimeframe = signal('all');
+  userAvatar = signal<string | null>(null);
+  userInitial = signal<string>('U');
 
   searchQuery = signal('');
 
-  // ─── Computed filtered list ───────────────────────────────────────────────
-  filteredItineraries = computed(() => {
+  // ─── Computed grouped list ───────────────────────────────────────────────
+  groupedItineraries = computed<ItineraryGroup[]>(() => {
     const source =
       this.activeTab() === 'favorites'
         ? this.allFavorites()
         : this.allItineraries();
 
-    const now = new Date();
     const search = this.searchQuery().toLowerCase().trim();
 
-    let result = search
+    const filtered = search
       ? source.filter(
           it =>
             it.name.toLowerCase().includes(search) ||
@@ -56,61 +53,30 @@ export class ItinerariesComponent implements OnInit {
         )
       : [...source];
 
-    // Status filters
-    const anyStatus =
-      this.appliedUpcoming() ||
-      this.appliedInProgress() ||
-      this.appliedCompleted() ||
-      this.appliedDrafts();
-
-    if (anyStatus) {
-      result = result.filter(it => {
-        if (this.appliedDrafts() && !it.isPublished) return true;
-        if (!it.isPublished) return false;
-        if (
-          this.appliedUpcoming() &&
-          it.startDate &&
-          new Date(it.startDate) > now
-        )
-          return true;
-        if (
-          this.appliedCompleted() &&
-          it.endDate &&
-          new Date(it.endDate) < now
-        )
-          return true;
-        if (this.appliedInProgress()) {
-          const s = it.startDate ? new Date(it.startDate) : null;
-          const e = it.endDate ? new Date(it.endDate) : null;
-          if (s && e && s <= now && e >= now) return true;
-        }
-        return false;
-      });
+    // Group by location name
+    const groupsMap = new Map<string, Itinerary[]>();
+    for (const it of filtered) {
+      const locName = it.location?.name || 'Altre Destinazioni';
+      if (!groupsMap.has(locName)) {
+        groupsMap.set(locName, []);
+      }
+      groupsMap.get(locName)!.push(it);
     }
 
-    // Timeframe filter
-    const tf = this.appliedTimeframe();
-    if (tf !== 'all') {
-      result = result.filter(it => {
-        if (!it.startDate) return false;
-        const s = new Date(it.startDate);
-        const e = it.endDate ? new Date(it.endDate) : null;
-        if (tf === 'next6months') {
-          const limit = new Date();
-          limit.setMonth(limit.getMonth() + 6);
-          return s >= now && s <= limit;
-        }
-        if (tf === 'nextyear') {
-          const limit = new Date();
-          limit.setFullYear(limit.getFullYear() + 1);
-          return s >= now && s <= limit;
-        }
-        if (tf === 'past') return e ? e < now : s < now;
-        return true;
-      });
+    // Convert map to array of objects
+    const groups: ItineraryGroup[] = [];
+    for (const [locationName, items] of groupsMap.entries()) {
+      groups.push({ locationName, items });
     }
 
-    return result;
+    // Sort groups alphabetically (putting 'Altre Destinazioni' at the end)
+    groups.sort((a, b) => {
+      if (a.locationName === 'Altre Destinazioni') return 1;
+      if (b.locationName === 'Altre Destinazioni') return -1;
+      return a.locationName.localeCompare(b.locationName);
+    });
+
+    return groups;
   });
 
   get totalCount() {
@@ -120,22 +86,23 @@ export class ItinerariesComponent implements OnInit {
     return this.allFavorites().length;
   }
   get hasActiveFilters(): boolean {
-    return (
-      this.appliedUpcoming() ||
-      this.appliedInProgress() ||
-      this.appliedCompleted() ||
-      this.appliedDrafts() ||
-      this.appliedTimeframe() !== 'all'
-    );
+    return false; // Deprecated
   }
 
   constructor(
     private itineraryService: ItineraryService,
+    private authService: AuthService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    const userData = this.authService.getUserData();
+    if (userData) {
+      this.userAvatar.set(userData.avatarUrl || null);
+      this.userInitial.set((userData.name || userData.email || 'U').charAt(0).toUpperCase());
+    }
+
     this.route.queryParams.subscribe(params => {
       if (params['tab'] === 'favorites') {
         this.activeTab.set('favorites');
@@ -176,25 +143,15 @@ export class ItinerariesComponent implements OnInit {
     }
   }
 
-  applyFilters(): void {
-    this.appliedUpcoming.set(this.filterUpcoming());
-    this.appliedInProgress.set(this.filterInProgress());
-    this.appliedCompleted.set(this.filterCompleted());
-    this.appliedDrafts.set(this.filterDrafts());
-    this.appliedTimeframe.set(this.filterTimeframe());
+  getLimit(groupName: string): number {
+    return this.limitByGroup()[groupName] || 4;
   }
 
-  resetFilters(): void {
-    this.filterUpcoming.set(false);
-    this.filterInProgress.set(false);
-    this.filterCompleted.set(false);
-    this.filterDrafts.set(false);
-    this.filterTimeframe.set('all');
-    this.appliedUpcoming.set(false);
-    this.appliedInProgress.set(false);
-    this.appliedCompleted.set(false);
-    this.appliedDrafts.set(false);
-    this.appliedTimeframe.set('all');
+  showMore(groupName: string): void {
+    this.limitByGroup.update(limits => ({
+      ...limits,
+      [groupName]: (limits[groupName] || 4) + 4
+    }));
   }
 
   onSearch(event: Event): void {
@@ -203,6 +160,14 @@ export class ItinerariesComponent implements OnInit {
 
   createNewTrip(): void {
     this.router.navigate(['/itineraries/new']);
+  }
+
+  createNewTripInLocation(locationName: string): void {
+    if (locationName === 'Altre Destinazioni') {
+      this.router.navigate(['/itineraries/new']);
+    } else {
+      this.router.navigate(['/itineraries/new'], { queryParams: { location: locationName } });
+    }
   }
 
   editItinerary(itinerary: Itinerary, event: Event): void {
@@ -230,21 +195,5 @@ export class ItinerariesComponent implements OnInit {
     return `${startStr} – ${end.toLocaleDateString('it-IT', opts)}`;
   }
 
-  getStatusLabel(itinerary: Itinerary): string {
-    if (!itinerary.isPublished) return 'Bozza';
-    const now = new Date();
-    if (itinerary.startDate && new Date(itinerary.startDate) > now) return 'In Programma';
-    if (itinerary.endDate && new Date(itinerary.endDate) < now) return 'Completato';
-    return 'In Corso';
-  }
 
-  getStatusClass(itinerary: Itinerary): string {
-    switch (this.getStatusLabel(itinerary)) {
-      case 'Bozza': return 'draft';
-      case 'In Programma': return 'upcoming';
-      case 'Completato': return 'completed';
-      case 'In Corso': return 'in-progress';
-      default: return '';
-    }
-  }
 }
