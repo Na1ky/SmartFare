@@ -1,21 +1,20 @@
 .sf-alert-container {
   position: fixed;
-  top: 32px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 32px;
+  right: 32px;
   z-index: 10000;
-  min-width: 340px;
-  max-width: 420px;
-  border-radius: 16px;
+  min-width: 380px;
+  max-width: 480px;
+  border-radius: 20px;
   isolation: isolate;
-  background: rgba(12, 16, 25, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(13, 17, 28, 0.82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 
-    0 24px 48px rgba(0, 0, 0, 0.4),
-    0 8px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    0 32px 64px rgba(0, 0, 0, 0.5),
+    0 16px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1);
   overflow: hidden;
   font-family: 'Outfit', 'Nunito Sans', sans-serif;
   color: #fff;
@@ -23,27 +22,27 @@
 }
 
 /* Theme variables based on type */
-.sf-alert-container.success { --alert-color: #00d289; --alert-glow: rgba(0, 210, 137, 0.35); }
-.sf-alert-container.info    { --alert-color: #7ea8ff; --alert-glow: rgba(126, 168, 255, 0.35); }
-.sf-alert-container.warning { --alert-color: #ffb84d; --alert-glow: rgba(255, 184, 77, 0.35); }
-.sf-alert-container.danger  { --alert-color: #ff5e5e; --alert-glow: rgba(255, 94, 94, 0.35); }
+.sf-alert-container.success { --alert-color: #00e699; --alert-glow: rgba(0, 230, 153, 0.4); }
+.sf-alert-container.info    { --alert-color: #8cb4ff; --alert-glow: rgba(140, 180, 255, 0.4); }
+.sf-alert-container.warning { --alert-color: #ffc266; --alert-glow: rgba(255, 194, 102, 0.4); }
+.sf-alert-container.danger  { --alert-color: #ff6b6b; --alert-glow: rgba(255, 107, 107, 0.4); }
 
 /* Glowing top border */
 .sf-alert-container::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--alert-color);
-  box-shadow: 0 0 14px var(--alert-glow), 0 0 4px var(--alert-color);
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--alert-color), transparent);
+  box-shadow: 0 0 16px var(--alert-glow);
   z-index: 2;
 }
 
 .sf-alert-glass {
   display: flex;
   align-items: flex-start;
-  padding: 16px 20px;
-  gap: 16px;
+  padding: 20px 24px;
+  gap: 20px;
 }
 
 .sf-alert-icon-wrapper {
@@ -51,19 +50,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--alert-color);
-  box-shadow: inset 0 0 16px var(--alert-glow);
+  box-shadow: 
+    inset 0 0 20px var(--alert-glow),
+    0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .sf-icon {
-  width: 22px;
-  height: 22px;
-  filter: drop-shadow(0 0 6px var(--alert-glow));
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 0 8px var(--alert-glow));
 }
 
 .sf-alert-content {
@@ -71,49 +72,51 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
-  margin-top: 2px;
+  gap: 6px;
+  margin-top: 4px;
 }
 
 .sf-alert-title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .sf-alert-message {
   margin: 0;
-  font-size: 14px;
-  font-weight: 300;
-  color: #a0aec0;
-  line-height: 1.4;
+  font-size: 15px;
+  font-weight: 400;
+  color: #cbd5e0;
+  line-height: 1.5;
 }
 
 .sf-close-btn {
   background: transparent;
   border: none;
-  color: #718096;
+  color: #a0aec0;
   cursor: pointer;
-  padding: 6px;
-  margin: -6px -6px 0 0;
-  border-radius: 8px;
+  padding: 8px;
+  margin: -8px -8px 0 0;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sf-close-btn:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
+  transform: rotate(90deg);
 }
 
 .sf-alert-progress {
   width: 100%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.03);
+  height: 4px;
+  background: rgba(255, 255, 255, 0.04);
   position: absolute;
   bottom: 0;
   left: 0;
@@ -121,8 +124,8 @@
 
 .sf-progress-bar {
   height: 100%;
-  background: var(--alert-color);
-  box-shadow: 0 0 8px var(--alert-glow);
+  background: linear-gradient(90deg, var(--alert-color), #fff);
+  box-shadow: 0 0 10px var(--alert-glow);
   width: 100%;
   transform-origin: left;
   animation: shrinkProgress 5s linear forwards;
@@ -130,32 +133,36 @@
 
 /* Animations */
 .fade-in {
-  animation: alertEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: alertEnter 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
 .fade-out {
-  animation: alertExit 0.4s cubic-bezier(0.36, 0, 0.66, -0.56) forwards;
+  animation: alertExit 0.5s cubic-bezier(1, 0, 0, 1) forwards;
 }
 
 @keyframes alertEnter {
   0% {
     opacity: 0;
-    transform: translate(-50%, -40px) scale(0.9);
+    transform: translateX(120%) scale(0.9);
+    filter: blur(10px);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateX(0) scale(1);
+    filter: blur(0);
   }
 }
 
 @keyframes alertExit {
   0% {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateX(0) scale(1);
+    filter: blur(0);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -30px) scale(0.9);
+    transform: translateX(50px) translateY(20px) scale(0.9);
+    filter: blur(10px);
   }
 }
 
@@ -169,24 +176,43 @@
   .sf-alert-container {
     width: calc(100% - 32px);
     min-width: unset;
-    top: 16px;
+    bottom: 24px;
+    right: 16px;
+    left: 16px;
   }
+  
   .sf-alert-glass {
-    padding: 14px 16px;
-    gap: 12px;
+    padding: 16px 20px;
+    gap: 16px;
   }
+  
   .sf-alert-icon-wrapper {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
   }
+  
   .sf-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
+  
   .sf-alert-title {
+    font-size: 15px;
+  }
+  
+  .sf-alert-message {
     font-size: 14px;
   }
-  .sf-alert-message {
-    font-size: 13px;
+  
+  @keyframes alertEnter {
+    0% {
+      opacity: 0;
+      transform: translateY(100px) scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 }

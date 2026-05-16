@@ -272,6 +272,7 @@ export class ItineraryBuilderComponent implements OnInit {
   }
 
   setMobileTab(tab: 'summary' | 'map' | 'ai' | 'tools') {
+
     this.ui.setMobileActiveTab(tab);
     if (tab === 'map') {
       this.ui.showSummary.set(false);

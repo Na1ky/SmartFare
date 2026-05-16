@@ -11,6 +11,16 @@ type DbMessage = {
   createdAt: Date;
 };
 
+type UserProfileContext = {
+  age: number | null;
+  travelStyle: string | null;
+  pace: string | null;
+  preferredTransport: string | null;
+  prefersNightlife: boolean | null;
+  familyFriendly: boolean | null;
+  notes: string | null;
+};
+
 type SessionWithMessages = Awaited<ReturnType<ChatService['getSessionOrThrow']>>;
 
 const DEFAULT_TITLE = 'Nuova conversazione';
@@ -96,6 +106,7 @@ export class ChatService {
     const extractedState = await this.extractPlannerState(session.mode as ChatMode, transcript, baseState);
     const bestLocation = await this.findBestLocation(extractedState.destination || userMessage);
     const plannerState = this.mergePlannerState(baseState, extractedState, bestLocation);
+    const userProfileContext = await this.getUserProfileContext(userId);
 
     const history = persistedMessages
       .slice(-16)
@@ -124,7 +135,7 @@ export class ChatService {
             },
             systemInstruction: {
               role: 'system',
-              parts: [{ text: this.getSystemInstruction(session.mode as ChatMode, plannerState, Boolean(bestLocation)) }]
+              parts: [{ text: this.getSystemInstruction(session.mode as ChatMode, plannerState, Boolean(bestLocation), userProfileContext) }]
             }
           });
 
@@ -384,13 +395,15 @@ export class ChatService {
     return session;
   }
 
-  private getSystemInstruction(mode: ChatMode, plannerState: PlannerState, hasSupportedLocation: boolean): string {
+  private getSystemInstruction(mode: ChatMode, plannerState: PlannerState, hasSupportedLocation: boolean, userCtx?: UserProfileContext | null): string {
+    const userBlock = this.buildUserProfileBlock(userCtx);
     const base = [
       'Sei Voyager AI, concierge premium di SmartFare.',
       'Rispondi sempre in italiano con tono elegante, chiaro e utile.',
       'Non parlare mai di budget, prezzi, costi o spesa.',
       'Quando citi preferenze usa solo categorie qualitative come ritmo, stile, interessi, atmosfera e tipologia di viaggio.',
-      'Evita testi troppo lunghi: 2-4 paragrafi brevi o una lista corta quando serve.'
+      'Evita testi troppo lunghi: 2-4 paragrafi brevi o una lista corta quando serve.',
+      ...(userBlock ? [userBlock] : []),
     ];
 
     if (mode === 'assistant') {
@@ -420,6 +433,66 @@ export class ChatService {
       `Campi ancora mancanti: ${missingFields.join(', ') || 'nessuno'}`,
       supportedLocationNote
     ].join('\n');
+  }
+
+  private buildUserProfileBlock(ctx?: UserProfileContext | null): string | null {
+    if (!ctx) return null;
+    const parts: string[] = [];
+    if (ctx.age) parts.push(`- Età approssimativa: ${ctx.age} anni`);
+    if (ctx.travelStyle) parts.push(`- Stile di viaggio: ${ctx.travelStyle}`);
+    if (ctx.pace) parts.push(`- Ritmo preferito: ${ctx.pace}`);
+    if (ctx.preferredTransport) parts.push(`- Mezzo di trasporto preferito: ${ctx.preferredTransport}`);
+    if (ctx.prefersNightlife !== null && ctx.prefersNightlife !== undefined) parts.push(`- Preferisce vita notturna: ${ctx.prefersNightlife ? 'sì' : 'no'}`);
+    if (ctx.familyFriendly !== null && ctx.familyFriendly !== undefined) parts.push(`- Viaggia con famiglia/bambini: ${ctx.familyFriendly ? 'sì' : 'no'}`);
+    if (ctx.notes) parts.push(`- Note personali: "${ctx.notes}"`);
+    if (parts.length === 0) return null;
+    return `Profilo personale dell'utente (usalo per personalizzare le risposte):\n${parts.join('\n')}`;
+  }
+
+  private async getUserProfileContext(userId: number): Promise<UserProfileContext | null> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          profile: { select: { birthDate: true } },
+          preference: {
+            select: {
+              travelStyle: true,
+              pace: true,
+              preferredTransport: true,
+              prefersNightlife: true,
+              familyFriendly: true,
+              notes: true,
+            }
+          }
+        }
+      });
+
+      if (!user) return null;
+
+      let age: number | null = null;
+      if (user.profile?.birthDate) {
+        const today = new Date();
+        const birth = new Date(user.profile.birthDate);
+        age = today.getFullYear() - birth.getFullYear();
+        const hasBirthdayPassed =
+          today.getMonth() > birth.getMonth() ||
+          (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+        if (!hasBirthdayPassed) age -= 1;
+      }
+
+      return {
+        age,
+        travelStyle: user.preference?.travelStyle ?? null,
+        pace: user.preference?.pace ?? null,
+        preferredTransport: user.preference?.preferredTransport ?? null,
+        prefersNightlife: user.preference?.prefersNightlife ?? null,
+        familyFriendly: user.preference?.familyFriendly ?? null,
+        notes: user.preference?.notes ?? null,
+      };
+    } catch {
+      return null;
+    }
   }
 
   private buildTranscript(messages: DbMessage[], userMessage: string): string {

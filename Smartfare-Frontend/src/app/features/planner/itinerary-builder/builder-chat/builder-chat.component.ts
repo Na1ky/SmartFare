@@ -7,6 +7,8 @@ import { Activity } from '../../../../core/models/activity.model';
 import { Accommodation } from '../../../../core/models/accommodation.model';
 import { firstValueFrom } from 'rxjs';
 import { BuilderPoi } from '../../../../core/models/builder.types';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { Router } from '@angular/router';
 
 type BuilderSuggestionAction = {
   label: string;
@@ -27,6 +29,10 @@ export class BuilderChatComponent implements OnChanges, AfterViewChecked {
 
   protected readonly chatService = inject(VoyagerChatService);
   private readonly alertService = inject(AlertService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  readonly isAuthenticated = computed(() => this.authService.IsAuthenticated());
 
   @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLDivElement>;
 
@@ -109,6 +115,10 @@ export class BuilderChatComponent implements OnChanges, AfterViewChecked {
     if (keyboardEvent.shiftKey) return;
     keyboardEvent.preventDefault();
     this.sendMessage();
+  }
+
+  login() {
+    this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
   }
 
   formatMessage(content: string): string {

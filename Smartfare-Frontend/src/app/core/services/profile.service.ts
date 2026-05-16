@@ -1,0 +1,54 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { UserProfile, UserPreference, UserProfileFull } from '../models/user-profile.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ProfileService {
+  private readonly API_URL = `${environment.apiUrl}/api/profile`;
+
+  constructor(private http: HttpClient) {}
+
+  getMyProfile(): Observable<UserProfileFull | null> {
+    return this.http.get<UserProfileFull>(`${this.API_URL}/me`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  getRandomLocationImage(): Observable<{ imageUrl: string } | null> {
+    return this.http.get<{ imageUrl: string }>(`${environment.apiUrl}/api/locations/random-image`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  updateProfile(data: Partial<UserProfile>): Observable<{ success: boolean; profile: UserProfile } | null> {
+    return this.http.patch<{ success: boolean; profile: UserProfile }>(`${this.API_URL}/me`, data).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  updatePreferences(data: Partial<UserPreference>): Observable<{ success: boolean; preference: UserPreference } | null> {
+    return this.http.patch<{ success: boolean; preference: UserPreference }>(`${this.API_URL}/preferences`, data).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  uploadAvatar(file: File): Observable<{ success: boolean; url: string } | null> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ success: boolean; url: string }>(`${this.API_URL}/upload/avatar`, formData).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  uploadBackground(file: File): Observable<{ success: boolean; url: string } | null> {
+    const formData = new FormData();
+    formData.append('image', file);
+    return this.http.post<{ success: boolean; url: string }>(`${this.API_URL}/upload/background`, formData).pipe(
+      catchError(() => of(null))
+    );
+  }
+}

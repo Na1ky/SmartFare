@@ -35,4 +35,23 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
+// ─── GET /api/locations/random-image ──────────────────────────────────
+router.get('/random-image', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const locationsWithImages = await prisma.location.findMany({
+            where: { image: { not: null } },
+            select: { image: true }
+        });
+
+        if (locationsWithImages.length === 0) {
+            return res.json({ imageUrl: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2000&auto=format&fit=crop' });
+        }
+
+        const randomLoc = locationsWithImages[Math.floor(Math.random() * locationsWithImages.length)];
+        res.json({ imageUrl: randomLoc.image });
+    } catch (error) {
+        next(error);
+    }
+});
+
 export default router;

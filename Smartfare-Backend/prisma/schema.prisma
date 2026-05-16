@@ -91,8 +91,9 @@ model UserProfile {
   surname   String?
   city      String?
   street    String?
-  avatarUrl String?
-  birthDate DateTime?
+  avatarUrl           String?
+  backgroundImageUrl  String?
+  birthDate           DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -108,7 +109,6 @@ model UserPreference {
   preferredTransport String?
   prefersNightlife   Boolean?
   familyFriendly     Boolean?
-  maxDailyBudget     Decimal?
   notes              String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

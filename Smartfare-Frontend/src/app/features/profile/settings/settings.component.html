@@ -1,0 +1,290 @@
+<div class="settings-page" [style.background-image]="pageBackground() ? 'url(' + pageBackground() + ')' : 'none'">
+  <div class="page-overlay"></div>
+
+  <!-- Main Dashboard Container -->
+  <div class="settings-dashboard">
+    
+    <!-- Sidebar / Left Panel -->
+    <aside class="dashboard-sidebar">
+      
+      <!-- Identity block -->
+      <div class="identity-block">
+        <label class="bg-upload-btn" [class.uploading]="isUploadingBackground()" title="Cambia immagine di sfondo">
+          <input type="file" accept="image/*" (change)="onBackgroundFileSelected($event)" style="display:none">
+          @if (isUploadingBackground()) {
+            <i class="bi bi-arrow-repeat spin"></i>
+          } @else {
+            <i class="bi bi-image"></i>
+          }
+          <span>Sfondo</span>
+        </label>
+
+        <div class="avatar-wrapper">
+          <div class="avatar-ring">
+            @if (avatarUrl()) {
+              <img [src]="avatarUrl()" alt="Avatar" class="avatar-img">
+            } @else {
+              <div class="avatar-fallback">
+                <i class="bi bi-person-fill"></i>
+              </div>
+            }
+            @if (isUploadingAvatar()) {
+              <div class="avatar-loading"><i class="bi bi-arrow-repeat spin"></i></div>
+            }
+          </div>
+          <label class="avatar-edit-btn" title="Cambia foto profilo">
+            <input type="file" accept="image/*" (change)="onAvatarFileSelected($event)" style="display:none">
+            <i class="bi bi-camera-fill"></i>
+          </label>
+        </div>
+
+        <h1 class="user-name">{{ displayName() }}</h1>
+        @if (age()) {
+          <span class="user-age">{{ age() }} anni</span>
+        }
+        @if (city()) {
+          <p class="user-location"><i class="bi bi-geo-alt"></i> {{ city() }}</p>
+        }
+      </div>
+
+      <!-- Navigation -->
+      <nav class="settings-nav">
+        <button class="nav-item" [class.active]="activeTab() === 'profile'" (click)="setTab('profile')">
+          <i class="bi bi-person-lines-fill"></i>
+          <span>Profilo Base</span>
+        </button>
+        <button class="nav-item" [class.active]="activeTab() === 'preferences'" (click)="setTab('preferences')">
+          <i class="bi bi-stars"></i>
+          <span>IA & Preferenze</span>
+        </button>
+        <button class="nav-item" [class.active]="activeTab() === 'account'" (click)="setTab('account')">
+          <i class="bi bi-shield-lock"></i>
+          <span>Account Sicurezza</span>
+        </button>
+
+        <div class="nav-divider"></div>
+        <a class="nav-item nav-back" routerLink="/home">
+          <i class="bi bi-arrow-left"></i>
+          <span>Torna all'app</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Content Panel -->
+    <main class="dashboard-content">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <div class="loader-ring"></div>
+          <p>Carico il tuo profilo...</p>
+        </div>
+      }
+
+      <!-- ── PROFILE TAB ─────────────────────────── -->
+      @if (!isLoading() && activeTab() === 'profile') {
+        <section class="content-section">
+          <div class="section-header">
+            <div>
+              <h2>Informazioni Personali</h2>
+              <p>Il tuo nome e i tuoi dati di base.</p>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field-group">
+              <label>Nome</label>
+              <input type="text" [value]="name()" (input)="name.set($any($event.target).value)"
+                     placeholder="Il tuo nome">
+            </div>
+            <div class="field-group">
+              <label>Cognome</label>
+              <input type="text" [value]="surname()" (input)="surname.set($any($event.target).value)"
+                     placeholder="Il tuo cognome">
+            </div>
+            <div class="field-group full-width">
+              <label>Città</label>
+              <input type="text" [value]="city()" (input)="city.set($any($event.target).value)"
+                     placeholder="Es. Roma">
+            </div>
+            <div class="field-group full-width">
+              <label>Indirizzo</label>
+              <input type="text" [value]="street()" (input)="street.set($any($event.target).value)"
+                     placeholder="Es. Via Roma 1">
+            </div>
+            <div class="field-group">
+              <label>Data di nascita</label>
+              <input type="date" [value]="birthDate()" (change)="birthDate.set($any($event.target).value)">
+            </div>
+            @if (age()) {
+              <div class="field-group">
+                <label>Età calcolata</label>
+                <div class="readonly-field">
+                  <i class="bi bi-cake2"></i> {{ age() }} anni
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="action-bar">
+            <button class="btn-save" (click)="saveProfile()" [disabled]="isSavingProfile()">
+              @if (isSavingProfile()) {
+                <i class="bi bi-arrow-repeat spin"></i> Salvataggio...
+              } @else {
+                <i class="bi bi-check-lg"></i> Salva Profilo
+              }
+            </button>
+          </div>
+        </section>
+      }
+
+      <!-- ── PREFERENCES TAB ───────────────────────── -->
+      @if (!isLoading() && activeTab() === 'preferences') {
+        <section class="content-section">
+          <div class="section-header">
+            <div>
+              <h2>Preferenze di Viaggio</h2>
+              <p>L'IA userà questi dati per personalizzare i tuoi itinerari.</p>
+            </div>
+            <div class="ai-badge">
+              <i class="bi bi-stars"></i> Usate dall'IA
+            </div>
+          </div>
+
+          <!-- Travel Style chips -->
+          <div class="pref-group">
+            <label>Stile di Viaggio</label>
+            <div class="chip-grid">
+              @for (style of TRAVEL_STYLES; track style) {
+                <button class="chip" [class.selected]="travelStyle() === style"
+                        (click)="travelStyle.set(travelStyle() === style ? '' : style)">
+                  {{ style }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="pref-row">
+            <!-- Pace -->
+            <div class="pref-group">
+              <label>Ritmo del Viaggio</label>
+              <div class="pace-selector">
+                @for (p of PACES; track p) {
+                  <button class="pace-btn" [class.selected]="pace() === p"
+                          (click)="pace.set(pace() === p ? '' : p)">
+                    @if (p === 'Lento') { <i class="bi bi-cup-hot"></i> }
+                    @if (p === 'Moderato') { <i class="bi bi-bicycle"></i> }
+                    @if (p === 'Intenso') { <i class="bi bi-lightning-charge-fill"></i> }
+                    {{ p }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Transport -->
+            <div class="pref-group">
+              <label>Trasporto Preferito</label>
+              <div class="chip-grid">
+                @for (t of TRANSPORTS; track t) {
+                  <button class="chip" [class.selected]="preferredTransport() === t"
+                          (click)="preferredTransport.set(preferredTransport() === t ? '' : t)">
+                    {{ t }}
+                  </button>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Toggles -->
+          <div class="toggle-row">
+            <div class="toggle-item">
+              <div class="toggle-copy">
+                <span>Vita Notturna</span>
+                <small>Includi locali, bar e serate nel tuo itinerario</small>
+              </div>
+              <button class="toggle-switch" [class.on]="prefersNightlife()"
+                      (click)="prefersNightlife.set(!prefersNightlife())"
+                      [attr.aria-label]="prefersNightlife() ? 'Disattiva' : 'Attiva'">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+            <div class="toggle-item">
+              <div class="toggle-copy">
+                <span>Family Friendly</span>
+                <small>Suggerisci attività adatte a bambini e famiglie</small>
+              </div>
+              <button class="toggle-switch" [class.on]="familyFriendly()"
+                      (click)="familyFriendly.set(!familyFriendly())"
+                      [attr.aria-label]="familyFriendly() ? 'Disattiva' : 'Attiva'">
+                <span class="toggle-thumb"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="pref-group">
+            <label>Note Personali <small>(l'IA le legge per personalizzare le risposte)</small></label>
+            <textarea [value]="notes()" (input)="notes.set($any($event.target).value)"
+                      placeholder="Es. Amo i borghi autentici e la cucina locale. Preferisco hotel di charme..."
+                      rows="4"></textarea>
+          </div>
+
+          <div class="action-bar">
+            <button class="btn-save" (click)="savePreferences()" [disabled]="isSavingPreferences()">
+              @if (isSavingPreferences()) {
+                <i class="bi bi-arrow-repeat spin"></i> Salvataggio...
+              } @else {
+                <i class="bi bi-check-lg"></i> Salva Preferenze
+              }
+            </button>
+          </div>
+        </section>
+      }
+
+      <!-- ── ACCOUNT TAB ───────────────────────────── -->
+      @if (!isLoading() && activeTab() === 'account') {
+        <section class="content-section">
+          <div class="section-header">
+            <div>
+              <h2>Impostazioni Account</h2>
+              <p>Gestisci le credenziali e la sicurezza del tuo account.</p>
+            </div>
+          </div>
+
+          <div class="account-info-block">
+            <div class="info-row">
+              <i class="bi bi-envelope-fill"></i>
+              <div>
+                <label>Email</label>
+                <span>{{ email() }}</span>
+              </div>
+            </div>
+            <div class="info-row">
+              <i class="bi bi-person-badge-fill"></i>
+              <div>
+                <label>Metodo di accesso</label>
+                <span class="provider-badge">{{ authProvider() === 'local' ? 'Email e Password' : authProvider() }}</span>
+              </div>
+            </div>
+          </div>
+
+          @if (isLocalAuth()) {
+            <div class="security-block">
+              <h3><i class="bi bi-lock-fill"></i> Sicurezza</h3>
+              <p>Vuoi cambiare la password? Usa il flusso di recupero password.</p>
+              <a routerLink="/forgot-password" class="btn-outline">
+                <i class="bi bi-key"></i> Cambia password
+              </a>
+            </div>
+          }
+
+          <div class="danger-zone">
+            <h3><i class="bi bi-exclamation-triangle-fill"></i> Zona di uscita</h3>
+            <p>Esci dal tuo account su questo dispositivo.</p>
+            <button class="btn-danger" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> Esci
+            </button>
+          </div>
+        </section>
+      }
+    </main>
+  </div>
+</div>
