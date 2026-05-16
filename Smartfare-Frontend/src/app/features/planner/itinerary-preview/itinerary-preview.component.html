@@ -34,10 +34,16 @@
           <span>{{ isFavorite() ? 'Preferito' : 'Aggiungi ai preferiti' }}</span>
         </button>
 
-        <button class="preview-action-btn preview-action-btn--primary" (click)="copyItinerary()"
+        <button class="preview-action-btn preview-action-btn--primary" 
+          (click)="isOwner() ? editItinerary() : copyItinerary()"
           [disabled]="isSaving() || isCopying()" id="preview-save-btn">
-          <i [class]="isCopying() ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
-          <span>{{ isCopying() ? 'Salvataggio…' : 'Incorpora' }}</span>
+          @if (isOwner()) {
+            <i class="bi bi-pencil-square"></i>
+            <span>Modifica</span>
+          } @else {
+            <i [class]="isCopying() ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+            <span>{{ isCopying() ? 'Salvataggio…' : 'Incorpora' }}</span>
+          }
         </button>
         }
       </div>

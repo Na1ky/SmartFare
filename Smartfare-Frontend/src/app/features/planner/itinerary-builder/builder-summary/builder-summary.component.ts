@@ -113,7 +113,7 @@ export class BuilderSummaryComponent {
 
   // Segnale unito: Itinerario (o Anteprima) + Dati del Workspace (POI)
   joinedPois = computed(() => {
-    const itin = this.previewItinerary() || this.itinerary();
+    const itin = this.previewItinerary() || this.previewItineraryInput() || this.itinerary();
     const ws = this.workspace();
     if (!itin || !ws) return [];
 
@@ -286,7 +286,7 @@ export class BuilderSummaryComponent {
   });
 
   getDaysCount(customItin?: Itinerary | null): number {
-    const itinerary = customItin !== undefined ? customItin : (this.previewItinerary() || this.itinerary());
+    const itinerary = customItin !== undefined ? customItin : (this.previewItinerary() || this.previewItineraryInput() || this.itinerary());
     if (!itinerary?.startDate || !itinerary?.endDate) return 1;
 
     const start = new Date(itinerary.startDate);
@@ -296,7 +296,7 @@ export class BuilderSummaryComponent {
   }
 
   getDayDate(day: number, customItin?: Itinerary | null): Date | null {
-    const itinerary = customItin !== undefined ? customItin : (this.previewItinerary() || this.itinerary());
+    const itinerary = customItin !== undefined ? customItin : (this.previewItinerary() || this.previewItineraryInput() || this.itinerary());
     if (!itinerary?.startDate) return null;
 
     const date = new Date(itinerary.startDate);

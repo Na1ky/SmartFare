@@ -54,7 +54,7 @@ export class ItineraryPreviewComponent implements OnInit, OnDestroy {
   readonly isOwner = computed(() => {
     const itin = this.itinerary();
     const user = this.currentUserData();
-    return !!(itin && user && itin.userId === user.id);
+    return !!(itin && user && itin.userId === user.userId);
   });
 
   readonly previewSavedPois = computed<BuilderPoi[]>(() => {
@@ -156,9 +156,6 @@ export class ItineraryPreviewComponent implements OnInit, OnDestroy {
         next: (data) => {
           if (data) {
             this.itinerary.set(data);
-            // Imposta l'itinerario nel service (senza autosave) così il summary
-            // lo legge normalmente — senza il banner "Modalità Anteprima"
-            this.itineraryService.setCurrentItinerary(data, { autosave: false });
             // Carica il workspace per la mappa e il summary
             if (data.locationId) {
               this.loadWorkspace(data.locationId);
@@ -303,20 +300,20 @@ export class ItineraryPreviewComponent implements OnInit, OnDestroy {
     const itin = this.itinerary();
     if (!itin) return;
 
+    if (!this.authService.IsAuthenticated()) {
+      this.alertService.warning('Devi essere loggato per incorporare un itinerario');
+      await this.router.navigate(['/login']);
+      return;
+    }
+
     this.isCopying.set(true);
     try {
       const copied = await firstValueFrom(this.itineraryService.copyItinerary(itin));
       if (copied && copied.id) {
-        const isAuthenticated = this.authService.IsAuthenticated();
         this.alertService.success(`Itinerario "${copied.name}" salvato!`);
-        if (!isAuthenticated) {
-          this.alertService.info('Accedi per gestire i tuoi itinerari');
-          await this.router.navigate(['/login']);
-        } else {
-          await this.router.navigate(['/itineraries/builder'], {
-            queryParams: { itineraryId: copied.id }
-          });
-        }
+        await this.router.navigate(['/itineraries/builder'], {
+          queryParams: { itineraryId: copied.id }
+        });
       } else {
         this.alertService.error('Errore durante il salvataggio dell\'itinerario');
       }

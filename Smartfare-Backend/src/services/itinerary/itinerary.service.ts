@@ -663,7 +663,6 @@ export class ItineraryService {
                     startDate: source.startDate,
                     endDate: source.endDate,
                     isPublished: false,
-                    visibilityCode: 'PRIVATE',
                     imageUrl: source.imageUrl || DEFAULT_ITINERARY_IMAGE_URL,
                     user: {
                         connect: { id: userId }
