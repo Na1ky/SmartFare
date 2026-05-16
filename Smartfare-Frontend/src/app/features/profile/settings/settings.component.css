@@ -15,9 +15,7 @@
   background-position: center;
   background-attachment: fixed;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1.5rem;
+  flex-direction: column;
 }
 
 .page-overlay {
@@ -28,10 +26,25 @@
   z-index: 1;
 }
 
-/* ─── Dashboard Container ──────────────────────────────────── */
-.settings-dashboard {
+.navbar-layer {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+.dashboard-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
   position: relative;
   z-index: 10;
+}
+
+/* ─── Dashboard Container ──────────────────────────────────── */
+.settings-dashboard {
   display: flex;
   width: 100%;
   max-width: 1300px;
@@ -303,6 +316,57 @@
 }
 
 .ai-badge i { color: #a855f7; }
+
+textarea {
+  width: 100%;
+  background: rgba(8, 13, 26, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  color: white;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+  background: rgba(8, 13, 26, 0.6);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  background: rgba(8, 13, 26, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.input-with-icon:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.input-with-icon span {
+  padding: 0 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.input-with-icon input {
+  border: none;
+  background: transparent;
+  padding: 0.8rem;
+}
+
+.input-with-icon input:focus {
+  box-shadow: none;
+}
 
 /* ─── Form Fields ─────────────────────────────────────────────── */
 .field-grid {

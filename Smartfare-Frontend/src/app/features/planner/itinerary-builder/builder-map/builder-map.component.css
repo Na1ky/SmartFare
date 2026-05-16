@@ -163,7 +163,7 @@
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  font-size: 18px;
+  font-size: 1.125rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -374,7 +374,7 @@
   }
 
   .route-compact-chip strong {
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
   .route-compact-stops {
@@ -383,7 +383,7 @@
 
   .route-compact-gmaps {
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: 0.75rem;
     border-radius: 20px;
     background: #2563eb;
     color: white;
@@ -437,29 +437,29 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #e2e8f0;
 }
 
 .route-compact-chip i {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: #64a5ff;
 }
 
 .route-compact-chip strong {
   font-weight: 800;
   color: #fff;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .route-compact-sep {
   color: #475569;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1;
 }
 
 .route-compact-stops {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 600;
 }
@@ -470,7 +470,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
 }
 
@@ -491,7 +491,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 100px;
   color: #e2e8f0;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-decoration: none;
   transition: all 0.25s ease;

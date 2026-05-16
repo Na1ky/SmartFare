@@ -1,4 +1,4 @@
-﻿.auth-page {
+.auth-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -486,7 +486,7 @@
 
 @media (max-width: 480px) {
   .auth-page {
-    padding: 0;
+    padding: 80px 0 0; /* Space for fixed navbar */
   }
 
   .auth-wrapper {

@@ -6,6 +6,9 @@ export interface UserProfile {
   street?: string | null;
   avatarUrl?: string | null;
   backgroundImageUrl?: string | null;
+  bio?: string | null;
+  instagramUrl?: string | null;
+  twitterUrl?: string | null;
   birthDate?: string | null;
 }
 
@@ -25,4 +28,7 @@ export interface UserProfileFull {
   authProvider: string;
   profile: UserProfile | null;
   preference: UserPreference | null;
+  followersCount?: number;
+  followingCount?: number;
+  publicItinerariesCount?: number;
 }

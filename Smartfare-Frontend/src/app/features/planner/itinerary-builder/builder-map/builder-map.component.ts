@@ -152,7 +152,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
           const count = cluster.getChildCount();
           return L.divIcon({
             className: 'custom-cluster-icon',
-            html: `<div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 13px; font-family: 'Inter', sans-serif;">${count}</div>`,
+            html: `<div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 0.8125rem; font-family: 'Inter', sans-serif;">${count}</div>`,
             iconSize: [34, 34],
             iconAnchor: [17, 17]
           });
@@ -769,7 +769,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
     return L.divIcon({
       className: 'route-stop-icon',
-      html: `<div style="width:28px;height:28px;border-radius:999px;background:${color};border:2px solid #f8fafc;box-shadow:0 4px 10px rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center;color:#ffffff;font-weight:800;font-size:12px;">${iconHtml}</div>`,
+      html: `<div style="width:28px;height:28px;border-radius:999px;background:${color};border:2px solid #f8fafc;box-shadow:0 4px 10px rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center;color:#ffffff;font-weight:800;font-size:0.75rem;">${iconHtml}</div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14]
     });
@@ -798,7 +798,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     const { icon, color } = this.getCategoryVisuals(categoryName, type);
     return L.divIcon({
       className: 'poi-category-icon',
-      html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid #ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:14px;"><i class="bi ${icon}"></i></div>`,
+      html: `<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2px solid #ffffff;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:0.875rem;"><i class="bi ${icon}"></i></div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14]
     });
@@ -808,7 +808,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     const icon = type === 'accommodation' ? 'bi-building' : 'bi-geo-alt-fill';
     return L.divIcon({
       className: 'poi-type-icon',
-      html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #f8fafc;box-shadow:0 2px 6px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:12px;"><i class="bi ${icon}"></i></div>`,
+      html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #f8fafc;box-shadow:0 2px 6px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:0.75rem;"><i class="bi ${icon}"></i></div>`,
       iconSize: [24, 24],
       iconAnchor: [12, 12]
     });
@@ -818,7 +818,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
     const width = Math.max(52, label.length * 8 + 20);
     return L.divIcon({
       className: 'route-endpoint-icon',
-      html: `<div style="padding:0 10px;height:26px;border-radius:999px;background:${color};border:2px solid #f8fafc;box-shadow:0 6px 14px rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;color:#ffffff;font-weight:800;font-size:10px;letter-spacing:0.03em;white-space:nowrap;">${label}</div>`,
+      html: `<div style="padding:0 10px;height:26px;border-radius:999px;background:${color};border:2px solid #f8fafc;box-shadow:0 6px 14px rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center;color:#ffffff;font-weight:800;font-size:0.625rem;letter-spacing:0.03em;white-space:nowrap;">${label}</div>`,
       iconSize: [width, 26],
       iconAnchor: [width / 2, 13]
     });

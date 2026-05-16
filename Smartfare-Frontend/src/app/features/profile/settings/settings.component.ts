@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
+import { NavbarComponent } from '../../ui/navbar/navbar.component';
 import { ProfileService } from '../../../core/services/profile.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -16,7 +17,7 @@ const TRANSPORTS = ['Auto', 'Treno', 'Aereo', 'Barca', 'Bus', 'Bicicletta', 'A p
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, RouterModule, NavbarComponent],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css'
 })
@@ -49,6 +50,9 @@ export class SettingsComponent implements OnInit {
   birthDate = signal('');
   avatarUrl = signal('');
   backgroundImageUrl = signal('');
+  bio = signal('');
+  instagramUrl = signal('');
+  twitterUrl = signal('');
   pageBackground = signal('');
 
   // Preferences form
@@ -107,6 +111,9 @@ export class SettingsComponent implements OnInit {
       this.street.set(p.street ?? '');
       this.avatarUrl.set(p.avatarUrl ?? '');
       this.backgroundImageUrl.set(p.backgroundImageUrl ?? '');
+      this.bio.set(p.bio ?? '');
+      this.instagramUrl.set(p.instagramUrl ?? '');
+      this.twitterUrl.set(p.twitterUrl ?? '');
       if (p.birthDate) {
         this.birthDate.set(new Date(p.birthDate).toISOString().split('T')[0]);
       }
@@ -134,6 +141,9 @@ export class SettingsComponent implements OnInit {
       surname: this.surname(),
       city: this.city(),
       street: this.street(),
+      bio: this.bio(),
+      instagramUrl: this.instagramUrl(),
+      twitterUrl: this.twitterUrl(),
       birthDate: this.birthDate() ? new Date(this.birthDate()).toISOString() : null,
     };
 

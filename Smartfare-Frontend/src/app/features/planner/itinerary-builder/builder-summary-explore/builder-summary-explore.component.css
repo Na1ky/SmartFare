@@ -12,7 +12,7 @@
 }
 
 .wl-section-header h2 {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 800;
   margin: 0;
   display: flex;
@@ -28,7 +28,7 @@
   padding: 12px 28px;
   border-radius: 14px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 0.875rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -82,7 +82,7 @@
   color: white;
   padding: 6px 14px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -93,14 +93,14 @@
 
 .wl-explore-info h3 {
   margin: 0 0 12px 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 800;
   color: #f8fafc;
 }
 
 .wl-explore-info p {
   color: #94a3b8;
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -135,7 +135,7 @@
 
 .wl-provider span {
   color: #f8fafc;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -145,7 +145,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 8px 16px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -163,7 +163,7 @@
 }
 
 .wl-no-explore i {
-  font-size: 32px;
+  font-size: 2rem;
   margin-bottom: 16px;
   opacity: 0.5;
 }

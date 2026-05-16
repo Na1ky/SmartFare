@@ -19,7 +19,7 @@
     <main class="container hero-content-wrap">
       <div class="row w-100 justify-content-center text-center">
         <div class="col-12 col-lg-10 mx-auto" appRevealOnScroll="fade-up">
-          <span class="badge rounded-pill text-bg-light px-3 py-2 mb-3">SmartFare Tickets</span>
+          <span class="badge rounded-pill text-bg-light px-3 py-2 mb-3">SmartFare </span>
           <h1 class="hero-title mb-3">
             <span class="typing-line">
               {{ heroLineTop() }}
@@ -41,7 +41,8 @@
 </div>
 
 <!-- Featured Itineraries Section -->
-<app-featured-itineraries [itineraries]="publicItineraries()" [loading]="isLoadingPublicItineraries()"></app-featured-itineraries>
+<app-featured-itineraries [itineraries]="publicItineraries()"
+  [loading]="isLoadingPublicItineraries()"></app-featured-itineraries>
 
 <!-- Features Section -->
 <app-features-grid></app-features-grid>

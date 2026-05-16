@@ -31,6 +31,10 @@ input, textarea, select, button {
   max-width: 100%;
 }
 
+html {
+  font-size: clamp(14px, 0.8rem + 0.4vw, 18px);
+}
+
 html,
 body {
   margin: 0;

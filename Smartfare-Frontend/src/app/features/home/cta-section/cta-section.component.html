@@ -1,11 +1,22 @@
-<section class="cta-section">
-  <div class="cta-overlay"></div>
-  <div class="container cta-content">
-    <h2 appRevealOnScroll="fade-up">Pronto a Partire?</h2>
-    <p appRevealOnScroll="fade-up" [revealDelay]="100">Unisciti a migliaia di viaggiatori che stanno scoprendo le coste più belle del mondo con SmartFare.</p>
-    <div class="cta-btns" appRevealOnScroll="fade-up" [revealDelay]="200">
-      <a routerLink="/auth/login" class="btn-primary-sf">Inizia Ora</a>
-      <a routerLink="/manual/planner" class="btn-secondary-sf">Esplora Mappe</a>
+<section class="cta-venture">
+  <div class="background-overlay"></div>
+  <div class="content">
+    <div class="venture-header" appRevealOnScroll="fade-up">
+      <div class="line"></div>
+      <h2>LET'S VENTURE</h2>
+      <div class="line"></div>
     </div>
+    
+    <p class="venture-sub" appRevealOnScroll="fade-up" [revealDelay]="100">
+      Scopri un'esperienza di viaggio unica e immersiva per la tua prossima grande avventura.
+    </p>
+
+    <a routerLink="/itineraries/new" class="btn-venture" appRevealOnScroll="fade-up" [revealDelay]="200">
+      INIZIA ORA
+    </a>
+
+    <p class="venture-contact" appRevealOnScroll="fade-up" [revealDelay]="300">
+      Oppure esplora i consigli del nostro team di viaggiatori
+    </p>
   </div>
 </section>

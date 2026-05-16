@@ -12,6 +12,7 @@ import accommodationRoutes from './routes/accommodation.route';
 import uploadRoutes from './routes/upload.route';
 import chatRoutes from './routes/chat.route';
 import profileRoutes from './routes/profile.route';
+import followRoutes from './routes/follow.route';
 import { errorHandler } from "./middleware/error.middleware";
 
 
@@ -68,7 +69,7 @@ export function createApp() {
       }
       callback(new Error(`CORS non autorizzato per origin: ${origin}`));
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
   }));
@@ -98,6 +99,7 @@ export function createApp() {
   app.use("/api/accommodation", accommodationRoutes);
   app.use("/api/upload", uploadRoutes);
   app.use("/api/profile", profileRoutes);
+  app.use("/api/follow", followRoutes);
   app.use("/auth", authRoutes);
 
   // Global Error handling

@@ -1,0 +1,151 @@
+<div class="profile-page">
+  <div class="navbar-layer">
+    <app-navbar></app-navbar>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loader-ring"></div>
+      <p>Caricamento profilo...</p>
+    </div>
+  } @else {
+    <main class="profile-main">
+      
+      <!-- ─── COVER & BIO HEADER ─── -->
+      <header class="profile-header">
+        <div class="cover-photo" [style.background-image]="pageBackground() ? 'url(' + pageBackground() + ')' : 'none'">
+          <div class="cover-overlay"></div>
+        </div>
+
+        <div class="profile-info-container">
+          <div class="avatar-wrapper">
+            @if (avatarUrl()) {
+              <img [src]="avatarUrl()" alt="Avatar" class="avatar-img">
+            } @else {
+              <div class="avatar-fallback"><i class="bi bi-person-fill"></i></div>
+            }
+          </div>
+
+          <div class="user-details">
+            <h1 class="user-name">{{ displayName() }}</h1>
+            <div class="user-meta">
+              @if (age()) {
+                <span class="meta-item"><i class="bi bi-person-fill"></i> {{ age() }} anni</span>
+              }
+              @if (birthDateStr()) {
+                <span class="meta-item"><i class="bi bi-calendar3"></i> Nato il {{ birthDateStr() }}</span>
+              }
+              @if (city()) {
+                <span class="meta-item"><i class="bi bi-geo-alt-fill"></i> {{ city() }}</span>
+              }
+            </div>
+            
+            @if (bio()) {
+              <div class="user-bio">
+                <p>{{ bio() }}</p>
+              </div>
+            }
+
+            @if (instagramUrl() || twitterUrl()) {
+              <div class="social-links">
+                @if (instagramUrl()) {
+                  <a [href]="'https://instagram.com/' + instagramUrl()" target="_blank" class="social-link instagram">
+                    <i class="bi bi-instagram"></i>
+                  </a>
+                }
+                @if (twitterUrl()) {
+                  <a [href]="'https://twitter.com/' + twitterUrl()" target="_blank" class="social-link twitter">
+                    <i class="bi bi-twitter-x"></i>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="profile-summary-row">
+            <div class="user-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{ publicItinerariesCount() }}</span>
+                <span class="stat-label">itinerari</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ followersCount() }}</span>
+                <span class="stat-label">follower</span>
+              </div>
+            </div>
+
+            <div class="profile-actions">
+              @if (isMe()) {
+                <button class="btn-settings" (click)="goToSettings()">
+                  <i class="bi bi-gear-fill"></i> Modifica
+                </button>
+              } @else {
+                <button class="btn-follow" [class.following]="isFollowing()" (click)="toggleFollow()" [disabled]="isFollowingLoading()">
+                  @if (isFollowing()) {
+                    <i class="bi bi-person-check-fill"></i> Segui già
+                  } @else {
+                    <i class="bi bi-person-plus-fill"></i> Segui
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ─── TABS ─── -->
+      <section class="profile-content">
+        <div class="tabs-container">
+          @if (isMe()) {
+            <button class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+              <i class="bi bi-grid-3x3-gap"></i> Tutti ({{ allItineraries().length }})
+            </button>
+            <button class="tab-btn" [class.active]="activeTab() === 'private'" (click)="setTab('private')">
+              <i class="bi bi-lock-fill"></i> Privati ({{ privateCount() }})
+            </button>
+            <button class="tab-btn" [class.active]="activeTab() === 'public'" (click)="setTab('public')">
+              <i class="bi bi-globe-americas"></i> Pubblici ({{ publicCount() }})
+            </button>
+          } @else {
+            <div class="tab-btn active">
+              <i class="bi bi-grid-3x3-gap"></i> Itinerari Pubblici ({{ allItineraries().length }})
+            </div>
+          }
+        </div>
+
+        <!-- ─── ITINERARIES GRID ─── -->
+        <div class="itineraries-grid">
+          @if (filteredItineraries().length === 0) {
+            <div class="empty-state">
+              <i class="bi bi-journal-x"></i>
+              <h3>Nessun itinerario trovato</h3>
+              <p>Non ci sono itinerari in questa sezione.</p>
+            </div>
+          } @else {
+            @for (itinerary of filteredItineraries(); track itinerary.id) {
+              <div class="itinerary-card" [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itinerary.id }">
+                <div class="card-image">
+                  <img [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&q=80&w=800'" [alt]="itinerary.name">
+                  <div class="visibility-badge" [class.public]="itinerary.isPublished">
+                    @if (itinerary.isPublished) {
+                      <i class="bi bi-globe"></i> Pubblico
+                    } @else {
+                      <i class="bi bi-lock-fill"></i> Privato
+                    }
+                  </div>
+                </div>
+                <div class="card-body">
+                  <h3 class="card-title">{{ itinerary.name }}</h3>
+                  <div class="card-date">
+                    <i class="bi bi-calendar3"></i> {{ formatDateRange(itinerary) }}
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
+
+    </main>
+  }
+</div>

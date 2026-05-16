@@ -195,10 +195,8 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end mt-2 p-2 shadow-sm rounded-3">
           @if (isAuthenticated()) {
-            <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/itineraries']">
-              <i class="bi bi-journal-bookmark"></i><span>I miei itinerari</span></a></li>
-            <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/favorites']">
-              <i class="bi bi-heart"></i><span>Preferiti</span></a></li>
+            <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile']">
+              <i class="bi bi-person-circle"></i><span>Profilo</span></a></li>
             <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/settings']">
               <i class="bi bi-gear"></i><span>Impostazioni</span></a></li>
             <li><hr class="dropdown-divider border-white-10"></li>

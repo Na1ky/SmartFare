@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import prisma from "../../config/prisma";
 import { ImageService } from "../image/image.service";
+import { EmailService } from "../email/email.service";
 
 type DraftItemPayload = {
     itemTypeCode: string;
@@ -43,9 +44,11 @@ const DEFAULT_ITINERARY_IMAGE_URL = "https://images.trvl-media.com/place/6046257
 
 export class ItineraryService {
     private imageService: ImageService;
+    private emailService: EmailService;
 
     constructor() {
         this.imageService = new ImageService();
+        this.emailService = new EmailService();
     }
 
     private getItineraryInclude() {
@@ -469,7 +472,7 @@ export class ItineraryService {
                         updateData.chatSession = { connect: { id: enrichedDraftPayload.chatSessionId } };
                     }
 
-                    await tx.itinerary.update({
+                    const up = await tx.itinerary.update({
                         where: { id: Number(id) },
                         data: updateData
                     });
@@ -492,6 +495,11 @@ export class ItineraryService {
                         include: this.getItineraryInclude()
                     });
                 }, { maxWait: 10000, timeout: 15000 });
+
+                // Trigger notification if published now but wasn't before
+                if (enrichedDraftPayload.isPublished && !existing.isPublished) {
+                    this.notifyFollowers(userId, updated).catch(e => console.error("Async notification error:", e));
+                }
 
                 return this.withLocation(updated);
             }
@@ -609,6 +617,10 @@ export class ItineraryService {
                     include: this.getItineraryInclude()
                 });
             }, { maxWait: 10000, timeout: 15000 });
+
+            if (enrichedDraftPayload.isPublished) {
+                this.notifyFollowers(userId, createdWithItems).catch(e => console.error("Async notification error:", e));
+            }
 
             return this.withLocation(createdWithItems);
         } catch (error) {
@@ -929,5 +941,48 @@ export class ItineraryService {
             where: { id, userId },
             include: this.getItineraryInclude()
         });
+    }
+
+    private async notifyFollowers(userId: number, itinerary: any) {
+        try {
+            const followers = await prisma.follow.findMany({
+                where: { followingId: userId },
+                include: {
+                    follower: {
+                        select: {
+                            email: true
+                        }
+                    }
+                }
+            });
+
+            if (followers.length === 0) return;
+
+            const author = await prisma.user.findUnique({
+                where: { id: userId },
+                include: { profile: true }
+            });
+
+            const authorName = author?.profile ? `${author.profile.name} ${author.profile.surname}`.trim() : author?.email || 'Un utente';
+            const frontendUrl = (process.env.FRONTEND_URL || 'https://smartfare.nicolas-dominici.it').replace(/\/+$/, '');
+            const profileLink = `${frontendUrl}/profile/${userId}`;
+            const itineraryImage = itinerary.imageUrl || "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1000";
+
+            // Send emails in parallel but catch errors individually
+            const emailPromises = followers.map(f =>
+                this.emailService.sendNewItineraryNotification(
+                    f.follower.email,
+                    authorName,
+                    itinerary.name || "Nuovo Viaggio",
+                    profileLink,
+                    itineraryImage
+                ).catch(err => console.error(`Failed to notify follower ${f.follower.email}:`, err))
+            );
+
+            await Promise.all(emailPromises);
+            console.log(`✅ Notifiche inviate a ${followers.length} follower per l'itinerario ${itinerary.id}`);
+        } catch (error) {
+            console.error("Errore critico durante la notifica dei follower:", error);
+        }
     }
 }

@@ -23,6 +23,9 @@ const updateProfileSchema = z.object({
     birthDate: z.string().datetime({ offset: true }).optional().nullable(),
     avatarUrl: z.string().url().max(500).optional().nullable(),
     backgroundImageUrl: z.string().url().max(500).optional().nullable(),
+    bio: z.string().trim().max(500).optional().nullable(),
+    instagramUrl: z.string().trim().max(100).optional().nullable(),
+    twitterUrl: z.string().trim().max(100).optional().nullable(),
 });
 
 const updatePreferencesSchema = z.object({
@@ -40,15 +43,28 @@ router.get('/me', authenticateJWT, async (req: AuthRequest, res: Response, next:
     try {
         const userId = Number(req.user!.userId);
 
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                email: true,
-                authProvider: true,
-                profile: true,
-                preference: true,
-            }
-        });
+        const [user, followersCount, followingCount, publicItinerariesCount] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    email: true,
+                    authProvider: true,
+                    profile: true,
+                    preference: true,
+                }
+            }),
+            prisma.follow.count({ where: { followingId: userId } }),
+            prisma.follow.count({ where: { followerId: userId } }),
+            prisma.itinerary.count({ 
+                where: { 
+                    userId, 
+                    OR: [
+                        { isPublished: true },
+                        { visibilityCode: 'PUBLIC' }
+                    ]
+                } 
+            })
+        ]);
 
         if (!user) {
             return res.status(404).json({ error: 'Utente non trovato' });
@@ -59,6 +75,53 @@ router.get('/me', authenticateJWT, async (req: AuthRequest, res: Response, next:
             authProvider: user.authProvider,
             profile: user.profile ?? null,
             preference: user.preference ?? null,
+            followersCount,
+            followingCount,
+            publicItinerariesCount
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ─── GET /api/profile/:id ─────────────────────────────────────────────────────
+router.get('/:id', authenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.params.id);
+
+        const [user, followersCount, followingCount, publicItinerariesCount] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: userId },
+                select: {
+                    email: true,
+                    authProvider: true,
+                    profile: true,
+                }
+            }),
+            prisma.follow.count({ where: { followingId: userId } }),
+            prisma.follow.count({ where: { followerId: userId } }),
+            prisma.itinerary.count({ 
+                where: { 
+                    userId, 
+                    OR: [
+                        { isPublished: true },
+                        { visibilityCode: 'PUBLIC' }
+                    ]
+                } 
+            })
+        ]);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Utente non trovato' });
+        }
+
+        return res.json({
+            email: user.email,
+            authProvider: user.authProvider,
+            profile: user.profile ?? null,
+            followersCount,
+            followingCount,
+            publicItinerariesCount
         });
     } catch (error) {
         next(error);

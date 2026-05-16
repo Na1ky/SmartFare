@@ -25,6 +25,7 @@ export class AuthService {
   private readonly PENDING_SOCIAL_REGISTRATION_KEY = 'pendingSocialRegistration';
 
   private readonly tokenSignal = signal<string | null>(null);
+  readonly userProfile = signal<any | null>(null);
 
   private AUTH_URL = `${environment.apiUrl}/auth`;
 
@@ -33,14 +34,28 @@ export class AuthService {
 
     if (token && !this.isTokenExpired(token)) {
       this.tokenSignal.set(token);
+      this.fetchProfile();
     } else if (token) {
       localStorage.removeItem(this.TOKEN_KEY);
     }
   }
 
+  fetchProfile(): void {
+    if (!this.IsAuthenticated()) return;
+    this.http.get<any>(`${environment.apiUrl}/api/profile/me`).subscribe({
+      next: (data) => {
+        if (data?.profile) {
+          this.userProfile.set(data.profile);
+        }
+      },
+      error: () => this.userProfile.set(null)
+    });
+  }
+
   saveAuth(token: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
     this.tokenSignal.set(token);
+    this.fetchProfile();
   }
 
   Logout() {

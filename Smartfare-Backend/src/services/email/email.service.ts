@@ -162,7 +162,7 @@ export class EmailService {
         
         Se non hai richiesto questa operazione puoi ignorare questa email.
         
-        SmartFare Tickets
+        SmartFare 
         support@smartfare.nicolas-dominici.it`;
 
         const htmlTemplate = `
@@ -272,7 +272,7 @@ export class EmailService {
                     <td style="padding:25px 40px;background-color:#fafafa;border-top:1px solid #eeeeee;">
         
                       <p style="margin:0 0 8px 0;font-size:12px;color:#888888;">
-                        © 2026 SmartFare Tickets. Tutti i diritti riservati.
+                        © 2026 Smartfare. Tutti i diritti riservati.
                       </p>
         
                       <p style="margin:0;font-size:12px;color:#888888;">
@@ -303,7 +303,7 @@ export class EmailService {
                 const payload = {
                     personalizations: [{
                         to: [{ email: to }],
-                        subject: 'Recupero Password Account - SmartFare Tickets'
+                        subject: 'Recupero Password Account - SmartFare '
                     }],
                     from: { email: sgFrom, name: 'SmartFare (no-reply)' },
                     content: [
@@ -340,7 +340,7 @@ export class EmailService {
             const info = await this.transporter!.sendMail({
                 from: fromEmail,
                 to: to,
-                subject: "Recupero Password Account - SmartFare Tickets",
+                subject: "Recupero Password Account - SmartFare ",
                 text: textTemplate,
                 html: htmlTemplate
                 ,
@@ -378,7 +378,7 @@ export class EmailService {
             logoDataUri = null;
         }
 
-        const textTemplate = `Benvenuto su SmartFare!\n\nGrazie per esserti registrato. Per completare la registrazione e attivare il tuo account, verifica il tuo indirizzo email visitando questo link:\n${verificationLink}\n\nQuesto link scadrà tra 1 ora.\n\nSe non hai creato un account SmartFare, puoi ignorare questa email in tutta sicurezza.\n\nCordialmente,\nIl team SmartFare\n\n© 2026 SmartFare Tickets. Tutti i diritti riservati.`;
+        const textTemplate = `Benvenuto su SmartFare!\n\nGrazie per esserti registrato. Per completare la registrazione e attivare il tuo account, verifica il tuo indirizzo email visitando questo link:\n${verificationLink}\n\nQuesto link scadrà tra 1 ora.\n\nSe non hai creato un account SmartFare, puoi ignorare questa email in tutta sicurezza.\n\nCordialmente,\nIl team SmartFare\n\n© 2026 Smartfare. Tutti i diritti riservati.`;
 
         const htmlTemplate = `<!DOCTYPE html>
 <html lang="it">
@@ -406,7 +406,7 @@ export class EmailService {
         
         <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
         
-        <p style="font-size: 12px; color: #999; margin-bottom: 0;">© 2026 SmartFare Tickets. Tutti i diritti riservati.</p>
+        <p style="font-size: 12px; color: #999; margin-bottom: 0;">© 2026 Smartfare. Tutti i diritti riservati.</p>
         <p style="font-size: 12px; color: #999; margin-top: 5px;">Se non hai richiesto questa email, puoi ignorarla.</p>
     </div>
 </body>
@@ -423,7 +423,7 @@ export class EmailService {
                 const payload = {
                     personalizations: [{
                         to: [{ email: to }],
-                        subject: 'Verifica il tuo indirizzo email - SmartFare Tickets'
+                        subject: 'Verifica il tuo indirizzo email - SmartFare '
                     }],
                     from: { email: sgFrom, name: 'SmartFare (no-reply)' },
                     content: [
@@ -460,7 +460,7 @@ export class EmailService {
             const info = await this.transporter!.sendMail({
                 from: fromEmail,
                 to: to,
-                subject: "Verifica il tuo indirizzo email - SmartFare Tickets",
+                subject: "Verifica il tuo indirizzo email - SmartFare ",
                 text: textTemplate,
                 html: htmlTemplate
                 ,
@@ -478,6 +478,104 @@ export class EmailService {
         } catch (error) {
             console.error("Errore durante l'invio dell'email di verifica:", error);
             throw new Error("Errore durante l'invio dell'email di verifica");
+        }
+    }
+
+    public async sendNewItineraryNotification(to: string, authorName: string, itineraryName: string, profileLink: string, itineraryImage: string) {
+        await this.ensureTransporter();
+        if (!this.transporter && !this.useSendgrid) return;
+
+        const textTemplate = `Ciao! ${authorName} ha pubblicato un nuovo itinerario: ${itineraryName}.\nScopri di più sul suo profilo: ${profileLink}`;
+
+        const htmlTemplate = `<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: 'Inter', Arial, sans-serif; color: #1f2937; line-height: 1.6; background: #f9fafb; margin:0; padding:40px 20px;">
+    <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 25px rgba(0,0,0,0.05); border: 1px solid #e5e7eb;">
+        <!-- Header -->
+        <div style="padding: 30px; text-align: center; background: #ffffff;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #6366f1; letter-spacing: -0.5px;">SMARTFARE</h1>
+            <p style="margin: 5px 0 0; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Community News</p>
+        </div>
+
+        <!-- Hero Image -->
+        <div style="width: 100%; height: 280px; background: #f3f4f6; text-align:center; overflow:hidden;">
+            <img src="${itineraryImage}" alt="${itineraryName}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 40px 30px;">
+            <p style="margin: 0 0 10px; font-size: 14px; color: #6366f1; font-weight: 600; text-transform: uppercase;">Nuovo itinerario pubblicato</p>
+            <h2 style="margin: 0 0 20px; font-size: 28px; line-height: 1.2; color: #111827; font-weight: 800;">${itineraryName}</h2>
+            
+            <p style="margin: 0 0 25px; font-size: 16px; color: #4b5563;">
+                <strong>${authorName}</strong>, che segui su SmartFare, ha appena condiviso una nuova avventura. Non perderti i suoi consigli di viaggio e scopri i posti migliori da visitare!
+            </p>
+
+            <!-- CTA -->
+            <div style="text-align: center; margin: 35px 0;">
+                <a href="${profileLink}" style="display: inline-block; background: #6366f1; color: #ffffff; padding: 16px 32px; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 16px; transition: background 0.2s;">
+                    Guarda il Profilo
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 30px; background: #f9fafb; border-top: 1px solid #e5e7eb; text-align: center;">
+            <p style="margin: 0; font-size: 13px; color: #9ca3af;">
+                © 2026 Smartfare. <br>
+                Hai ricevuto questa email perché segui <strong>${authorName}</strong>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+        try {
+            const smtpFrom = process.env.EMAIL_FROM || process.env.SMTP_FROM || process.env.SMTP_USER;
+            const fromEmail = smtpFrom
+                ? `"SmartFare Community" <${smtpFrom}>`
+                : '"SmartFare Community" <support@smartfare.com>';
+
+            if (this.useSendgrid && this.sendgridApiKey) {
+                const sgFrom = this.defaultFromEmail || 'support@smartfare.com';
+                const payload = {
+                    personalizations: [{
+                        to: [{ email: to }],
+                        subject: `Nuovo itinerario da ${authorName} su SmartFare!`
+                    }],
+                    from: { email: sgFrom, name: 'SmartFare Community' },
+                    content: [
+                        { type: 'text/plain', value: textTemplate },
+                        { type: 'text/html', value: htmlTemplate }
+                    ],
+                    tracking_settings: {
+                        click_tracking: { enable: true },
+                        open_tracking: { enable: true }
+                    }
+                };
+
+                await axios.post('https://api.sendgrid.com/v3/mail/send', payload, {
+                    headers: {
+                        Authorization: `Bearer ${this.sendgridApiKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                return;
+            }
+
+            await this.transporter!.sendMail({
+                from: fromEmail,
+                to: to,
+                subject: `Nuovo itinerario da ${authorName} su SmartFare!`,
+                text: textTemplate,
+                html: htmlTemplate
+            });
+        } catch (error) {
+            console.error("Errore invio notifica follower:", error);
         }
     }
 }

@@ -33,7 +33,7 @@
       @if (userAvatar) {
       <div class="dropdown">
         <img [src]="userAvatar" alt="User Avatar" class="user-avatar-nav align-self-center pointer"
-          referrerpolicy="no-referrer" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false"/>
+          referrerpolicy="no-referrer" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" />
         <ul class="dropdown-menu dropdown-menu-end mt-2 p-2 shadow-sm rounded-3">
           <li>
             <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile/itineraries']">
@@ -42,16 +42,15 @@
             </a>
           </li>
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-              [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile/itineraries']"
+              [queryParams]="{tab: 'favorites'}">
               <i class="bi bi-heart"></i>
               <span>Itinerari Preferiti</span>
             </a>
           </li>
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/settings']">
-              <i class="bi bi-gear"></i>
-              <span>Impostazioni</span>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile']">
+              <i class="bi bi-person-circle"></i><span>Profilo</span>
             </a>
           </li>
           <li>
@@ -71,16 +70,9 @@
           aria-expanded="false"></i>
         <ul class="dropdown-menu dropdown-menu-end mt-2 p-2 shadow-sm rounded-3">
           <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile/itineraries']">
-              <i class="bi bi-journal-bookmark"></i>
-              <span>I miei Itinerari</span>
-            </a>
-          </li>
-          <li>
-            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
-              [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}">
-              <i class="bi bi-heart"></i>
-              <span>Itinerari Preferiti</span>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile']">
+              <i class="bi bi-person-circle"></i>
+              <span>Profilo</span>
             </a>
           </li>
           <li>
@@ -116,51 +108,104 @@
 
   <!-- MOBILE MENU OVERLAY -->
   <div class="mobile-menu" [class.open]="mobileMenuOpen">
-    <div class="mobile-menu-header d-flex justify-content-between align-items-center">
-      <div class="logo">SMARTFARE</div>
+    <div class="mobile-menu-header">
+      <div class="logo d-flex align-items-center gap-2">
+        <img class='logo-img' src="favicon.png" alt='smartfareLogo'>
+        <span class="logo-text">SMARTFARE</span>
+      </div>
       <button class="close-btn" (click)="toggleMobileMenu()">&times;</button>
     </div>
-    <div class="mobile-nav-links d-flex flex-column gap-3">
-      @for (item of navItems; track item.label) {
-      @if (item.route === '/voyager') {
-      <a class="nav-item d-flex align-items-center gap-2" href="" (click)="openAiPlanner($event)">
-        <i [class]="item.icon"></i>
-        <span>{{ item.label }}</span>
-      </a>
-      } @else {
-      <a class="nav-item d-flex align-items-center gap-2" [routerLink]="item.route" (click)="closeMobileMenu()">
-        <i [class]="item.icon"></i>
-        <span>{{ item.label }}</span>
-      </a>
-      }
-      }
+
+    <div class="mobile-menu-content">
+      <!-- USER PROFILE CARD (if authenticated) -->
       @if (isAuthenticated) {
-      <div class="d-flex flex-column gap-2 align-items-center">
-        @if (userAvatar) {
-        <img [src]="userAvatar" alt="User Avatar" class="user-avatar-mobile" referrerpolicy="no-referrer"/>
-        } @else {
-        <i class="bi bi-person-circle fs-1"></i>
-        }
-        <a class="btn btn-outline-primary w-100 mt-2 d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="['/profile/itineraries']" (click)="closeMobileMenu()">
-          <i class="bi bi-journal-bookmark"></i>
-          <span>I miei Itinerari</span>
-        </a>
-        <a class="btn btn-outline-secondary w-100 mt-2 d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}" (click)="closeMobileMenu()">
-          <i class="bi bi-heart"></i>
-          <span>Itinerari Preferiti</span>
-        </a>
-        <a class="btn btn-outline-secondary w-100 mt-2 d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="['/settings']" (click)="closeMobileMenu()">
-          <i class="bi bi-gear"></i>
-          <span>Impostazioni</span>
-        </a>
-        <button class="btn btn-outline-danger w-100 mt-3" type="button" (click)="logout()">Logout</button>
+      <div class="user-profile-card mb-4">
+        <div class="profile-header">
+          <div class="avatar-wrapper">
+            @if (userAvatar) {
+            <img [src]="userAvatar" alt="User Avatar" class="user-avatar-mobile" referrerpolicy="no-referrer" />
+            } @else {
+            <div class="avatar-placeholder">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            }
+          </div>
+          <div class="user-info">
+            <h3 class="user-name">{{ userName }}</h3>
+            <p class="user-email text-muted">{{ userEmail }}</p>
+          </div>
+        </div>
       </div>
-      }@else {
-      <button class="btn login-btn w-100" (click)="login()">Login</button>
-      <a class="btn register-btn w-100" [routerLink]="['/register']" (click)="closeMobileMenu()">Register</a>
+      }
+
+      <!-- NAVIGATION LINKS -->
+      <div class="menu-section">
+        <h4 class="section-title">Menu Principale</h4>
+        <div class="mobile-nav-links d-flex flex-column gap-2">
+          @for (item of navItems; track item.label; let i = $index) {
+          <a class="menu-row" [routerLink]="item.route" (click)="closeMobileMenu()">
+            <div class="row-icon">
+              <i [class]="item.icon"></i>
+            </div>
+            <span class="row-label">{{ item.label }}</span>
+            <i class="bi bi-chevron-right ms-auto chevron"></i>
+          </a>
+          }
+        </div>
+      </div>
+
+      <!-- PERSONAL AREA SECTION (consistent with desktop) -->
+      @if (isAuthenticated) {
+      <div class="menu-section mt-4">
+        <h4 class="section-title">Area Personale</h4>
+        <div class="mobile-nav-links d-flex flex-column gap-2">
+          <a class="menu-row" [routerLink]="['/profile/itineraries']" (click)="closeMobileMenu()">
+            <div class="row-icon">
+              <i class="bi bi-journal-bookmark"></i>
+            </div>
+            <span class="row-label">I miei Itinerari</span>
+            <i class="bi bi-chevron-right ms-auto chevron"></i>
+          </a>
+          <a class="menu-row" [routerLink]="['/profile/itineraries']" [queryParams]="{tab: 'favorites'}"
+            (click)="closeMobileMenu()">
+            <div class="row-icon text-danger">
+              <i class="bi bi-heart-fill"></i>
+            </div>
+            <span class="row-label">Preferiti</span>
+            <i class="bi bi-chevron-right ms-auto chevron"></i>
+          </a>
+          <a class="menu-row" [routerLink]="['/profile']" (click)="closeMobileMenu()">
+            <div class="row-icon">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            <span class="row-label">Profilo</span>
+            <i class="bi bi-chevron-right ms-auto chevron"></i>
+          </a>
+          <a class="menu-row" [routerLink]="['/settings']" (click)="closeMobileMenu()">
+            <div class="row-icon">
+              <i class="bi bi-gear"></i>
+            </div>
+            <span class="row-label">Impostazioni</span>
+            <i class="bi bi-chevron-right ms-auto chevron"></i>
+          </a>
+
+          <div class="mt-4 px-2">
+            <button class="logout-row w-100" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Esci dall'account</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      } @else {
+      <!-- LOGIN/REGISTER FOR GUESTS -->
+      <div class="guest-actions mt-4 p-3 rounded-4">
+        <p class="guest-hint mb-3 text-center">Accedi per salvare i tuoi viaggi e usare l'AI Planner al meglio.</p>
+        <div class="d-flex flex-column gap-3">
+          <button class="btn login-btn w-100 py-2" (click)="login()">Login</button>
+          <a class="btn register-btn w-100 py-2" [routerLink]="['/register']" (click)="closeMobileMenu()">Registrati</a>
+        </div>
+      </div>
       }
     </div>
   </div>

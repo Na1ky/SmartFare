@@ -17,6 +17,16 @@ export const APP_ROUTES: Routes = [
   { path: 'itineraries/preview', loadComponent: () => import('./features/planner/itinerary-preview/itinerary-preview.component').then((p) => p.ItineraryPreviewComponent) },
   { path: 'itineraries/builder', loadComponent: () => import('./features/planner/itinerary-builder/itinerary-builder.component').then((m) => m.ItineraryBuilderComponent)},
   { path: 'voyager', loadComponent: () => import('./features/voyager-ai/voyager-ai.component').then((v) => v.VoyagerAiComponent), canActivate: [authGuard] },
+  { 
+    path: 'profile', 
+    loadComponent: () => import('./features/profile/profile-view/profile-view.component').then(m => m.ProfileViewComponent),
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'profile/:id', 
+    loadComponent: () => import('./features/profile/profile-view/profile-view.component').then(m => m.ProfileViewComponent),
+    canActivate: [authGuard]
+  },
   { path: 'settings', loadComponent: () => import('./features/profile/settings/settings.component').then((s) => s.SettingsComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

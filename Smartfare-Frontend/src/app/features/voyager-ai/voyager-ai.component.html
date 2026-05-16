@@ -286,14 +286,6 @@
       <!-- INPUT AREA -->
       <footer class="chat-footer">
         <div class="chat-input-container">
-          @if (chatService.messages().length < 3 && !message()) { <div class="quick-prompts">
-            @for (prompt of quickPrompts(); track prompt.label) {
-            <button (click)="usePrompt(prompt.text)">
-              {{ prompt.label }}
-            </button>
-            }
-        </div>
-        }
 
         @if (pendingAttachmentName()) {
         <div class="attachment-chip">

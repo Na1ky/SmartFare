@@ -1,6 +1,6 @@
 <section class="featured-itineraries">
   <div class="container">
-    <div class="section-header" appRevealOnScroll="fade-up">
+    <div class="section-header">
       <div class="section-title">
         <h2>Itinerari in Evidenza</h2>
         <p>Viaggi selezionati a mano per ispirare la tua anima.</p>
@@ -25,7 +25,7 @@
       </div>
       } @else {
       @for (itinerary of itineraries; track itinerary.id) {
-      <div class="itinerary-card" appRevealOnScroll="fade-up" [revealDelay]="$index * 100">
+      <div class="itinerary-card">
         <div class="card-image-wrap">
           <img
             [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800'"

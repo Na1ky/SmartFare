@@ -18,6 +18,12 @@ export class ProfileService {
     );
   }
 
+  getProfileById(id: number): Observable<UserProfileFull | null> {
+    return this.http.get<UserProfileFull>(`${this.API_URL}/${id}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
   getRandomLocationImage(): Observable<{ imageUrl: string } | null> {
     return this.http.get<{ imageUrl: string }>(`${environment.apiUrl}/api/locations/random-image`).pipe(
       catchError(() => of(null))
@@ -48,6 +54,27 @@ export class ProfileService {
     const formData = new FormData();
     formData.append('image', file);
     return this.http.post<{ success: boolean; url: string }>(`${this.API_URL}/upload/background`, formData).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  // ─── Follow System ───────────────────────────────────
+  private readonly FOLLOW_API_URL = `${environment.apiUrl}/api/follow`;
+
+  followUser(userId: number): Observable<{ success: boolean } | null> {
+    return this.http.post<{ success: boolean }>(`${this.FOLLOW_API_URL}/${userId}`, {}).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  unfollowUser(userId: number): Observable<{ success: boolean } | null> {
+    return this.http.delete<{ success: boolean }>(`${this.FOLLOW_API_URL}/${userId}`).pipe(
+      catchError(() => of(null))
+    );
+  }
+
+  getFollowStatus(userId: number): Observable<{ isFollowing: boolean } | null> {
+    return this.http.get<{ isFollowing: boolean }>(`${this.FOLLOW_API_URL}/status/${userId}`).pipe(
       catchError(() => of(null))
     );
   }

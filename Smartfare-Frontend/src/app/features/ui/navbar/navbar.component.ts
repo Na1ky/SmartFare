@@ -54,8 +54,31 @@ export class NavbarComponent {
   }
 
   get userAvatar() {
-    const avatar = this.authService.getUserData()?.avatarUrl;
-    return avatar;
+    const profile = this.authService.userProfile();
+    if (profile?.avatarUrl) return profile.avatarUrl;
+    return this.authService.getUserData()?.avatarUrl;
+  }
+
+  get userName() {
+    const profile = this.authService.userProfile();
+    if (profile?.name) {
+      return `${profile.name} ${profile.surname || ''}`.trim();
+    }
+    
+    const data = this.authService.getUserData();
+    if (!data) return '';
+    if (data.name || data.given_name) {
+      const first = data.name || data.given_name;
+      const last = data.surname || data.family_name || '';
+      return `${first} ${last}`.trim();
+    }
+    return 'Viaggiatore';
+  }
+
+  get userEmail() {
+    const profile = this.authService.userProfile();
+    if (profile?.email) return profile.email;
+    return this.authService.getUserData()?.email;
   }
 
   async login() {

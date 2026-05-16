@@ -40,7 +40,7 @@
 }
 
 .wl-section-header h2 {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 800;
   margin: 0;
   display: flex;
@@ -98,7 +98,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .wl-selection-actions {
@@ -173,7 +173,7 @@
   cursor: pointer;
   transition: all 0.2s;
   color: rgba(255, 255, 255, 0.2);
-  font-size: 22px;
+  font-size: 1.375rem;
 }
 
 .wl-poi-checkbox:hover {
@@ -204,7 +204,7 @@
 
 .wl-day-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 800;
   color: #f8fafc;
   display: flex;
@@ -323,7 +323,7 @@
 .wl-group-title h4 {
   margin: 0;
   color: #f8fafc;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -340,12 +340,12 @@
 
 .wl-group-icon {
   color: #3b82f6;
-  font-size: 18px;
+  font-size: 1.125rem;
   filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
 }
 
 .wl-group-edit-icon {
-  font-size: 13px;
+  font-size: 0.8125rem;
   opacity: 0;
   color: #94a3b8;
   transition: opacity 0.2s, color 0.2s;
@@ -365,7 +365,7 @@
   border-radius: 8px;
   color: white;
   padding: 8px 12px;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 700;
   outline: none;
   min-width: 250px;
@@ -490,7 +490,7 @@
 }
 
 .wl-time-field label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #94a3b8;
 }
@@ -629,7 +629,7 @@
 }
 
 .wl-preview-info i {
-  font-size: 20px;
+  font-size: 1.25rem;
   color: #60a5fa;
   animation: pulseEye 2s infinite;
 }
@@ -641,7 +641,7 @@
 
 .wl-preview-info span {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 0.9375rem;
   letter-spacing: 0.02em;
 }
 
@@ -787,7 +787,7 @@
   }
 
   .wl-section-header h2 {
-    font-size: 22px;
+    font-size: 1.375rem;
     gap: 12px;
   }
 
@@ -796,13 +796,13 @@
   }
 
   .wl-day-date {
-    font-size: 11px;
+    font-size: 0.6875rem;
     opacity: 0.7;
     white-space: nowrap;
   }
 
   .wl-section-header h2 {
-    font-size: 20px;
+    font-size: 1.25rem;
     white-space: nowrap;
     flex-shrink: 0;
   }
@@ -821,7 +821,7 @@
     margin-left: 40px;
     margin-right: 8px;
     padding: 24px 16px;
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .wl-group-header-container {
@@ -834,7 +834,7 @@
   }
 
   .wl-group-title h4 {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 
   .wl-selection-action-bar {
@@ -846,7 +846,7 @@
 
   .wl-btn-group, .wl-btn-delete-selection {
     padding: 6px 12px;
-    font-size: 12px;
+    font-size: 0.75rem;
   }
 
   .wl-day-route-bar {
@@ -869,7 +869,7 @@
     width: 100%;
     justify-content: center;
     padding: 14px;
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
 }
 
@@ -906,7 +906,7 @@
 
   .wl-group-name-input {
     width: 100%;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .wl-group-time-actions {
@@ -917,7 +917,7 @@
 
   .wl-group-btn-time {
     padding: 6px 12px;
-    font-size: 11px;
+    font-size: 0.6875rem;
     flex: 1;
     justify-content: center;
   }

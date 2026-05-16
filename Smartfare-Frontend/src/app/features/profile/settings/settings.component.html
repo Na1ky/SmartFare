@@ -1,8 +1,14 @@
 <div class="settings-page" [style.background-image]="pageBackground() ? 'url(' + pageBackground() + ')' : 'none'">
   <div class="page-overlay"></div>
 
-  <!-- Main Dashboard Container -->
-  <div class="settings-dashboard">
+  <!-- Navbar Layer -->
+  <div class="navbar-layer">
+    <app-navbar></app-navbar>
+  </div>
+
+  <div class="dashboard-wrapper">
+    <!-- Main Dashboard Container -->
+    <div class="settings-dashboard">
     
     <!-- Sidebar / Left Panel -->
     <aside class="dashboard-sidebar">
@@ -63,9 +69,9 @@
         </button>
 
         <div class="nav-divider"></div>
-        <a class="nav-item nav-back" routerLink="/home">
+        <a class="nav-item nav-back" [routerLink]="['/profile']" >
           <i class="bi bi-arrow-left"></i>
-          <span>Torna all'app</span>
+          <span>Visualizza profilo</span>
         </a>
       </nav>
     </aside>
@@ -122,6 +128,29 @@
                 </div>
               </div>
             }
+            
+            <div class="field-group full-width">
+              <label>Biografia</label>
+              <textarea [value]="bio()" (input)="bio.set($any($event.target).value)"
+                        placeholder="Raccontaci qualcosa di te..." rows="3"></textarea>
+            </div>
+            
+            <div class="field-group">
+              <label><i class="bi bi-instagram"></i> Username Instagram</label>
+              <div class="input-with-icon">
+                <span>@</span>
+                <input type="text" [value]="instagramUrl()" (input)="instagramUrl.set($any($event.target).value)"
+                       placeholder="tuo.username">
+              </div>
+            </div>
+            <div class="field-group">
+              <label><i class="bi bi-twitter-x"></i> Username X (Twitter)</label>
+              <div class="input-with-icon">
+                <span>@</span>
+                <input type="text" [value]="twitterUrl()" (input)="twitterUrl.set($any($event.target).value)"
+                       placeholder="tuo_username">
+              </div>
+            </div>
           </div>
 
           <div class="action-bar">
@@ -286,5 +315,7 @@
         </section>
       }
     </main>
+    </div>
   </div>
+
 </div>

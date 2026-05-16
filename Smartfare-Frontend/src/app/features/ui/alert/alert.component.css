@@ -78,7 +78,7 @@
 
 .sf-alert-title {
   margin: 0;
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   color: #fff;
@@ -87,7 +87,7 @@
 
 .sf-alert-message {
   margin: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 400;
   color: #cbd5e0;
   line-height: 1.5;
@@ -198,11 +198,11 @@
   }
   
   .sf-alert-title {
-    font-size: 15px;
+    font-size: 0.9375rem;
   }
   
   .sf-alert-message {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   
   @keyframes alertEnter {

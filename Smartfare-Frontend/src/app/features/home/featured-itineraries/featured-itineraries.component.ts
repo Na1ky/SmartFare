@@ -2,12 +2,11 @@ import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Itinerary } from '../../../core/models/itinerary.model';
-import { RevealOnScrollDirective } from '../../../core/directives/reveal-on-scroll.directive';
 
 @Component({
   selector: 'app-featured-itineraries',
   standalone: true,
-  imports: [CommonModule, RouterLink, RevealOnScrollDirective],
+  imports: [CommonModule, RouterLink],
   templateUrl: './featured-itineraries.component.html',
   styleUrl: './featured-itineraries.component.css'
 })

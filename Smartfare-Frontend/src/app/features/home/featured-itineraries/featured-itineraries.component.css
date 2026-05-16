@@ -1,9 +1,3 @@
-:host {
-  /* Skip rendering when off-screen — major scroll performance gain */
-  content-visibility: auto;
-  contain-intrinsic-size: 0 700px;
-  display: block;
-}
 
 .featured-itineraries {
   background-color: #020617;
