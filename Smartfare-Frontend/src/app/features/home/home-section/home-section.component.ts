@@ -12,10 +12,10 @@ import {
   ChangeDetectorRef,
   inject
 } from '@angular/core';
+import { animate, query, stagger, state, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { NavbarComponent } from "../../ui/navbar/navbar.component";
-import { AiPromptBarComponent } from "../ai-prompt-bar/ai-prompt-bar.component";
-import { RevealOnScrollDirective } from '../../../core/directives/reveal-on-scroll.directive';
+import { NavbarComponent } from '../../ui/navbar/navbar.component';
+import { AiPromptBarComponent } from '../ai-prompt-bar/ai-prompt-bar.component';
 import { ItineraryService } from '../../../core/services/itinerary.service';
 import { Itinerary } from '../../../core/models/itinerary.model';
 import { FooterComponent } from '../../ui/footer/footer.component';
@@ -31,7 +31,6 @@ import { AppLoaderComponent } from '../../ui/loader/loader.component';
     CommonModule,
     NavbarComponent,
     AiPromptBarComponent,
-    RevealOnScrollDirective,
     FooterComponent,
     FeaturedItinerariesComponent,
     FeaturesGridComponent,
@@ -40,7 +39,19 @@ import { AppLoaderComponent } from '../../ui/loader/loader.component';
   ],
   templateUrl: './home-section.component.html',
   styleUrl: './home-section.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [
+    trigger('homeReveal', [
+      state('hidden', style({ opacity: 0 })),
+      state('visible', style({ opacity: 1 })),
+      transition('hidden => visible', [
+        query('.hero-reveal', [
+          style({ opacity: 0, transform: 'translateY(24px)' }),
+          stagger(140, animate('700ms cubic-bezier(0.2, 0, 0, 1)', style({ opacity: 1, transform: 'none' })))
+        ], { optional: true })
+      ])
+    ])
+  ]
 })
 export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChildren('backgroundVideo')
@@ -49,6 +60,11 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly publicItineraries = signal<Itinerary[]>([]);
   protected readonly isLoadingPublicItineraries = signal(true);
   private readonly itineraryService = inject(ItineraryService);
+  protected readonly isHeroContentVisible = signal(false);
+
+  protected readonly heroTopText = signal('');
+  protected readonly heroBottomText = signal('');
+  protected readonly activeTypingLine = signal<'top' | 'bottom' | 'none'>('none');
 
   protected readonly transitionMs = 1200;
   protected readonly videoRotationMs = 9000;
@@ -66,16 +82,12 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
 
   protected activeVideoLayer = 0;
   protected readonly isInitialVideoReady = signal(false);
-  protected readonly heroLineTop = signal('');
-  protected readonly heroLineBottom = signal('');
-  protected readonly caretLine = signal<0 | 1>(0);
 
   private currentVideoIndex = 0;
   private queuedVideoIndex = 1;
   private rotationTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private cleanupTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private typingTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private typingStage = 0;
+  private heroTypingTimeoutIds: ReturnType<typeof setTimeout>[] = [];
 
   private readonly ngZone = inject(NgZone);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -101,26 +113,14 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
-
-
-    if (this.reduceMotion) {
-      this.heroLineTop.set(this.heroTypingLines[0] ?? '');
-      this.heroLineBottom.set(this.heroTypingLines[1] ?? '');
-      this.caretLine.set(1);
-      return;
-    }
-
-    // Run typing animation outside Angular zone to avoid triggering
-    // change detection every 85ms, which causes scroll jank
-    this.ngZone.runOutsideAngular(() => {
-      this.startTypingLoop();
-    });
   }
 
   ngAfterViewInit(): void {
     queueMicrotask(() => {
       this.prepareVideoElements();
       this.playLayer(this.activeVideoLayer);
+      this.initializeHeroTyping();
+      this.isHeroContentVisible.set(true);
     });
 
     if (!this.reduceMotion) {
@@ -148,6 +148,7 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearTimers();
+    this.destroyHeroTyping();
     this.heroObserver?.disconnect();
   }
 
@@ -289,97 +290,115 @@ export class HomeSectionComponent implements OnInit, AfterViewInit, OnDestroy {
       clearTimeout(this.cleanupTimeoutId);
       this.cleanupTimeoutId = null;
     }
-
-    if (this.typingTimeoutId) {
-      clearTimeout(this.typingTimeoutId);
-      this.typingTimeoutId = null;
-    }
   }
 
-  private startTypingLoop(): void {
+  private initializeHeroTyping(): void {
     const topTarget = this.heroTypingLines[0] ?? '';
     const bottomTarget = this.heroTypingLines[1] ?? '';
-    const top = this.heroLineTop();
-    const bottom = this.heroLineBottom();
 
-    switch (this.typingStage) {
-      case 0:
-        this.caretLine.set(0);
-        if (top.length < topTarget.length) {
-          this.heroLineTop.set(topTarget.slice(0, top.length + 1));
-          this.queueTypingFrame(85);
-          return;
-        }
+    this.clearHeroTypingTimers();
+    this.heroTopText.set('');
+    this.heroBottomText.set('');
+    this.activeTypingLine.set('none');
 
-        this.typingStage = 1;
-        this.queueTypingFrame(700);
-        return;
-
-      case 1:
-        this.caretLine.set(1);
-        this.typingStage = 2;
-        this.queueTypingFrame(80);
-        return;
-
-      case 2:
-        this.caretLine.set(1);
-        if (bottom.length < bottomTarget.length) {
-          this.heroLineBottom.set(bottomTarget.slice(0, bottom.length + 1));
-          this.queueTypingFrame(85);
-          return;
-        }
-
-        this.typingStage = 3;
-        this.queueTypingFrame(2500);
-        return;
-
-      case 3:
-        this.caretLine.set(1);
-        this.typingStage = 4;
-        this.queueTypingFrame(45);
-        return;
-
-      case 4:
-        this.caretLine.set(1);
-        if (bottom.length > 0) {
-          this.heroLineBottom.set(bottom.slice(0, -1));
-          this.queueTypingFrame(45);
-          return;
-        }
-
-        this.typingStage = 5;
-        this.queueTypingFrame(260);
-        return;
-
-      case 5:
-        this.caretLine.set(0);
-        this.typingStage = 6;
-        this.queueTypingFrame(45);
-        return;
-
-      case 6:
-        this.caretLine.set(0);
-        if (top.length > 0) {
-          this.heroLineTop.set(top.slice(0, -1));
-          this.queueTypingFrame(45);
-          return;
-        }
-
-        this.typingStage = 7;
-        this.queueTypingFrame(350);
-        return;
-
-      default:
-        this.typingStage = 0;
-        this.queueTypingFrame(90);
-        return;
+    if (this.reduceMotion) {
+      this.heroTopText.set(topTarget);
+      this.heroBottomText.set(bottomTarget);
+      return;
     }
+
+    this.ngZone.runOutsideAngular(() => {
+      const typeSpeed = 50; // Calma ma non troppo lenta
+      const untypeSpeed = 45;
+      const readDelay = 3000;
+      const lineDelay = 300;
+
+      const typeLine = (
+        target: string,
+        update: (value: string) => void,
+        startDelay = 0,
+        speed = 100,
+        onComplete?: () => void,
+      ) => {
+        let currentIndex = 0;
+        const tick = () => {
+          currentIndex += 1;
+          update(target.slice(0, currentIndex));
+          if (currentIndex < target.length) {
+            const nextTimeoutId = setTimeout(tick, speed);
+            this.heroTypingTimeoutIds.push(nextTimeoutId);
+            return;
+          }
+          onComplete?.();
+        };
+        const timeoutId = setTimeout(tick, startDelay);
+        this.heroTypingTimeoutIds.push(timeoutId);
+      };
+
+      const untypeLine = (
+        target: string,
+        update: (value: string) => void,
+        startDelay = 0,
+        speed = 60,
+        onComplete?: () => void,
+      ) => {
+        let currentIndex = target.length;
+        const tick = () => {
+          currentIndex -= 1;
+          update(target.slice(0, currentIndex));
+          if (currentIndex > 0) {
+            const nextTimeoutId = setTimeout(tick, speed);
+            this.heroTypingTimeoutIds.push(nextTimeoutId);
+            return;
+          }
+          onComplete?.();
+        };
+        const timeoutId = setTimeout(tick, startDelay);
+        this.heroTypingTimeoutIds.push(timeoutId);
+      };
+
+      const typeLoop = () => {
+        this.activeTypingLine.set('top');
+        typeLine(topTarget, (value) => this.heroTopText.set(value), 150, typeSpeed, () => {
+          const bottomStartTimeoutId = setTimeout(() => {
+            this.activeTypingLine.set('bottom');
+            typeLine(bottomTarget, (value) => this.heroBottomText.set(value), 0, typeSpeed, () => {
+              const readTimeoutId = setTimeout(() => {
+                untypeLine(bottomTarget, (value) => this.heroBottomText.set(value), 0, untypeSpeed, () => {
+                  this.activeTypingLine.set('none');
+                  const topUntypeTimeoutId = setTimeout(() => {
+                    this.activeTypingLine.set('top');
+                    untypeLine(topTarget, (value) => this.heroTopText.set(value), 0, untypeSpeed, () => {
+                      this.activeTypingLine.set('none');
+                      const loopTimeoutId = setTimeout(typeLoop, 800);
+                      this.heroTypingTimeoutIds.push(loopTimeoutId);
+                    });
+                  }, 100);
+                  this.heroTypingTimeoutIds.push(topUntypeTimeoutId);
+                });
+              }, readDelay);
+              this.heroTypingTimeoutIds.push(readTimeoutId);
+            });
+          }, lineDelay);
+          this.heroTypingTimeoutIds.push(bottomStartTimeoutId);
+        });
+      };
+
+      typeLoop();
+    });
   }
 
-  private queueTypingFrame(delayMs: number): void {
-    // Already outside Angular zone — setTimeout won't trigger zone-based CD
-    this.typingTimeoutId = setTimeout(() => {
-      this.startTypingLoop();
-    }, delayMs);
+  private destroyHeroTyping(): void {
+    this.clearHeroTypingTimers();
+    this.heroTopText.set('');
+    this.heroBottomText.set('');
+  }
+
+  private clearHeroTypingTimers(): void {
+    for (const timeoutId of this.heroTypingTimeoutIds) {
+      clearTimeout(timeoutId);
+    }
+
+    this.heroTypingTimeoutIds = [];
   }
 }

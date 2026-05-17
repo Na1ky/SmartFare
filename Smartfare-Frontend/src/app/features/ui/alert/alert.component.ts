@@ -50,12 +50,12 @@ export class AlertComponent implements OnDestroy {
 
   close(): void {
     if (!this.visible() || this.closing()) return;
-    
+
     this.closing.set(true);
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
     }
-    
+
     this.closeTimeoutId = setTimeout(() => {
       this.visible.set(false);
       this.closing.set(false);

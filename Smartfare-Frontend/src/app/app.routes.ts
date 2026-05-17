@@ -12,7 +12,7 @@ export const APP_ROUTES: Routes = [
   { path: 'verify-email', loadComponent: () => import('./features/auth/verify-email/verify-email.component').then((c) => c.VerifyEmailComponent) },
   { path: 'profile/itineraries', loadComponent: () => import('./features/profile/itineraries/itineraries.component').then((c) => c.ItinerariesComponent) },
   { path: 'manual/planner', loadComponent: () => import('./features/planner/manual-planner/manual-planner.component').then((m) => m.ManualPlannerComponent) },
-  { path: 'itineraries', loadComponent: () => import('./features/profile/itineraries/itineraries.component').then((c) => c.ItinerariesComponent) },
+  { path: 'itineraries', loadComponent: () => import('./features/profile/itineraries/itineraries.component').then((c) => c.ItinerariesComponent), canActivate: [authGuard] },
   { path: 'itineraries/new', loadComponent: () => import('./features/planner/manual-planner/manual-planner.component').then((m) => m.ManualPlannerComponent) },
   { path: 'itineraries/preview', loadComponent: () => import('./features/planner/itinerary-preview/itinerary-preview.component').then((p) => p.ItineraryPreviewComponent) },
   { path: 'itineraries/builder', loadComponent: () => import('./features/planner/itinerary-builder/itinerary-builder.component').then((m) => m.ItineraryBuilderComponent) },

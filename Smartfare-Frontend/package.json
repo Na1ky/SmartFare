@@ -24,6 +24,7 @@
   "packageManager": "npm@11.6.1",
   "dependencies": {
     "@abacritt/angularx-social-login": "^2.6.0",
+    "@angular/animations": "^21.2.9",
     "@angular/cdk": "^21.2.8",
     "@angular/common": "^21.1.4",
     "@angular/compiler": "^21.1.4",
@@ -42,7 +43,8 @@
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "typed.js": "^3.0.0"
   },
   "devDependencies": {
     "@angular/build": "^21.1.4",

@@ -1,4 +1,4 @@
-<nav class="navbar-shell" data-aos="fade-down">
+<nav #navbarRoot class="navbar-shell nav-animate" [@navReveal]="isVisible() ? 'visible' : 'hidden'">
 
   <app-top-navbar></app-top-navbar>
   <!-- MAIN NAVBAR -->
@@ -66,8 +66,9 @@
       </div>
       } @else {
       <div class="dropdown">
-        <i class="bi bi-person-circle fs-3 align-self-center pointer" data-bs-toggle="dropdown" data-bs-display="static"
-          aria-expanded="false"></i>
+        <button type="button" class="bi bi-person-circle fs-3 align-self-center pointer border-0 bg-transparent p-0"
+          data-bs-toggle="dropdown" data-bs-display="static" aria-label="Apri menu utente"
+          title="Apri menu utente"></button>
         <ul class="dropdown-menu dropdown-menu-end mt-2 p-2 shadow-sm rounded-3">
           <li>
             <a class="dropdown-item d-flex align-items-center gap-2 py-2" [routerLink]="['/profile']">
@@ -100,7 +101,8 @@
     </div>
 
     <!-- MOBILE TOGGLER -->
-    <button class="mobile-toggler d-lg-none" type="button" (click)="toggleMobileMenu()">
+    <button class="mobile-toggler d-lg-none" type="button" (click)="toggleMobileMenu()" aria-label="Apri menu mobile"
+      title="Apri menu mobile">
       <i class="bi bi-list"></i>
     </button>
 

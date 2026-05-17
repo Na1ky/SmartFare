@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from "@angular/router";
 import { AuthService } from '../../../core/auth/auth.service';
@@ -6,6 +6,7 @@ import { AlertService } from '../../../core/services/alert.service';
 import { TopNavbarComponent } from "../top-navbar/top-navbar.component";
 import { SocialAuthService } from '@abacritt/angularx-social-login';
 import { ItineraryService } from '../../../core/services/itinerary.service';
+import { animate, query, state, style, transition, trigger } from '@angular/animations';
 
 interface NavItem {
   icon: string;
@@ -19,8 +20,21 @@ interface NavItem {
   imports: [FormsModule, RouterLink, TopNavbarComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
+  animations: [
+    trigger('navReveal', [
+      state('hidden', style({ opacity: 0, transform: 'translateY(-18px)' })),
+      state('visible', style({ opacity: 1, transform: 'translateY(0)' })),
+      transition('hidden => visible', [
+        query('.nav-animate', [style({ opacity: 0, transform: 'translateY(-18px)' }), animate('650ms cubic-bezier(0.2, 0, 0, 1)')], { optional: true })
+      ])
+    ])
+  ]
 })
-export class NavbarComponent {
+export class NavbarComponent implements AfterViewInit {
+  @ViewChild('navbarRoot', { static: true })
+  private readonly navbarRoot?: ElementRef<HTMLElement>;
+
+  protected readonly isVisible = signal(false);
 
   constructor(
     private authService: AuthService,
@@ -29,6 +43,10 @@ export class NavbarComponent {
     private socialAuthService: SocialAuthService,
     private itineraryService: ItineraryService
   ) { };
+
+  ngAfterViewInit(): void {
+    queueMicrotask(() => this.isVisible.set(true));
+  }
 
   readonly navItems: NavItem[] = [
     { icon: 'bi bi-house-door', label: 'Home', route: '/home' },
@@ -64,7 +82,7 @@ export class NavbarComponent {
     if (profile?.name) {
       return `${profile.name} ${profile.surname || ''}`.trim();
     }
-    
+
     const data = this.authService.getUserData();
     if (!data) return '';
     if (data.name || data.given_name) {

@@ -7,7 +7,8 @@
     <video #backgroundVideo class="background-video" [class.is-active]="$index === activeVideoLayer"
       [attr.src]="videoSrc" [attr.autoplay]="$index === activeVideoLayer ? '' : null" muted
       [attr.loop]="$index === activeVideoLayer ? '' : null"
-      [attr.preload]="$index === activeVideoLayer ? 'auto' : 'metadata'" (loadeddata)="onVideoLoaded($index)"></video>
+      [attr.preload]="$index === activeVideoLayer ? 'auto' : 'metadata'"
+      (loadedmetadata)="onVideoLoaded($index)"></video>
     }
     <div class="overlay w-100 h-100 position-absolute top-0 start-0"></div>
   </div>
@@ -16,25 +17,24 @@
 
     <app-navbar></app-navbar>
 
-    <main class="container hero-content-wrap">
+    <main class="container hero-content-wrap" [@homeReveal]="isHeroContentVisible() ? 'visible' : 'hidden'">
       <div class="row w-100 justify-content-center text-center">
-        <div class="col-12 col-lg-10 mx-auto" appRevealOnScroll="fade-up">
-          <span class="badge rounded-pill text-bg-light px-3 py-2 mb-3">SmartFare </span>
-          <h1 class="hero-title mb-3">
-            <span class="typing-line">
-              {{ heroLineTop() }}
-            </span>
-            <span class="typing-line hero-title-accent">
-              {{ heroLineBottom() }}
-            </span>
+        <div class="col-12 col-lg-10 mx-auto hero-reveal">
+          <span class="badge rounded-pill text-bg-light px-3 py-2 mb-3 hero-reveal">SmartFare </span>
+          <h1 class="hero-title mb-3" aria-live="polite">
+            <span class="typing-line hero-reveal"
+              [class.is-typing]="activeTypingLine() === 'top'">{{ heroTopText() }}</span>
+            <span class="typing-line hero-title-accent hero-reveal"
+              [class.is-typing]="activeTypingLine() === 'bottom'">{{ heroBottomText()
+              }}</span>
           </h1>
         </div>
       </div>
     </main>
 
-    <div class="booking-form-wrap w-100 d-flex justify-content-center align-items-end" data-aos="fade-up">
+    <div class="booking-form-wrap w-100 d-flex justify-content-center align-items-end hero-reveal">
       <div class="booking-form-inner w-100">
-        <app-ai-prompt-bar appRevealOnScroll="fade-up" [revealDelay]="140"></app-ai-prompt-bar>
+        <app-ai-prompt-bar></app-ai-prompt-bar>
       </div>
     </div>
   </div>
