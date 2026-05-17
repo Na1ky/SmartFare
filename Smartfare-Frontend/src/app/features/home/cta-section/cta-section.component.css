@@ -1,99 +1,181 @@
-.cta-venture {
+.cta-runway {
   position: relative;
-  min-height: 600px;
+  padding: 0 0 6rem;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  color: white;
-  background: #0a0a0a url('/assets/footer.jpg') no-repeat center center;
-  background-size: cover;
+  background: linear-gradient(180deg, #090611 0%, #040208 100%);
   overflow: hidden;
-  margin-top: 0;
 }
 
-.background-overlay {
+.cta-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.cta-orb-left {
+  width: 26rem;
+  height: 26rem;
+  top: 3rem;
+  left: -10rem;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.22) 0%, transparent 72%);
+}
+
+.cta-orb-right {
+  width: 22rem;
+  height: 22rem;
+  right: -6rem;
+  bottom: 1rem;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, transparent 72%);
+}
+
+.cta-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.cta-panel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 5vw, 4rem);
+  border-radius: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(8, 5, 16, 0.7), rgba(8, 5, 16, 0.88)),
+    url('/assets/footer.jpg') center center / cover no-repeat;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.cta-panel::after {
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+  background:
+    linear-gradient(120deg, rgba(99, 102, 241, 0.12), transparent 35%),
+    linear-gradient(180deg, rgba(5, 3, 9, 0.12), rgba(5, 3, 9, 0.78));
+  pointer-events: none;
+}
+
+.cta-kicker,
+.cta-title,
+.cta-copy,
+.cta-actions,
+.cta-tags {
+  position: relative;
   z-index: 1;
 }
 
-.content {
-  position: relative;
-  z-index: 5;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-  display: flex;
+.cta-kicker {
+  display: inline-flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(196, 181, 253, 0.22);
+  background: rgba(7, 5, 14, 0.45);
+  color: #d8b4fe;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 1.4rem;
 }
 
-.venture-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.venture-header .line {
-  width: 50px;
-  height: 2px;
-  background: white;
-}
-
-.venture-header h2 {
-  font-size: 4.5rem;
-  font-weight: 900;
-  letter-spacing: 6px;
+.cta-title {
   margin: 0;
-  line-height: 0.9;
+  max-width: 46rem;
+  font-size: clamp(2.2rem, 5vw, 4.4rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  color: #f8fafc;
 }
 
-.venture-sub {
-  font-size: 1.6rem;
-  font-weight: 400;
-  margin-bottom: 3rem;
-  opacity: 0.95;
-  line-height: 1.4;
+.cta-copy {
+  max-width: 38rem;
+  margin: 1.35rem 0 0;
+  color: rgba(248, 250, 252, 0.76);
+  font-size: 1.05rem;
+  line-height: 1.85;
 }
 
-.btn-venture {
+.cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.cta-primary,
+.cta-secondary {
   display: inline-block;
-  background: #22d3ee; /* Adjusted to brand cyan/blue from logo */
-  color: #080d1a;
-  padding: 1.3rem 3.5rem;
-  border-radius: 4px;
+  min-height: 3.35rem;
+  padding: 0.95rem 1.4rem;
+  border-radius: 999px;
   font-weight: 800;
   text-decoration: none;
-  font-size: 1.1rem;
-  letter-spacing: 2px;
+  font-size: 0.95rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 2rem;
-  box-shadow: 0 10px 30px rgba(34, 211, 238, 0.2);
 }
 
-.btn-venture:hover {
-  background: #0ea5e9;
-  transform: translateY(-3px);
-  box-shadow: 0 15px 40px rgba(34, 211, 238, 0.4);
+.cta-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(124, 58, 237, 0.25);
 }
 
-.venture-contact {
-  font-size: 1rem;
-  opacity: 0.6;
-  font-weight: 500;
-  letter-spacing: 0.5px;
+.cta-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(7, 5, 14, 0.44);
+  color: #f8fafc;
+}
+
+.cta-primary:hover,
+.cta-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.cta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.cta-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.6rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 @media (max-width: 768px) {
-  .cta-venture { height: 500px; }
-  .venture-header h2 { font-size: 2.8rem; letter-spacing: 3px; }
-  .venture-sub { font-size: 1.2rem; }
-  .btn-venture { padding: 1rem 2.5rem; font-size: 0.9rem; }
+  .cta-runway {
+    padding-bottom: 4.5rem;
+  }
+
+  .cta-shell {
+    width: min(100%, calc(100% - 24px));
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    text-align: center;
+  }
 }

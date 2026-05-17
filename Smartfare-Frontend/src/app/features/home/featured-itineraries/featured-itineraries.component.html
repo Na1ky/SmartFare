@@ -1,75 +1,99 @@
-<section class="featured-itineraries">
-  <div class="container">
-    <div class="section-header">
-      <div class="section-title">
-        <h2>Itinerari in Evidenza</h2>
-        <p>Viaggi selezionati a mano per ispirare la tua anima.</p>
-      </div>
-      <div class="section-nav">
-        <a routerLink="/discover" class="see-more-btn">
-          Vedi di più <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
+<section class="fi-section" #sectionEl>
+  <div class="fi-bg-blob fi-bg-blob-left"></div>
+  <div class="fi-bg-blob fi-bg-blob-right"></div>
+
+  <div class="fi-shell">
+    <div #revealItem class="fi-copy reveal-fi">
+      <span class="fi-eyebrow">COMMUNITY ITINERARIES</span>
+      <h2 class="fi-title">
+        Dopo la parte prodotto arrivano
+        <span>gli itinerari veri della community.</span>
+      </h2>
+      <p class="fi-subtitle">
+        Qui la home deve diventare piu editoriale: heading che resta presente, card grandi, immagini immersive
+        e ingresso morbido delle preview reali mentre continui a scorrere.
+      </p>
+      <a routerLink="/discover" class="fi-link">
+        <span>Apri Discover</span>
+        <i class="bi bi-arrow-up-right"></i>
+      </a>
     </div>
 
-    <div class="itinerary-grid" [class.is-loading]="loading">
+    <div class="fi-rail" [class.fi-loading]="loading">
       @if (loading) {
-      <div class="loader-container">
-        <div class="premium-loader">
-          <div class="loader-ring"></div>
-          <div class="loader-compass">
-            <i class="bi bi-compass-fill"></i>
-          </div>
-        </div>
-        <p class="loader-text">Esplorando mete incredibili...</p>
+      <div class="fi-loader">
+        <div class="fi-loader-ring"></div>
+        <i class="bi bi-compass-fill fi-loader-icon"></i>
+        <p>Carichiamo gli itinerari della community...</p>
       </div>
       } @else {
-      @for (itinerary of itineraries; track itinerary.id) {
-      <div class="itinerary-card">
-        <div class="card-image-wrap">
-          <img
-            [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&q=80&w=800'"
-            class="card-image" alt="Itinerary cover">
-        </div>
-        <div class="card-content">
-          <span class="location-tag">{{ itinerary.location?.name?.toUpperCase() || 'ITALIA' }}</span>
-          <h3>{{ itinerary.name }}</h3>
-          <p>{{ itinerary.description || 'Nessuna descrizione disponibile per questo itinerario.' }}</p>
+      @for (itinerary of itineraries; track itinerary.id; let i = $index) {
+      <a #revealItem class="fi-card reveal-fi" [class.fi-card--featured]="i === 0" [class.fi-card--offset-right]="i === 1"
+        [class.fi-card--offset-left]="i === 2" [routerLink]="['/itineraries/preview']"
+        [queryParams]="{ itineraryId: itinerary.id }">
+        <div class="fi-card-media">
+          <img [src]="itinerary.imageUrl || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=900'"
+            [alt]="itinerary.name" loading="lazy">
+          <div class="fi-card-overlay"></div>
 
-          <div class="card-meta-row">
-            <div class="card-meta-item">
+          <div class="fi-card-top">
+            <span class="fi-chip">
               <i class="bi bi-geo-alt-fill"></i>
-              <span>{{ itinerary.location?.name || 'Destinazione libera' }}</span>
-            </div>
-            <div class="card-meta-item">
-              <i class="bi bi-collection-fill"></i>
-              <span>{{ getItemCount(itinerary) }} {{ getItemCount(itinerary) === 1 ? 'tappa' : 'tappe' }}</span>
-            </div>
+              {{ itinerary.location?.name || 'Italia' }}
+            </span>
+            @if (getDuration(itinerary) !== 'Durata non definita') {
+            <span class="fi-chip">
+              <i class="bi bi-clock-fill"></i>
+              {{ getDuration(itinerary) }}
+            </span>
+            }
           </div>
 
-          <div class="card-footer">
-            <div class="card-footer-left">
-              <div class="creator-avatar" [title]="getCreatorName(itinerary)">
+          <div class="fi-card-bottom">
+            <span class="fi-floating-pill">
+              <i class="bi bi-map-fill"></i>
+              {{ getItemCount(itinerary) }} {{ getItemCount(itinerary) === 1 ? 'tappa' : 'tappe' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="fi-card-body">
+          <div class="fi-card-meta">
+            <div class="fi-creator">
+              <div class="fi-avatar" [title]="getCreatorName(itinerary)">
                 @if (itinerary.user?.profile?.avatarUrl) {
-                  <img [src]="itinerary.user!.profile!.avatarUrl" [alt]="getCreatorName(itinerary)" class="creator-img">
+                <img [src]="itinerary.user!.profile!.avatarUrl" [alt]="getCreatorName(itinerary)">
                 } @else {
-                  <span class="creator-initials">{{ getCreatorInitials(itinerary) }}</span>
+                <span>{{ getCreatorInitials(itinerary) }}</span>
                 }
               </div>
-              <span class="days-info">
-                <i class="bi bi-clock"></i>
-                {{ getDuration(itinerary) }}
-              </span>
+              <div class="fi-creator-info">
+                <span class="fi-creator-name">{{ getCreatorName(itinerary) }}</span>
+                <span class="fi-creator-label">Autore del viaggio</span>
+              </div>
             </div>
-            <a [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itinerary.id }" class="view-plan">
-              Vai al Piano <i class="bi bi-arrow-right"></i>
-            </a>
+
+            <span class="fi-card-tag">SmartFare route</span>
+          </div>
+
+          <h3 class="fi-card-title">{{ itinerary.name }}</h3>
+          <p class="fi-card-desc">
+            {{ itinerary.description || 'Una rotta pubblicata dalla community SmartFare, pronta da aprire, adattare e trasformare nel tuo prossimo viaggio.' }}
+          </p>
+
+          <div class="fi-card-cta">
+            <span>Apri anteprima</span>
+            <i class="bi bi-arrow-up-right"></i>
           </div>
         </div>
-      </div>
-      } @empty {
-      <div class="empty-state">
-        <p>Nessun itinerario trovato</p>
+      </a>
+      }
+
+      @empty {
+      <div #revealItem class="fi-empty reveal-fi">
+        <i class="bi bi-map"></i>
+        <p>Nessun itinerario disponibile al momento</p>
+        <a routerLink="/itineraries/new" class="fi-empty-cta">Crea il primo</a>
       </div>
       }
       }

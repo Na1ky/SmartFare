@@ -1,249 +1,90 @@
-<section #sectionRoot class="showcase-wrap" [class.is-visible]="isVisible()">
+<section #sectionRoot class="cinema-section">
+  <div class="cinema-ambient cinema-ambient-left"></div>
+  <div class="cinema-ambient cinema-ambient-right"></div>
 
-  <!-- ─── Ambient background ─── -->
-  <div class="ambient blob-purple"></div>
-  <div class="ambient blob-cyan"></div>
+  <div class="cinema-sticky-stage">
+    <div class="cinema-kicker">
+      <span>SMARTFARE FLOW</span>
+      <p>Scorri e guarda il prodotto cambiare scena dopo scena.</p>
+    </div>
 
-  <!-- ─── Section header ─── -->
-  <div class="showcase-header reveal">
-    <span class="eyebrow">
-      <span class="eyebrow-dot"></span>
-      LA PIATTAFORMA
-      <span class="eyebrow-dot"></span>
-    </span>
-    <h2 class="headline">
-      Tutto in uno.<br>
-      <span class="headline-grad">Nessun compromesso.</span>
-    </h2>
-    <p class="subhead">
-      SmartFare porta in un'unica app il pianificatore interattivo,<br class="d-none d-lg-block">
-      la gestione degli itinerari e un assistente AI sempre pronto.
-    </p>
-  </div>
+    <div class="cinema-progress">
+      @for (stage of stages; track stage.id; let i = $index) {
+      <span [class.is-active]="activeStageIndex() === i">0{{ i + 1 }}</span>
+      }
+    </div>
 
-  <!-- ═══════════════════════════════
-       BLOCK 1 — Planner (image right)
-       ═══════════════════════════════ -->
-  <div class="feature-block reveal">
-    <div class="feature-inner">
+    <div class="cinema-word-stack" aria-hidden="true">
+      @for (word of capabilityWords; track word) {
+      <span [class.is-highlight]="activeStage().stackWord === word">{{ word }}</span>
+      }
+    </div>
 
-      <!-- Text side -->
-      <div class="feat-text">
-        <span class="feat-number">01</span>
-        <span class="feat-eyebrow" style="color:#8b5cf6">Planner Interattivo</span>
-        <h3 class="feat-title">Costruisci il percorso<br>perfetto sulla mappa</h3>
-        <p class="feat-desc">
-          Trascina, riordina e personalizza ogni tappa in tempo reale.
-          Ottimizzazione del percorso assistita dall'IA, mappe live e
-          export PDF in un click — tutto senza lasciare la pagina.
-        </p>
-        <ul class="feat-list">
+    <div class="cinema-copy-stack">
+      @for (stage of stages; track stage.id; let i = $index) {
+      <article class="cinema-copy" [class.is-active]="activeStageIndex() === i">
+        <span class="cinema-step">0{{ i + 1 }} / 03</span>
+        <h2>{{ stage.headline }}</h2>
+      </article>
+      }
+    </div>
+
+    <div class="cinema-info-stack">
+      @for (stage of stages; track stage.id; let i = $index) {
+      <aside class="cinema-info" [class.is-active]="activeStageIndex() === i"
+        [class.layout-left]="stage.layout === 'left'" [class.layout-right]="stage.layout === 'right'">
+        <span class="cinema-info-eyebrow">{{ stage.eyebrow }}</span>
+        <p class="cinema-info-copy">{{ stage.description }}</p>
+
+        <ul class="cinema-info-list">
+          @for (bullet of stage.bullets; track bullet) {
           <li>
-            <i class="bi bi-check-circle-fill" style="color:#8b5cf6"></i>
-            Percorsi ottimizzati automaticamente
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>{{ bullet }}</span>
           </li>
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#8b5cf6"></i>
-            Filtri per categoria (hotel, attrazioni, ristoranti…)
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#8b5cf6"></i>
-            Export PDF &amp; GPX in un click
-          </li>
+          }
         </ul>
-        <a routerLink="/planner" class="feat-cta" style="--cta-color:#8b5cf6">
-          Prova il Planner
-          <i class="bi bi-arrow-right"></i>
+
+        <a [routerLink]="stage.route" class="cinema-info-link">
+          <span>{{ stage.cta }}</span>
+          <i class="bi bi-arrow-up-right"></i>
         </a>
-      </div>
+      </aside>
+      }
+    </div>
 
-      <!-- Screenshot side -->
-      <div class="feat-visual">
-        <div class="screen-wrap">
-          <div class="screen-chrome">
-            <div class="chrome-dots">
-              <span class="d-red"></span><span class="d-yel"></span><span class="d-grn"></span>
-            </div>
-            <div class="chrome-url">
-              <i class="bi bi-lock-fill" style="color:#22c55e;font-size:.6rem"></i>
-              smartfare.nicolas-dominici.it/planner
-            </div>
+    <div class="cinema-frame-stack">
+      @for (stage of stages; track stage.id; let i = $index) {
+      <figure class="cinema-frame cinema-frame-main" [class.is-active]="activeStageIndex() === i"
+        [class.layout-left]="stage.layout === 'left'" [class.layout-right]="stage.layout === 'right'">
+        <div class="cinema-browser-bar">
+          <div class="cinema-browser-dots">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
-          <div class="screen-body">
-            <img src="assets/preview.png" alt="SmartFare Planner" loading="lazy">
-          </div>
+          <span>{{ stage.primaryUrl }}</span>
         </div>
-        <div class="visual-badge badge-tl" style="--accent:#8b5cf6">
-          <i class="bi bi-stars"></i>
-          <span>Ottimizzazione IA</span>
-        </div>
-        <div class="visual-badge badge-br" style="--accent:#8b5cf6">
-          <i class="bi bi-geo-alt-fill"></i>
-          <span>Mappe in tempo reale</span>
-        </div>
-        <div class="screen-glow" style="--glow-color:rgba(139,92,246,0.25)"></div>
-      </div>
+        <img [src]="stage.primaryImage" [alt]="stage.eyebrow" loading="lazy">
+      </figure>
+      }
+    </div>
 
+    <div class="cinema-secondary-stack">
+      @for (stage of stages; track stage.id; let i = $index) {
+      <figure class="cinema-frame cinema-frame-secondary" [class.is-active]="activeStageIndex() === i"
+        [class.layout-left]="stage.layout === 'left'" [class.layout-right]="stage.layout === 'right'">
+        <img [src]="stage.secondaryImage" [alt]="stage.secondaryLabel" loading="lazy">
+        <figcaption>{{ stage.secondaryLabel }}</figcaption>
+      </figure>
+      }
     </div>
   </div>
 
-  <!-- ═══════════════════════════════
-       BLOCK 2 — Dashboard (image left)
-       ═══════════════════════════════ -->
-  <div class="feature-block reveal alt">
-    <div class="feature-inner">
-
-      <!-- Screenshot side -->
-      <div class="feat-visual">
-        <div class="screen-wrap">
-          <div class="screen-chrome">
-            <div class="chrome-dots">
-              <span class="d-red"></span><span class="d-yel"></span><span class="d-grn"></span>
-            </div>
-            <div class="chrome-url">
-              <i class="bi bi-lock-fill" style="color:#22c55e;font-size:.6rem"></i>
-              smartfare.nicolas-dominici.it/my-itineraries
-            </div>
-          </div>
-          <div class="screen-body">
-            <img src="assets/preview2.png" alt="SmartFare Dashboard" loading="lazy">
-          </div>
-        </div>
-        <div class="visual-badge badge-tr" style="--accent:#06b6d4">
-          <i class="bi bi-collection-fill"></i>
-          <span>I miei Itinerari</span>
-        </div>
-        <div class="visual-badge badge-bl" style="--accent:#06b6d4">
-          <i class="bi bi-share-fill"></i>
-          <span>Condivisione diretta</span>
-        </div>
-        <div class="screen-glow" style="--glow-color:rgba(6,182,212,0.2)"></div>
-      </div>
-
-      <!-- Text side -->
-      <div class="feat-text">
-        <span class="feat-number">02</span>
-        <span class="feat-eyebrow" style="color:#06b6d4">I Tuoi Itinerari</span>
-        <h3 class="feat-title">Tutti i tuoi viaggi,<br>in un unico posto</h3>
-        <p class="feat-desc">
-          Organizza, riprendi e condividi i tuoi itinerari salvati.
-          Visualizza i preferiti, ripartenza rapida dall'ultimo punto
-          e gestione multi-destinazione intelligente.
-        </p>
-        <ul class="feat-list">
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#06b6d4"></i>
-            Salvataggio illimitato degli itinerari
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#06b6d4"></i>
-            Condivisione tramite link diretto
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#06b6d4"></i>
-            Gestione multi-città e multi-viaggio
-          </li>
-        </ul>
-        <a routerLink="/my-itineraries" class="feat-cta" style="--cta-color:#06b6d4">
-          Vedi i miei Itinerari
-          <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
-
-    </div>
+  <div class="cinema-trigger-track">
+    @for (stage of stages; track stage.id; let i = $index) {
+    <article #stageTrigger class="cinema-trigger" [class.layout-left]="stage.layout === 'left'"
+      [class.layout-right]="stage.layout === 'right'"></article>
+    }
   </div>
-
-  <!-- ═══════════════════════════════
-       BLOCK 3 — AI (image right)
-       ═══════════════════════════════ -->
-  <div class="feature-block reveal">
-    <div class="feature-inner">
-
-      <!-- Text side -->
-      <div class="feat-text">
-        <span class="feat-number">03</span>
-        <span class="feat-eyebrow" style="color:#a855f7">SmartFare AI</span>
-        <h3 class="feat-title">Il tuo assistente<br>di viaggio intelligente</h3>
-        <p class="feat-desc">
-          Chiedi consigli su ristoranti, quartieri, musei e attrazioni locali.
-          L'IA crea un itinerario completo dalla tua conversazione,
-          già pronto per essere modificato nel planner.
-        </p>
-        <ul class="feat-list">
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#a855f7"></i>
-            Risponde in linguaggio naturale
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#a855f7"></i>
-            Genera itinerari completi dalla chat
-          </li>
-          <li>
-            <i class="bi bi-check-circle-fill" style="color:#a855f7"></i>
-            Multilingua — parla nella tua lingua
-          </li>
-        </ul>
-        <a routerLink="/voyager-ai" class="feat-cta" style="--cta-color:#a855f7">
-          Parla con l'AI
-          <i class="bi bi-stars"></i>
-        </a>
-      </div>
-
-      <!-- Screenshot side -->
-      <div class="feat-visual">
-        <div class="screen-wrap">
-          <div class="screen-chrome">
-            <div class="chrome-dots">
-              <span class="d-red"></span><span class="d-yel"></span><span class="d-grn"></span>
-            </div>
-            <div class="chrome-url">
-              <i class="bi bi-lock-fill" style="color:#22c55e;font-size:.6rem"></i>
-              smartfare.nicolas-dominici.it/voyager-ai
-            </div>
-          </div>
-          <div class="screen-body">
-            <img src="assets/preview3.png" alt="SmartFare AI" loading="lazy">
-          </div>
-        </div>
-        <div class="visual-badge badge-tl" style="--accent:#a855f7">
-          <i class="bi bi-robot"></i>
-          <span>Gemini Pro</span>
-        </div>
-        <div class="visual-badge badge-br" style="--accent:#a855f7">
-          <i class="bi bi-translate"></i>
-          <span>Multilingua</span>
-        </div>
-        <div class="screen-glow" style="--glow-color:rgba(168,85,247,0.22)"></div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ─── Bottom strip ─── -->
-  <div class="bottom-strip reveal">
-    <div class="strip-item">
-      <i class="bi bi-shield-check-fill"></i>
-      <strong>Dati Verificati</strong>
-      <span>Aggiornati in tempo reale</span>
-    </div>
-    <div class="strip-sep"></div>
-    <div class="strip-item">
-      <i class="bi bi-cloud-arrow-down-fill"></i>
-      <strong>Export Offline</strong>
-      <span>PDF e GPX sempre disponibili</span>
-    </div>
-    <div class="strip-sep"></div>
-    <div class="strip-item">
-      <i class="bi bi-people-fill"></i>
-      <strong>Comunità</strong>
-      <span>Itinerari condivisi dalla community</span>
-    </div>
-    <div class="strip-sep"></div>
-    <div class="strip-item">
-      <i class="bi bi-lightning-charge-fill"></i>
-      <strong>Instant AI</strong>
-      <span>Risposta in meno di 2 secondi</span>
-    </div>
-  </div>
-
 </section>

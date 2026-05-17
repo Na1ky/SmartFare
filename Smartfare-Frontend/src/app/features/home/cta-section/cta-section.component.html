@@ -1,22 +1,31 @@
-<section #ctaRoot class="cta-venture" [@ctaReveal]="isVisible() ? 'visible' : 'hidden'">
-  <div class="background-overlay"></div>
-  <div class="content">
-    <div class="venture-header cta-reveal">
-      <div class="line"></div>
-      <h2>LET'S VENTURE</h2>
-      <div class="line"></div>
+<section #ctaRoot class="cta-runway" [@ctaReveal]="isVisible() ? 'visible' : 'hidden'">
+  <div class="cta-orb cta-orb-left"></div>
+  <div class="cta-orb cta-orb-right"></div>
+
+  <div class="cta-shell">
+    <div class="cta-panel">
+      <span class="cta-kicker cta-reveal">SMARTFARE CLOSEOUT</span>
+
+      <h2 class="cta-title cta-reveal">
+        Dal primo prompt al viaggio pronto da condividere.
+      </h2>
+
+      <p class="cta-copy cta-reveal">
+        La home ora accompagna davvero l'utente fino in fondo: vede il prodotto, capisce il flusso,
+        apre gli itinerari e arriva a una call to action chiara senza perdere ritmo.
+      </p>
+
+      <div class="cta-actions cta-reveal">
+        <a routerLink="/itineraries/new" class="cta-primary">Crea un itinerario</a>
+        <a routerLink="/discover" class="cta-secondary">Esplora la community</a>
+      </div>
+
+      <div class="cta-tags cta-reveal">
+        <span>Planner live</span>
+        <span>Preview immersive</span>
+        <span>Itinerari veri</span>
+        <span>AI assistita</span>
+      </div>
     </div>
-
-    <p class="venture-sub cta-reveal">
-      Scopri un'esperienza di viaggio unica e immersiva per la tua prossima grande avventura.
-    </p>
-
-    <a routerLink="/itineraries/new" class="btn-venture cta-reveal">
-      INIZIA ORA
-    </a>
-
-    <p class="venture-contact cta-reveal">
-      Oppure esplora i consigli del nostro team di viaggiatori
-    </p>
   </div>
 </section>
