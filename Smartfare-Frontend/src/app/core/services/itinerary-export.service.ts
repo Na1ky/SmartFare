@@ -238,8 +238,8 @@ export class ItineraryExportService {
         
         :root {
             --bg-color: #0b1120;
-            --bg-color-alt: #0f172a;
-            --glass-bg: rgba(30, 41, 59, 0.7);
+            --bg-color-alt: #0b0914;
+            --glass-bg: rgba(22, 17, 41, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -266,7 +266,7 @@ export class ItineraryExportService {
         /* Hero Section */
         .hero {
             padding: 40px 30px;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4)), 
+            background: linear-gradient(135deg, rgba(11, 9, 20, 0.9), rgba(11, 9, 20, 0.4)), 
                         radial-gradient(circle at top right, rgba(45, 212, 191, 0.15), transparent 40%),
                         radial-gradient(circle at bottom left, rgba(56, 189, 248, 0.15), transparent 40%);
             border-bottom: 1px solid var(--glass-border);
@@ -361,7 +361,7 @@ export class ItineraryExportService {
             margin-bottom: 20px;
             padding: 16px;
             border-radius: 20px;
-            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+            background: linear-gradient(145deg, rgba(22, 17, 41, 0.6), rgba(11, 9, 20, 0.8));
             border: 1px solid rgba(45, 212, 191, 0.15);
             page-break-inside: avoid;
         }
@@ -409,7 +409,7 @@ export class ItineraryExportService {
         /* Modifica specifica per le item dentro un gruppo per non avere il bottom margin extra */
         .group-item-list .item {
             margin-bottom: 0;
-            background: rgba(15, 23, 42, 0.4);
+            background: rgba(11, 9, 20, 0.4);
         }
 
         .item-media {
@@ -418,7 +418,7 @@ export class ItineraryExportService {
             height: 110px;
             border-radius: 12px;
             overflow: hidden;
-            background: #1e293b;
+            background: #161129;
             position: relative;
         }
 

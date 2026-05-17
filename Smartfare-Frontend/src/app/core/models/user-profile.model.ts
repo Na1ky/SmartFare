@@ -24,6 +24,7 @@ export interface UserPreference {
 }
 
 export interface UserProfileFull {
+  id?: number;
   email: string;
   authProvider: string;
   profile: UserProfile | null;
@@ -31,4 +32,5 @@ export interface UserProfileFull {
   followersCount?: number;
   followingCount?: number;
   publicItinerariesCount?: number;
+  isFollowing?: boolean;
 }

@@ -17,7 +17,7 @@
 }
 
 .sp-tag {
-  color: #3b82f6;
+  color: #8b5cf6;
   font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 0.25em;
@@ -49,7 +49,7 @@
 }
 
 .sp-btn-primary {
-  background: #3b82f6;
+  background: #8b5cf6;
   color: #fff;
   border: none;
   padding: 16px 40px;
@@ -60,9 +60,9 @@
 }
 
 .sp-btn-primary:hover {
-  background: #2563eb;
+  background: #7c3aed;
   transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 15px 30px rgba(139, 92, 246, 0.4);
 }
 
 .sp-btn-outline {
@@ -91,7 +91,7 @@
 }
 
 .sp-browser-frame {
-  background: #1e293b;
+  background: #161129;
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 0 60px 120px -20px rgba(0, 0, 0, 0.7);
@@ -106,7 +106,7 @@
 
 .sp-browser-toolbar {
   height: 48px;
-  background: #0f172a;
+  background: #0b0914;
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -154,7 +154,7 @@
 /* Floating Badges */
 .sp-floating-badge {
   position: absolute;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(11, 9, 20, 0.8);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 14px 24px;
@@ -169,7 +169,7 @@
 }
 
 .sp-floating-badge i {
-  color: #3b82f6;
+  color: #8b5cf6;
   font-size: 1.2rem;
 }
 
@@ -191,7 +191,7 @@
   transform: translate(-50%, -50%);
   width: 120%;
   height: 120%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
   z-index: -1;
   pointer-events: none;
 }
@@ -214,7 +214,7 @@
 }
 
 .mini-item i {
-  color: #3b82f6;
+  color: #8b5cf6;
   font-size: 1.1rem;
 }
 

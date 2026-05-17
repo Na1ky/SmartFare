@@ -69,7 +69,7 @@
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.2), rgba(15, 23, 42, 0.8)) !important;
+  background: linear-gradient(to bottom, rgba(11, 9, 20, 0.2), rgba(11, 9, 20, 0.8)) !important;
   z-index: 1 !important;
 }
 
@@ -221,7 +221,7 @@
 .sp-spinner {
   width: 48px !important;
   height: 48px !important;
-  border: 3px solid rgba(59, 130, 246, 0.1) !important;
+  border: 3px solid rgba(139, 92, 246, 0.1) !important;
   border-top-color: var(--accent-color) !important;
   border-radius: 50% !important;
   animation: spin 1s linear infinite !important;
@@ -244,9 +244,9 @@
 }
 
 .sp-submit-btn:hover {
-  background: #2563eb !important;
+  background: #7c3aed !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
 }
 
 /* Responsiveness */

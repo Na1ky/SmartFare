@@ -39,7 +39,10 @@ router.get("/public", optionalAuthenticateJWT, async (req: AuthRequest, res: Res
     try {
         const locationId = req.query.locationId ? Number(req.query.locationId) : undefined;
         const currentUserId = req.user?.userId ? Number(req.user.userId) : undefined;
-        const itineraries = await itineraryService.getPublicItineraries(locationId, currentUserId);
+        const query = (req.query.q as string) || undefined;
+        const trending = req.query.trending === 'true';
+
+        const itineraries = await itineraryService.getPublicItineraries(locationId, currentUserId, query, trending);
         res.status(200).json(itineraries);
     } catch (error) {
         next(error);

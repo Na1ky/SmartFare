@@ -334,7 +334,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #1e293b;
+  background: #161129;
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
@@ -670,7 +670,7 @@
 }
 
 .voyager-dropdown {
-  background: #1e293b;
+  background: #161129;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   padding: 8px;
@@ -747,7 +747,7 @@
 }
 
 .user-avatar {
-  background: #1e293b;
+  background: #161129;
   color: #94a3b8;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -815,7 +815,7 @@
   padding: 30px 40px;
   border: 1px solid rgba(99, 102, 241, 0.3);
   background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.15), transparent 60%),
-              linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(9, 13, 26, 0.95));
+              linear-gradient(180deg, rgba(11, 9, 20, 0.9), rgba(9, 13, 26, 0.95));
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -1198,7 +1198,7 @@
 }
 
 .input-wrapper {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(22, 17, 41, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   padding: 8px 16px;
@@ -1218,7 +1218,7 @@
 .input-wrapper:focus-within {
   border-color: #4f46e5;
   box-shadow: 0 10px 30px rgba(79, 70, 229, 0.15);
-  background: rgba(30, 41, 59, 0.9);
+  background: rgba(22, 17, 41, 0.9);
 }
 
 textarea {

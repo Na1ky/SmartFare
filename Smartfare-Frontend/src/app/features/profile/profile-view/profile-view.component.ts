@@ -115,7 +115,7 @@ export class ProfileViewComponent implements OnInit {
         // Or better, the backend route for public profile should return public itineraries?
         // Let's check my backend change... ah, I didn't return itineraries in GET /api/profile/:id.
         // I'll fetch them separately.
-        this.itineraryService.getPublicItineraries(undefined).subscribe(allPublic => {
+        this.itineraryService.getPublicItineraries().subscribe(allPublic => {
           // Filter for this user (this is not optimal but works for now)
           // Ideally the backend should have a route for "itineraries of user X"
           // I will use a filter on the frontend for now.

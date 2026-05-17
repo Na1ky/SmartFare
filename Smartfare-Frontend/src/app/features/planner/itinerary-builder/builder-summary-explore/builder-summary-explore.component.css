@@ -22,7 +22,7 @@
 }
 
 .wl-btn-primary {
-  background: #3b82f6;
+  background: #8b5cf6;
   color: white;
   border: none;
   padding: 12px 28px;
@@ -37,9 +37,9 @@
 }
 
 .wl-btn-primary:hover {
-  background: #2563eb;
+  background: #7c3aed;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
 }
 
 .wl-explore-grid {
@@ -49,7 +49,7 @@
 }
 
 .wl-explore-card {
-  background: rgba(30, 41, 59, 0.4);
+  background: rgba(22, 17, 41, 0.4);
   backdrop-filter: blur(12px);
   border-radius: 24px;
   overflow: hidden;
@@ -60,7 +60,7 @@
 
 .wl-explore-card:hover {
   transform: translateY(-12px);
-  border-color: rgba(59, 130, 246, 0.4);
+  border-color: rgba(139, 92, 246, 0.4);
 }
 
 .wl-explore-img {
@@ -78,7 +78,7 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  background: #3b82f6;
+  background: #8b5cf6;
   color: white;
   padding: 6px 14px;
   border-radius: 10px;
@@ -123,7 +123,7 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: #1e293b;
+  background: #161129;
   overflow: hidden;
 }
 
@@ -156,7 +156,7 @@
   flex-direction: column;
   align-items: center;
   padding: 48px;
-  background: rgba(30, 41, 59, 0.4);
+  background: rgba(22, 17, 41, 0.4);
   border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: #94a3b8;

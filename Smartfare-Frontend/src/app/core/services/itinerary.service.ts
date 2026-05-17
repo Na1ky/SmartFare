@@ -189,9 +189,12 @@ export class ItineraryService {
     );
   }
   // Public itineraries for exploration
-  getPublicItineraries(locationId?: number): Observable<Itinerary[]> {
-    const params: any = {};
-    if (locationId) params.locationId = locationId.toString();
+  getPublicItineraries(options?: { locationId?: number; q?: string; trending?: boolean }): Observable<Itinerary[]> {
+    let params: any = {};
+    if (options?.locationId) params.locationId = options.locationId.toString();
+    if (options?.q) params.q = options.q;
+    if (options?.trending) params.trending = 'true';
+    
     return this.http.get<Itinerary[]>(`${this.API_URL}/public`, { params }).pipe(
       catchError(() => of([]))
     );

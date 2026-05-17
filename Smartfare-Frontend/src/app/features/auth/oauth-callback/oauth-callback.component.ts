@@ -29,7 +29,7 @@ import { AlertService } from '../../../core/services/alert.service';
       justify-content: center;
       padding: 24px;
       background:
-        radial-gradient(circle at top, rgba(37, 99, 235, 0.22), transparent 40%),
+        radial-gradient(circle at top, rgba(124, 58, 237, 0.22), transparent 40%),
         linear-gradient(180deg, #020617 0%, #081122 100%);
     }
 
@@ -39,7 +39,7 @@ import { AlertService } from '../../../core/services/alert.service';
       border-radius: 24px;
       text-align: center;
       color: white;
-      background: rgba(15, 23, 42, 0.88);
+      background: rgba(11, 9, 20, 0.88);
       border: 1px solid rgba(148, 163, 184, 0.18);
       box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
     }

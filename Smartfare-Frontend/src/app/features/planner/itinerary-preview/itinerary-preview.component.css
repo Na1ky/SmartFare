@@ -7,7 +7,7 @@
   height: 100vh;
   overflow: hidden;
   color: #f8fafc;
-  background: #0f172a; /* Deep slate background */
+  background: #0b0914; /* Deep slate background */
 }
 
 .preview-atmosphere {
@@ -77,7 +77,7 @@
   padding: 10px 14px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.7) 100%);
+  background: linear-gradient(145deg, rgba(11, 9, 20, 0.7) 0%, rgba(22, 17, 41, 0.7) 100%);
   backdrop-filter: blur(16px);
   box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.2),
@@ -125,7 +125,7 @@
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: #0f172a;
+  background: #0b0914;
   padding: 5px;
 }
 
@@ -198,15 +198,15 @@
 }
 
 .preview-action-btn--primary {
-  background: #3b82f6;
+  background: #8b5cf6;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
 .preview-action-btn--primary:hover {
-  background: #2563eb;
+  background: #7c3aed;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
 }
 
 .preview-action-btn:disabled {
@@ -230,7 +230,7 @@
   min-height: 0;
   border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(11, 9, 20, 0.6);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(12px);
   overflow: hidden; /* Let child components handle scrolling if needed */
@@ -273,11 +273,11 @@
 }
 
 .preview-resize-handle:hover::after {
-  background: rgba(59, 130, 246, 0.4);
+  background: rgba(139, 92, 246, 0.4);
 }
 
 .preview-resize-handle.resizing::after {
-  background: rgba(59, 130, 246, 0.8);
+  background: rgba(139, 92, 246, 0.8);
 }
 
 /* The summary component might have its own scrolling container.
@@ -308,7 +308,7 @@
   width: 48px;
   height: 48px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #3b82f6;
+  border-top-color: #8b5cf6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -337,7 +337,7 @@
   left: 0;
   width: 100%;
   height: 70px;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(11, 9, 20, 0.95);
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: none; /* Block on mobile via media query */
@@ -371,7 +371,7 @@
 }
 
 .mobile-tab-btn.active {
-  color: #3b82f6;
+  color: #8b5cf6;
 }
 
 .mobile-tab-btn.active i {

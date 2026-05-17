@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import rateLimit from 'express-rate-limit';
-import { authenticateJWT, AuthRequest } from '../middleware/auth.middleware';
+import { authenticateJWT, AuthRequest, optionalAuthenticateJWT } from '../middleware/auth.middleware';
 import { upload } from '../config/cloudinary';
 import prisma from '../config/prisma';
 
@@ -79,6 +79,170 @@ router.get('/me', authenticateJWT, async (req: AuthRequest, res: Response, next:
             followingCount,
             publicItinerariesCount
         });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ─── GET /api/profile/top-creators ──────────────────────────────────────────────
+router.get('/top-creators', optionalAuthenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const limit = Number(req.query.limit) || 10;
+        const currentUserId = req.user?.userId ? Number(req.user.userId) : undefined;
+
+        const users = await prisma.user.findMany({
+            where: {
+                profile: { isNot: null }
+            },
+            select: {
+                id: true,
+                email: true,
+                authProvider: true,
+                profile: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        itineraries: {
+                            where: {
+                                OR: [
+                                    { isPublished: true },
+                                    { visibilityCode: 'PUBLIC' }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                followers: {
+                    _count: 'desc'
+                }
+            },
+            take: limit
+        });
+
+        const result = await Promise.all(users.map(async (u) => {
+            let isFollowing = false;
+            if (currentUserId) {
+                const follow = await prisma.follow.findUnique({
+                    where: {
+                        followerId_followingId: {
+                            followerId: currentUserId,
+                            followingId: u.id
+                        }
+                    }
+                });
+                isFollowing = !!follow;
+            }
+
+            return {
+                id: u.id,
+                email: u.email,
+                authProvider: u.authProvider,
+                profile: u.profile,
+                followersCount: u._count.followers,
+                followingCount: u._count.following,
+                publicItinerariesCount: u._count.itineraries,
+                isFollowing
+            };
+        }));
+
+        return res.json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// ─── GET /api/profile/search ──────────────────────────────────────────────────
+router.get('/search', optionalAuthenticateJWT, async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        const query = (req.query.q as string) || '';
+        const limit = Number(req.query.limit) || 10;
+        const currentUserId = req.user?.userId ? Number(req.user.userId) : undefined;
+
+        if (!query || query.length < 2) {
+            return res.json([]);
+        }
+
+        const terms = query.toLowerCase().split(' ').filter(Boolean);
+        
+        let whereClause: any = { profile: { isNot: null } };
+        
+        if (terms.length === 1) {
+            whereClause.OR = [
+                { profile: { name: { contains: terms[0], mode: 'insensitive' } } },
+                { profile: { surname: { contains: terms[0], mode: 'insensitive' } } }
+            ];
+        } else if (terms.length >= 2) {
+            whereClause.AND = [
+                {
+                    OR: [
+                        { profile: { name: { contains: terms[0], mode: 'insensitive' } } },
+                        { profile: { surname: { contains: terms[0], mode: 'insensitive' } } }
+                    ]
+                },
+                {
+                    OR: [
+                        { profile: { name: { contains: terms[1], mode: 'insensitive' } } },
+                        { profile: { surname: { contains: terms[1], mode: 'insensitive' } } }
+                    ]
+                }
+            ];
+        }
+
+        const users = await prisma.user.findMany({
+            where: whereClause,
+            select: {
+                id: true,
+                email: true,
+                authProvider: true,
+                profile: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        itineraries: {
+                            where: {
+                                OR: [
+                                    { isPublished: true },
+                                    { visibilityCode: 'PUBLIC' }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            take: limit
+        });
+
+        const result = await Promise.all(users.map(async (u) => {
+            let isFollowing = false;
+            if (currentUserId) {
+                const follow = await prisma.follow.findUnique({
+                    where: {
+                        followerId_followingId: {
+                            followerId: currentUserId,
+                            followingId: u.id
+                        }
+                    }
+                });
+                isFollowing = !!follow;
+            }
+
+            return {
+                id: u.id,
+                email: u.email,
+                authProvider: u.authProvider,
+                profile: u.profile,
+                followersCount: u._count.followers,
+                followingCount: u._count.following,
+                publicItinerariesCount: u._count.itineraries,
+                isFollowing
+            };
+        }));
+
+        return res.json(result);
     } catch (error) {
         next(error);
     }
@@ -218,5 +382,6 @@ router.post('/upload/background', writeLimiter, authenticateJWT, upload.single('
         next(error);
     }
 });
+
 
 export default router;

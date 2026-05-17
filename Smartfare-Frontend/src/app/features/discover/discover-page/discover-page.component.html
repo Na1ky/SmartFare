@@ -1,0 +1,216 @@
+<div class="discover-page min-vh-100 d-flex flex-column position-relative">
+  <app-navbar></app-navbar>
+
+  <app-loader [show]="isLoading()"></app-loader>
+
+  <main class="discover-content flex-grow-1" [class.content-ready]="!isLoading()">
+    
+    <!-- 1. Hero Search Bar -->
+    <section class="hero-search-section">
+      <div class="hero-overlay"></div>
+      <div class="container hero-content">
+        <h1 class="search-title">Esplora il Mondo</h1>
+        <p class="search-subtitle">Cerca itinerari, destinazioni e creatori eccezionali</p>
+        
+        <div class="search-tabs">
+          <button class="search-tab" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+            Tutto
+          </button>
+          <button class="search-tab" [class.active]="activeFilter() === 'itineraries'" (click)="setFilter('itineraries')">
+            Itinerari
+          </button>
+          <button class="search-tab" [class.active]="activeFilter() === 'explorers'" (click)="setFilter('explorers')">
+            Esploratori
+          </button>
+        </div>
+
+        <div class="search-input-container">
+          <i class="bi bi-search search-icon"></i>
+          <input 
+            type="text" 
+            class="hero-search-input" 
+            placeholder="Cerca viaggi, luoghi o esploratori..." 
+            [value]="searchQuery()"
+            (input)="onSearchChange($event)"
+          >
+          @if (searchQuery()) {
+            <button class="clear-btn" (click)="clearSearch()">
+              <i class="bi bi-x"></i>
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- SEARCH RESULTS OVERLAY (Active when typing) -->
+    @if (searchQuery().length >= 2) {
+      <section class="search-results-section container mt-4">
+        <h2 class="section-title">Risultati per "{{ searchQuery() }}"</h2>
+        
+        @if (isSearching()) {
+          <div class="d-flex justify-content-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+        } @else {
+          <!-- Itineraries Results -->
+          @if ((activeFilter() === 'all' || activeFilter() === 'itineraries') && searchResultsItineraries().length > 0) {
+            <h3 class="subsection-title mt-4">Itinerari</h3>
+            <div class="itinerary-grid">
+              @for (itin of searchResultsItineraries(); track itin.id) {
+                <div class="itinerary-card" [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itin.id }">
+                  <div class="card-img-wrapper">
+                    <img [src]="itin.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1'" alt="Cover" class="card-img">
+                    <div class="location-badge">{{ itin.location?.name || 'Destinazione Multipla' }}</div>
+                  </div>
+                  <div class="card-info">
+                    <h4>{{ itin.name }}</h4>
+                    <div class="card-meta">
+                      <span><i class="bi bi-person-circle"></i> {{ getCreatorName(itin) }}</span>
+                      <span><i class="bi bi-calendar3"></i> {{ getDuration(itin) }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Users Results -->
+          @if ((activeFilter() === 'all' || activeFilter() === 'explorers') && searchResultsUsers().length > 0) {
+            <h3 class="subsection-title mt-4">Esploratori</h3>
+            <div class="explorer-grid">
+              @for (user of searchResultsUsers(); track $index) {
+                <div class="explorer-card" [routerLink]="['/profile', user.id]">
+                  <img [src]="user.profile?.avatarUrl || 'https://i.pravatar.cc/150?u=' + user.id" alt="Avatar" class="explorer-avatar">
+                  <h5>{{ getUserDisplayName(user) }}</h5>
+                  <p class="explorer-stats">{{ user.followersCount }} follower</p>
+                  <button class="btn follow-btn" [class.following]="user.isFollowing" (click)="toggleFollow(user, $event)">
+                    {{ user.isFollowing ? 'Segui Già' : 'Segui' }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @if (searchResultsItineraries().length === 0 && searchResultsUsers().length === 0) {
+            <div class="empty-state">
+              <i class="bi bi-search"></i>
+              <p>Nessun risultato trovato per la tua ricerca.</p>
+            </div>
+          }
+        }
+      </section>
+    } 
+    <!-- DEFAULT DISCOVER VIEW -->
+    @else {
+      <!-- 2. Featured Mix (Magazine Style) -->
+      @if (featuredItineraries().length > 0) {
+        <section class="featured-mix-section container">
+          <div class="magazine-grid">
+            @for (itin of featuredItineraries(); track itin.id; let i = $index) {
+              <div class="magazine-item" [class.large]="i === 0" [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itin.id }">
+                <img [src]="itin.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1'" alt="Cover" class="magazine-img">
+                <div class="magazine-overlay">
+                  @if (i === 0) { <span class="featured-badge">In Evidenza</span> }
+                  <h2>{{ itin.name }}</h2>
+                  <p class="magazine-creator">di {{ getCreatorName(itin) }}</p>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- 3. Trending Itineraries -->
+      @if (trendingItineraries().length > 0) {
+        <section class="trending-section container">
+          <div class="section-header">
+            <h2 class="section-title">In Tendenza Ora</h2>
+            <p class="section-subtitle">I viaggi più amati dalla community</p>
+          </div>
+          
+          <div class="carousel-container">
+            <div class="itinerary-row">
+              @for (itin of trendingItineraries(); track itin.id) {
+                <div class="itinerary-card horizontal-scroll-item" [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itin.id }">
+                  <div class="card-img-wrapper">
+                    <img [src]="itin.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1'" alt="Cover" class="card-img">
+                    <div class="location-badge">{{ itin.location?.name || 'Globale' }}</div>
+                  </div>
+                  <div class="card-info">
+                    <h4>{{ itin.name }}</h4>
+                    <p class="itin-desc">{{ itin.description || 'Scopri questo fantastico itinerario...' }}</p>
+                    <div class="card-meta">
+                      <span><i class="bi bi-collection"></i> {{ getItemCount(itin) }} tappe</span>
+                      <span class="likes"><i class="bi bi-heart-fill text-danger"></i> Trending</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 4. Explorer Spotlight -->
+      @if (topCreators().length > 0) {
+        <section class="spotlight-section">
+          <div class="container">
+            <div class="section-header">
+              <h2 class="section-title">Esploratori in Evidenza</h2>
+              <p class="section-subtitle">Viaggiatori esperti da seguire per trovare ispirazione</p>
+            </div>
+
+            <div class="explorer-grid">
+              @for (user of topCreators(); track $index) {
+                <div class="explorer-card" [routerLink]="['/profile', user.id]">
+                  <div class="avatar-ring">
+                    <img [src]="user.profile?.avatarUrl || 'https://i.pravatar.cc/150?u=' + user.id" alt="Avatar" class="explorer-avatar">
+                  </div>
+                  <h5>{{ getUserDisplayName(user) }}</h5>
+                  <p class="explorer-role">Elite Explorer</p>
+                  <p class="explorer-stats">
+                    <span><strong>{{ user.followersCount }}</strong> followers</span>
+                    <span>&bull;</span>
+                    <span><strong>{{ user.publicItinerariesCount }}</strong> viaggi</span>
+                  </p>
+                  <button class="btn follow-btn" [class.following]="user.isFollowing" (click)="toggleFollow(user, $event)">
+                    {{ user.isFollowing ? 'Segui Già' : 'Segui' }}
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 5. Near Your Trips -->
+      @if (nearYourTrips().length > 0) {
+        <section class="near-trips-section container mt-5">
+          <div class="section-header">
+            <h2 class="section-title"><i class="bi bi-geo-alt-fill text-primary"></i> Vicino ai tuoi viaggi recenti</h2>
+            <p class="section-subtitle">Scopri cosa hanno creato gli altri nella zona della tua ultima meta</p>
+          </div>
+          
+          <div class="itinerary-grid">
+            @for (itin of nearYourTrips().slice(0, 4); track itin.id) {
+              <div class="itinerary-card" [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: itin.id }">
+                <div class="card-img-wrapper">
+                  <img [src]="itin.imageUrl || 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1'" alt="Cover" class="card-img">
+                </div>
+                <div class="card-info">
+                  <h4>{{ itin.name }}</h4>
+                  <div class="card-meta">
+                    <span><i class="bi bi-person-circle"></i> {{ getCreatorName(itin) }}</span>
+                    <span><i class="bi bi-geo-alt"></i> {{ itin.location?.name }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+  </main>
+
+  <app-footer></app-footer>
+</div>

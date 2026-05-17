@@ -111,7 +111,7 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit, OnDestroy
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.quadraticCurveTo(cpX, cpY, x2, y2);
-        ctx.strokeStyle = `rgba(59, 130, 246, ${r.opacity * 0.2})`;
+        ctx.strokeStyle = `rgba(139, 92, 246, ${r.opacity * 0.2})`;
         ctx.lineWidth = 1;
         ctx.stroke();
 
@@ -125,8 +125,8 @@ export class ForgotPasswordComponent implements OnInit, AfterViewInit, OnDestroy
         ctx.fill();
 
         const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 6);
-        glow.addColorStop(0, `rgba(59, 130, 246, ${r.opacity * 0.5})`);
-        glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        glow.addColorStop(0, `rgba(139, 92, 246, ${r.opacity * 0.5})`);
+        glow.addColorStop(1, 'rgba(139, 92, 246, 0)');
         ctx.fillStyle = glow;
         ctx.beginPath();
         ctx.arc(cx, cy, 6, 0, Math.PI * 2);

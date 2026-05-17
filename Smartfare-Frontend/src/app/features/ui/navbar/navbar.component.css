@@ -5,10 +5,10 @@
 }
 
 .navbar-shell {
-  --navbar-bg: rgba(15, 23, 42, 0.65);
+  --navbar-bg: rgba(11, 9, 20, 0.65);
   --navbar-border: rgba(255, 255, 255, 0.12);
   --navbar-text: #f8fafc;
-  --navbar-hover: rgba(59, 130, 246, 0.15);
+  --navbar-hover: rgba(139, 92, 246, 0.15);
   font-family: 'Inter', sans-serif;
   color: var(--text-color);
   position: relative;
@@ -137,20 +137,20 @@
 }
 .login-btn {
   background: transparent;
-  border: 2px solid #3b82f6;
-  color: #3b82f6;
+  border: 2px solid #8b5cf6;
+  color: #8b5cf6;
 }
 .login-btn:hover {
-  background: #3b82f6;
+  background: #8b5cf6;
   color: #fff;
 }
 .register-btn {
-  background: linear-gradient(90deg, #60a5fa, #2563eb);
+  background: linear-gradient(90deg, #60a5fa, #7c3aed);
   border: none;
   color: #fff;
 }
 .register-btn:hover {
-  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  background: linear-gradient(90deg, #7c3aed, #60a5fa);
   transform: scale(1.05);
 }
 
@@ -168,7 +168,7 @@
   inset: 0;
   width: 100%;
   min-height: 100dvh;
-  background: linear-gradient(135deg, rgba(6, 10, 18, 0.99) 0%, rgba(15, 23, 42, 1) 100%);
+  background: linear-gradient(135deg, rgba(6, 10, 18, 0.99) 0%, rgba(11, 9, 20, 1) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   display: flex;
@@ -199,7 +199,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(11, 9, 20, 0.8);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -285,8 +285,8 @@
 }
 
 .menu-row:active {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.2);
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.2);
   transform: scale(0.98);
 }
 
@@ -347,8 +347,8 @@
 
 /* Guest Actions */
 .guest-actions {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 .guest-hint {

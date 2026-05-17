@@ -28,7 +28,7 @@ export class UIStateService {
     this.routeOrderMode.set(mode);
   }
 
-  private readonly defaultDayPalette = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '#14b8a6'];
+  private readonly defaultDayPalette = ['#f97316', '#22c55e', '#8b5cf6', '#eab308', '#ef4444', '#a855f7', '#14b8a6'];
 
   toggleSidebar() {
     this.showSidebar.update(v => !v);

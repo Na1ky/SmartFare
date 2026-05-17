@@ -307,7 +307,7 @@
   height: 140px;
   position: relative;
   overflow: hidden;
-  background: #1e293b;
+  background: #161129;
   cursor: pointer;
 }
 
@@ -330,7 +330,7 @@
   justify-content: center;
   color: rgba(255, 255, 255, 0.15);
   font-size: 2.5rem;
-  background: linear-gradient(135deg, #1e293b, #0f172a);
+  background: linear-gradient(135deg, #161129, #0b0914);
 }
 
 /* Saved Badge in Cover */

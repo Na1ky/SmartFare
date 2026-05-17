@@ -21,7 +21,7 @@
 .bottom-toolbar {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.7) 100%);
+  background: linear-gradient(145deg, rgba(11, 9, 20, 0.7) 0%, rgba(22, 17, 41, 0.7) 100%);
   backdrop-filter: blur(16px);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
@@ -79,7 +79,7 @@
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: #0f172a;
+  background: #0b0914;
   padding: 5px;
 }
 
@@ -512,7 +512,7 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: rgba(15, 23, 42, 0.5);
+  color: rgba(11, 9, 20, 0.5);
 }
 
 .custom-dropdown {
@@ -690,7 +690,7 @@
     width: 100%;
     justify-content: space-around;
     padding: 8px;
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(11, 9, 20, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -767,7 +767,7 @@
     border-radius: 0;
     border-left: none;
     border-right: none;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(11, 9, 20, 0.8);
   }
   .category-bar-wrap {
     margin-top: -1px;

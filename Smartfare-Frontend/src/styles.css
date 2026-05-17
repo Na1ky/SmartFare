@@ -2,20 +2,20 @@
 @import 'aos/dist/aos.css';
 
 :root {
-  /* Dark Theme (Default) */
-  --bg-color: #0f172a;
-  --bg-color-rgb: 15, 23, 42;
-  --bg-color-alt: #1e293b;
+  /* Amethyst Deep Space Theme */
+  --bg-color: #0b0914;
+  --bg-color-rgb: 11, 9, 20;
+  --bg-color-alt: #161129;
   --text-color: #f8fafc;
   --text-color-muted: #94a3b8;
-  --accent-color: #3b82f6;
-  --accent-color-glow: rgba(59, 130, 246, 0.5);
-  --card-bg: rgba(20, 25, 40, 0.6);
+  --accent-color: #8b5cf6;
+  --accent-color-glow: rgba(139, 92, 246, 0.5);
+  --card-bg: rgba(22, 17, 41, 0.6);
   --card-border: rgba(255, 255, 255, 0.15);
-  --glass-bg: rgba(15, 23, 42, 0.65);
+  --glass-bg: rgba(11, 9, 20, 0.65);
   --glass-border: rgba(255, 255, 255, 0.12);
-  --scrollbar-track: rgba(8, 12, 20, 0.9);
-  --scrollbar-thumb: linear-gradient(180deg, #7ea8ff 0%, #00d289 100%);
+  --scrollbar-track: rgba(11, 9, 20, 0.9);
+  --scrollbar-thumb: linear-gradient(180deg, #a855f7 0%, #0ea5e9 100%);
 }
 
 * {

@@ -24,6 +24,22 @@ export class ProfileService {
     );
   }
 
+  searchUsers(q: string, limit: number = 10): Observable<UserProfileFull[]> {
+    return this.http.get<UserProfileFull[]>(`${this.API_URL}/search`, {
+      params: { q, limit: limit.toString() }
+    }).pipe(
+      catchError(() => of([]))
+    );
+  }
+
+  getTopCreators(limit: number = 10): Observable<UserProfileFull[]> {
+    return this.http.get<UserProfileFull[]>(`${this.API_URL}/top-creators`, {
+      params: { limit: limit.toString() }
+    }).pipe(
+      catchError(() => of([]))
+    );
+  }
+
   getRandomLocationImage(): Observable<{ imageUrl: string } | null> {
     return this.http.get<{ imageUrl: string }>(`${environment.apiUrl}/api/locations/random-image`).pipe(
       catchError(() => of(null))

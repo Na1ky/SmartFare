@@ -62,7 +62,7 @@
   position: absolute;
   width: 4px;
   height: 80%;
-  background: linear-gradient(to bottom, #4080ff 50%, #1e293b 50%);
+  background: linear-gradient(to bottom, #4080ff 50%, #161129 50%);
   border-radius: 2px;
   animation: compass-spin 3s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
@@ -90,7 +90,7 @@
   z-index: 3;
   width: 60px;
   height: 60px;
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(11, 9, 20, 0.8);
   border: 1px solid rgba(64, 128, 255, 0.3);
   border-radius: 16px;
   display: grid;
@@ -135,7 +135,7 @@
 .progress-container {
   width: 100%;
   height: 6px;
-  background: rgba(30, 41, 59, 0.5);
+  background: rgba(22, 17, 41, 0.5);
   border-radius: 10px;
   overflow: hidden;
   margin: 0.5rem 0;

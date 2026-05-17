@@ -60,7 +60,7 @@
 }
 
 .wl-poi-card {
-  background: #0f172a;
+  background: #0b0914;
   border-radius: 20px;
   display: flex;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -192,7 +192,7 @@
 
 .wl-poi-notes-box input {
   width: 100%;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(11, 9, 20, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 10px 14px;
@@ -210,9 +210,9 @@
 .wl-poi-notes-box input:focus,
 .wl-poi-notes-box input.is-editing {
   outline: none;
-  border-color: #3b82f6;
-  background: rgba(15, 23, 42, 0.8);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: #8b5cf6;
+  background: rgba(11, 9, 20, 0.8);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
 }
 
 .wl-poi-notes-readonly {
@@ -220,7 +220,7 @@
   display: flex;
   align-items: center;
   padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.28);
+  background: rgba(11, 9, 20, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 10px;
   color: #cbd5e1;
@@ -247,8 +247,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
   padding: 8px 16px;
   border-radius: 12px;
   color: #60a5fa;
@@ -257,8 +257,8 @@
 }
 
 .wl-time-pill:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
 }
 
 .wl-time-pill--readonly {
@@ -323,7 +323,7 @@
 }
 
 .wl-poi-checkbox.checked {
-  color: #3b82f6;
+  color: #8b5cf6;
 }
 
 .wl-poi-checkbox i {
@@ -336,7 +336,7 @@
   top: 100%;
   left: 0;
   margin-top: 8px;
-  background: #1e293b;
+  background: #161129;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 20px;
@@ -374,7 +374,7 @@
 }
 
 .wl-time-field select {
-  background: #0f172a;
+  background: #0b0914;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   padding: 10px 14px;
@@ -385,7 +385,7 @@
 }
 
 .wl-time-field select:focus {
-  border-color: #3b82f6;
+  border-color: #8b5cf6;
 }
 
 .wl-time-sep {
@@ -424,12 +424,12 @@
 }
 
 .wl-btn-save {
-  background: #3b82f6;
+  background: #8b5cf6;
   color: white;
 }
 
 .wl-btn-save:hover {
-  background: #2563eb;
+  background: #7c3aed;
 }
 
 @keyframes popIn {

@@ -82,10 +82,10 @@
 }
 
 .route-mode-switch button.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.8) 100%);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.8) 0%, rgba(124, 58, 237, 0.8) 100%);
   border-color: #4f8fff;
   color: #ffffff;
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
 }
 
 .day-route-list {
@@ -159,7 +159,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(11, 9, 20, 0.6);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
@@ -185,7 +185,7 @@
   height: 120px;
   background-size: cover;
   background-position: center;
-  background-color: #1e293b;
+  background-color: #161129;
   position: relative;
   display: flex;
   align-items: center;
@@ -256,7 +256,7 @@
   gap: 8px;
   margin-top: 12px;
   padding: 8px 14px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.85) 0%, rgba(37, 99, 235, 0.85) 100%);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.85) 0%, rgba(124, 58, 237, 0.85) 100%);
   color: #ffffff;
   font-size: 0.8rem;
   font-weight: 700;
@@ -264,12 +264,12 @@
   text-decoration: none;
   transition: all 0.3s ease;
   border: 1px solid rgba(79, 172, 254, 0.5);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }
 
 .route-link:hover {
   background: linear-gradient(135deg, rgba(79, 150, 266, 0.95) 0%, rgba(57, 119, 255, 0.95) 100%);
-  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
   transform: translateY(-2px);
 }
 
@@ -345,7 +345,7 @@
     padding: 8px 12px;
     border-radius: 50px;
     justify-content: space-between;
-    background: #0f172a; /* Solid dark color */
+    background: #0b0914; /* Solid dark color */
   }
 }
 
@@ -385,7 +385,7 @@
     padding: 6px 10px;
     font-size: 0.75rem;
     border-radius: 20px;
-    background: #2563eb;
+    background: #7c3aed;
     color: white;
   }
 

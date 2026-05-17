@@ -798,18 +798,46 @@ export class ItineraryService {
         }
     }
 
-    async getPublicItineraries(locationId?: number, excludeUserId?: number) {
+    async getPublicItineraries(locationId?: number, excludeUserId?: number, query?: string, trending?: boolean) {
         try {
+            let whereClause: any = {
+                OR: [
+                    { isPublished: true },
+                    { visibilityCode: 'PUBLIC' }
+                ]
+            };
+
+            if (locationId) {
+                whereClause.locationId = locationId;
+            }
+
+            if (excludeUserId) {
+                whereClause.userId = { not: excludeUserId };
+            }
+
+            if (query && query.length >= 2) {
+                whereClause.AND = [
+                    {
+                        OR: [
+                            { name: { contains: query, mode: 'insensitive' } },
+                            { description: { contains: query, mode: 'insensitive' } }
+                        ]
+                    }
+                ];
+            }
+
+            let orderByClause: any = { updatedAt: 'desc' };
+            if (trending) {
+                orderByClause = {
+                    favorites: {
+                        _count: 'desc'
+                    }
+                };
+            }
+
             const itineraries = await prisma.itinerary.findMany({
-                where: {
-                    OR: [
-                        { isPublished: true },
-                        { visibilityCode: 'PUBLIC' }
-                    ],
-                    ...(locationId ? { locationId } : {}),
-                    ...(excludeUserId ? { userId: { not: excludeUserId } } : {})
-                },
-                orderBy: { updatedAt: 'desc' },
+                where: whereClause,
+                orderBy: orderByClause,
                 include: {
                     location: true,
                     user: {

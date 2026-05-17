@@ -12,7 +12,7 @@
 }
 
 .glow-effect {
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+  background: linear-gradient(90deg, #8b5cf6, #8b5cf6, #ec4899, #8b5cf6);
   border-radius: 40px;
   filter: blur(8px);
   opacity: 0.6;
@@ -27,13 +27,13 @@
 }
 
 .glow-wrapper {
-  --prompt-bar-bg: rgba(15, 23, 42, 0.85);
+  --prompt-bar-bg: rgba(11, 9, 20, 0.85);
   --prompt-bar-border: rgba(255, 255, 255, 0.1);
   --prompt-text: #fff;
   --prompt-placeholder: rgba(255, 255, 255, 0.4);
   --prompt-button-bg: rgba(255, 255, 255, 0.1);
   --prompt-button-active-bg: #fff;
-  --prompt-button-active-text: #0f172a;
+  --prompt-button-active-text: #0b0914;
 }
 
 /* Prompt Bar */

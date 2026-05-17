@@ -57,7 +57,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   private resizeObserver?: ResizeObserver;
   private readonly ui = inject(UIStateService);
   private readonly cdr = inject(ChangeDetectorRef);
-  private readonly defaultDayPalette = ['#f97316', '#22c55e', '#3b82f6', '#eab308', '#ef4444', '#a855f7', '#14b8a6'];
+  private readonly defaultDayPalette = ['#f97316', '#22c55e', '#8b5cf6', '#eab308', '#ef4444', '#a855f7', '#14b8a6'];
   private displayRoutePois: BuilderPoi[] = [];
   private lastRouteFingerprint = '';
   private geometryCache = new Map<number, L.LatLng[]>();
@@ -152,7 +152,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
           const count = cluster.getChildCount();
           return L.divIcon({
             className: 'custom-cluster-icon',
-            html: `<div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 0.8125rem; font-family: 'Inter', sans-serif;">${count}</div>`,
+            html: `<div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(22, 17, 41, 0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 2px solid #8b5cf6; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 0.8125rem; font-family: 'Inter', sans-serif;">${count}</div>`,
             iconSize: [34, 34],
             iconAnchor: [17, 17]
           });
@@ -485,7 +485,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
 
         this.routeLayer.addLayer(
           L.polyline(latLngs, {
-            color: '#0f172a',
+            color: '#0b0914',
             opacity: 0.3,
             weight: 10,
             lineCap: 'round',
@@ -776,7 +776,7 @@ export class BuilderMapComponent implements AfterViewInit, OnChanges, OnDestroy 
   }
 
   private getCategoryVisuals(categoryName?: string, type?: 'accommodation' | 'activity'): { icon: string, color: string } {
-    if (type === 'accommodation') return { icon: 'bi-building', color: '#3b82f6' }; // blue
+    if (type === 'accommodation') return { icon: 'bi-building', color: '#8b5cf6' }; // blue
     if (!categoryName) return { icon: 'bi-geo-alt-fill', color: '#64748b' }; // slate
 
     const n = categoryName.toLowerCase();

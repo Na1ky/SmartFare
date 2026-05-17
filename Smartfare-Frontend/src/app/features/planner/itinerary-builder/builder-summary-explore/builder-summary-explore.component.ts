@@ -24,7 +24,7 @@ export class BuilderSummaryExploreComponent {
     effect(() => {
       const ws = this.workspace();
       if (ws?.location?.id) {
-        this.itineraryService.getPublicItineraries(ws.location.id).subscribe(list => {
+        this.itineraryService.getPublicItineraries({ locationId: ws.location.id }).subscribe(list => {
           this.publicItineraries.set(list);
         });
       }

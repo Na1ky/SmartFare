@@ -24,7 +24,7 @@
 }
 
 .chat-header__kicker {
-  color: #93c5fd;
+  color: #c084fc;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -200,7 +200,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #93c5fd;
+  color: #c084fc;
 }
 
 .suggestion-section__head small {
@@ -254,7 +254,7 @@
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #93c5fd;
+  color: #c084fc;
 }
 
 .suggestion-card strong {
@@ -574,7 +574,7 @@ textarea::placeholder {
   width: 100%;
   padding: 0.9rem 1.5rem;
   background: white;
-  color: #1e293b;
+  color: #161129;
   border: none;
   border-radius: 14px;
   font-weight: 700;
