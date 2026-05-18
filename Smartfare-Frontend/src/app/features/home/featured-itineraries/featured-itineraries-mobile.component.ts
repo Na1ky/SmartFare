@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Itinerary } from '../../../core/models/itinerary.model';
@@ -8,7 +8,7 @@ import { Itinerary } from '../../../core/models/itinerary.model';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './featured-itineraries-mobile.component.html',
-  styleUrl: './featured-itineraries-mobile.component.css',
+  styleUrl: './featured-itineraries-mobile.component.css'
 })
 export class FeaturedItinerariesMobileComponent {
   @Input({ required: true }) itineraries: Itinerary[] = [];
@@ -17,7 +17,7 @@ export class FeaturedItinerariesMobileComponent {
   getDuration(itinerary: Itinerary): string {
     const days = itinerary.durationDays;
     if (days != null && days > 0) {
-      return `${days} ${days === 1 ? 'Giorno' : 'Giorni'}`;
+      return `${days} ${days === 1 ? 'Giorno' : 'Giorni'} di Viaggio`;
     }
     return 'Durata non definita';
   }
@@ -31,5 +31,9 @@ export class FeaturedItinerariesMobileComponent {
     const first = p?.name?.[0] ?? '';
     const last = p?.surname?.[0] ?? '';
     return (first + last).toUpperCase() || 'SF';
+  }
+
+  trackById(_index: number, item: Itinerary) {
+    return item.id;
   }
 }

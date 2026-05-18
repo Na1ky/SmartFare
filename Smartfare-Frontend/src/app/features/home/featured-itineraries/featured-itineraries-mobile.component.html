@@ -12,7 +12,7 @@
     </div>
 
   <div *ngIf="!loading && (itineraries && itineraries.length > 0)" class="fi-rail-mobile" role="list">
-      @for (it of itineraries; track it.id) {
+      <ng-container *ngFor="let it of itineraries; trackBy: trackById">
       <a class="fi-card-mobile" [routerLink]="['/itineraries/preview']" [queryParams]="{ itineraryId: it.id }">
         <div class="fi-card-media">
           <img [src]="it.imageUrl || 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=900'" [alt]="it.name" loading="lazy">
@@ -21,11 +21,12 @@
           <div class="fi-card-meta">
             <div class="fi-creator">
               <div class="fi-avatar">
-                @if (it.user?.profile?.avatarUrl) {
+                <ng-container *ngIf="it.user?.profile?.avatarUrl; else mi">
                 <img [src]="it.user!.profile!.avatarUrl" [alt]="it.user!.profile!.name">
-                } @else {
+                </ng-container>
+                <ng-template #mi>
                 <span>{{ getCreatorInitials(it) }}</span>
-                }
+                </ng-template>
               </div>
               <div>
                 <div class="fi-creator-name">{{ it.user?.profile?.name || 'Utente SmartFare' }}</div>
@@ -39,7 +40,7 @@
           <p class="fi-card-desc">{{ it.description || 'Anteprima itinerario community' }}</p>
         </div>
       </a>
-      }
+      </ng-container>
     </div>
 
     <div *ngIf="!loading && (!itineraries || itineraries.length === 0)" class="fi-empty-mobile">
