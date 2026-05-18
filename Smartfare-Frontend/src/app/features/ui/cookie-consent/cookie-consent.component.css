@@ -24,6 +24,21 @@
   --sf-switch-off: #d1d1db;
 }
 
+/* Dark theme when host has sf-theme-dark (added via HostBinding) */
+:host(.sf-theme-dark) {
+  --sf-surface: #0b0b0d;
+  --sf-surface-2: #0f1113;
+  --sf-border: rgba(255,255,255,0.06);
+  --sf-border-mid: rgba(255,255,255,0.08);
+  --sf-text: #e6e7ea;
+  --sf-text-2: #c7c9cf;
+  --sf-text-3: #9da0a6;
+  --sf-accent-subtle: rgba(99,102,241,0.09);
+  --sf-shadow-banner: 0 -2px 24px rgba(0,0,0,0.6), 0 8px 32px rgba(0,0,0,0.6);
+  --sf-shadow-modal: 0 24px 64px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.6);
+  --sf-switch-off: #2b2b33;
+}
+
 /* ─── Banner ──────────────────────────────────────────────────────── */
 .sf-banner {
   position: fixed;

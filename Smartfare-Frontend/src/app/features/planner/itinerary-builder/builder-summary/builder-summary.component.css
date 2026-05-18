@@ -690,6 +690,58 @@
   border-color: rgba(239, 68, 68, 0.4);
 }
 
+/* Make preview banner responsive on smaller screens */
+@media (max-width: 992px) {
+  .wl-preview-overlay {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    transform: none;
+    z-index: 10000;
+    width: auto;
+    min-width: unset;
+    max-width: calc(100% - 24px);
+    animation: none; /* avoid large slide animation on small screens */
+  }
+
+  .wl-preview-banner {
+    padding: 10px 14px;
+    gap: 12px;
+    border-radius: 12px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .wl-preview-info {
+    flex: 1 1 60%;
+    min-width: 0;
+  }
+
+  .wl-preview-info span {
+    display: inline-block;
+    white-space: normal;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .wl-preview-actions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .wl-btn-apply-preview {
+    padding: 8px 12px;
+  }
+
+  .wl-btn-close-preview {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* ── Day Route Bar ────────────────────────────────────────── */
 .wl-day-route-bar {
   max-width: 1100px;
@@ -886,7 +938,7 @@
     justify-content: space-between;
     margin-top: 4px;
   }
-  
+
   .wl-section-header {
     flex-direction: column;
     align-items: flex-start;

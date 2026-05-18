@@ -1,110 +1,15 @@
-.sf-privacy-backdrop {
-  position: fixed;
-  inset: 0;
-  /* darker backdrop for dark modal */
-  background: rgba(0,0,0,0.72);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
 
-.sf-privacy-modal {
-  /* dark modal background */
-  background: #0f1720;
-  color: #e6edf3;
-  width: min(900px, 95%);
-  max-height: 80vh;
-  border-radius: 8px;
-  box-shadow: 0 12px 40px rgba(2,6,23,0.6);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.sf-privacy-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.sf-privacy-body {
-  padding: 16px;
-  overflow: auto;
-}
-
-.sf-privacy-close {
-  background: transparent;
-  border: none;
-  font-size: 22px;
-  line-height: 1;
-}
-
-.sf-privacy-actions {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  display: flex;
-  justify-content: flex-end;
-}
-
-/* Ensure modal text is high-contrast and not overridden by global theme variables */
-.sf-privacy-modal {
-  /* force readable text color for everything inside the modal (override global themes) */
-  color: #e6edf3 !important;
-  background: #0f1720 !important;
-}
-
-.sf-privacy-header,
-.sf-privacy-body,
-.sf-privacy-actions {
-  color: inherit;
-}
-
-.sf-privacy-header h2,
-.sf-privacy-body h3,
-.sf-privacy-body p,
-.sf-privacy-body li {
-  color: inherit;
-}
-
-/* Close button must be visible and clickable */
-.sf-privacy-close {
-  color: #e6edf3 !important;
-  cursor: pointer;
-}
-
-/* Ensure action buttons inside the modal are visible even if global button styles are inverted */
-.sf-privacy-actions .btn,
-.sf-privacy-actions .btn * {
-  color: #e6edf3 !important;
-}
-
-/* Links inside modal: visible and accessible */
-.sf-privacy-modal a {
-  color: #6ea8ff !important;
-}
-
-/* Make outline-secondary buttons match dark theme */
-.sf-privacy-actions .btn-outline-secondary {
-  background: transparent !important;
-  border-color: rgba(255,255,255,0.12) !important;
-  color: #e6edf3 !important;
-}
-
-/* Primary button variant for visibility */
-.sf-privacy-actions .btn-primary {
-  background: #2563eb !important;
-  border-color: #1e4ed8 !important;
-  color: #fff !important;
-}
-
-/* Ensure lists and paragraphs have comfortable contrast */
-.sf-privacy-body p,
-.sf-privacy-body li,
-.sf-privacy-header h2,
-.sf-privacy-body h3 {
-  color: inherit;
-}
-
+    .sf-privacy-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    .sf-privacy-modal { background: #fff; width: min(900px, 95%); max-height: 80vh; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; }
+    .sf-privacy-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #eee; }
+    .sf-privacy-body { padding: 16px; overflow: auto; }
+    .sf-privacy-close { background: transparent; border: none; font-size: 22px; line-height: 1; }
+    .sf-privacy-actions { padding: 12px 16px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; }
