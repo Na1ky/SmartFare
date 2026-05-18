@@ -1,0 +1,187 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CookieConsentService, CookiePrefs } from '../../../core/services/cookie-consent.service';
+
+@Component({
+  selector: 'sf-cookie-consent',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <!-- ─── BANNER ─────────────────────────────────────────────── -->
+    <div class="sf-banner" *ngIf="visible" role="region" aria-label="Consenso cookie">
+      <div class="sf-banner-inner">
+        <div class="sf-banner-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/>
+            <path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/>
+          </svg>
+        </div>
+        <p class="sf-banner-text">
+          Utilizziamo i cookie per migliorare la tua esperienza.
+          <button class="sf-link" (click)="openModal()">Gestisci preferenze</button>
+        </p>
+        <div class="sf-banner-actions">
+          <button class="sf-btn sf-btn--ghost" (click)="rejectAll()">Rifiuta</button>
+          <button class="sf-btn sf-btn--primary" (click)="acceptAll()">Accetta tutto</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MODAL ──────────────────────────────────────────────── -->
+    <div class="sf-overlay" *ngIf="modalOpen" (click)="onOverlayClick($event)">
+      <div class="sf-modal" role="dialog" aria-modal="true" aria-labelledby="sf-modal-title">
+
+        <!-- Header -->
+        <div class="sf-modal-header">
+          <div class="sf-tabs">
+            <button class="sf-tab" [class.sf-tab--active]="tab === 'info'"  (click)="tab='info'">Informativa</button>
+            <button class="sf-tab" [class.sf-tab--active]="tab === 'prefs'" (click)="tab='prefs'">Preferenze</button>
+          </div>
+          <button class="sf-close" (click)="closeModal()" aria-label="Chiudi">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="sf-modal-body">
+
+          <!-- TAB: INFORMATIVA -->
+          <div *ngIf="tab === 'info'" class="sf-prose">
+            <h2 id="sf-modal-title">Informativa sulla privacy</h2>
+            <p>Questa informativa descrive come <strong>SmartFare</strong> raccoglie, utilizza e condivide i tuoi dati personali nell'ambito dell'applicazione.</p>
+
+            <h3>Dati raccolti</h3>
+            <ul>
+              <li><strong>Account</strong> — nome, email e dati del profilo forniti in fase di registrazione o accesso tramite Google.</li>
+              <li><strong>Contenuti caricati</strong> — immagini, video e file di profilo; archiviati tramite Cloudinary.</li>
+              <li><strong>Attività e itinerari</strong> — ricerche, preferenze e itinerari salvati per erogare il servizio.</li>
+              <li><strong>Comunicazioni</strong> — messaggi inviati tramite i canali dell'app.</li>
+            </ul>
+
+            <h3>Servizi di terze parti</h3>
+            <ul>
+              <li><strong>Cloudinary</strong> — archiviazione e distribuzione dei media caricati dagli utenti.</li>
+              <li><strong>Google (Social Login)</strong> — autenticazione; fornisce nome ed email per la creazione dell'account.</li>
+            </ul>
+
+            <h3>Cookie tecnici</h3>
+            <p>Utilizziamo il cookie <code>sf_cookie_consent</code> per memorizzare la tua scelta. Non vengono attivati cookie non essenziali senza il tuo consenso.</p>
+
+            <h3>Finalità del trattamento</h3>
+            <ul>
+              <li>Erogazione e manutenzione del servizio (autenticazione, salvataggio itinerari, media).</li>
+              <li>Analisi aggregata per migliorare l'app, solo se il consenso è accordato.</li>
+            </ul>
+
+            <h3>I tuoi diritti</h3>
+            <p>Puoi richiedere accesso, rettifica o cancellazione dei tuoi dati contattando il titolare del trattamento tramite le impostazioni dell'app o il supporto.</p>
+          </div>
+
+          <!-- TAB: PREFERENZE -->
+          <div *ngIf="tab === 'prefs'" class="sf-prefs">
+            <p class="sf-prefs-intro">Scegli quali categorie di cookie abilitare. I cookie necessari non possono essere disattivati.</p>
+
+            <div class="sf-pref-item">
+              <div class="sf-pref-info">
+                <span class="sf-pref-name">Necessari</span>
+                <span class="sf-badge sf-badge--required">Sempre attivi</span>
+                <p>Essenziali per il corretto funzionamento del servizio (autenticazione, sicurezza, sessione).</p>
+              </div>
+              <label class="sf-switch sf-switch--disabled">
+                <input type="checkbox" checked disabled />
+                <span class="sf-switch-track"></span>
+              </label>
+            </div>
+
+            <div class="sf-pref-item">
+              <div class="sf-pref-info">
+                <span class="sf-pref-name">Funzionalità</span>
+                <p>Consentono funzionalità aggiuntive come preferenze di layout e personalizzazione dell'interfaccia.</p>
+              </div>
+              <label class="sf-switch">
+                <input type="checkbox" [(ngModel)]="prefs.functional" />
+                <span class="sf-switch-track"></span>
+              </label>
+            </div>
+
+            <div class="sf-pref-item">
+              <div class="sf-pref-info">
+                <span class="sf-pref-name">Analitica</span>
+                <p>Dati aggregati e anonimi per comprendere come viene usata l'app e migliorarne la qualità.</p>
+              </div>
+              <label class="sf-switch">
+                <input type="checkbox" [(ngModel)]="prefs.analytics" />
+                <span class="sf-switch-track"></span>
+              </label>
+            </div>
+
+            <div class="sf-pref-item">
+              <div class="sf-pref-info">
+                <span class="sf-pref-name">Marketing</span>
+                <p>Utilizzo dei dati per comunicazioni promozionali e contenuti personalizzati basati sulle tue preferenze.</p>
+              </div>
+              <label class="sf-switch">
+                <input type="checkbox" [(ngModel)]="prefs.marketing" />
+                <span class="sf-switch-track"></span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="sf-modal-footer">
+          <button class="sf-btn sf-btn--ghost" (click)="rejectAll()">Rifiuta tutto</button>
+          <div class="sf-footer-right">
+            <button class="sf-btn sf-btn--outline" (click)="saveAndClose()">Salva preferenze</button>
+            <button class="sf-btn sf-btn--primary" (click)="acceptAll()">Accetta tutto</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `,
+  styleUrls: ['./cookie-consent.component.css']
+})
+export class CookieConsentComponent implements OnInit {
+  visible   = false;
+  modalOpen = false;
+  tab: 'info' | 'prefs' = 'info';
+
+  prefs: CookiePrefs = { necessary: true, functional: false, analytics: false, marketing: false };
+
+  constructor(private consent: CookieConsentService) {}
+
+  ngOnInit(): void {
+    this.visible = !this.consent.hasConsented();
+    const saved = this.consent.getPreferences();
+    if (saved) this.prefs = { ...saved };
+  }
+
+  openModal(): void  { this.modalOpen = true; this.tab = 'info'; }
+  closeModal(): void { this.modalOpen = false; }
+
+  onOverlayClick(e: MouseEvent): void {
+    if ((e.target as HTMLElement).classList.contains('sf-overlay')) this.closeModal();
+  }
+
+  acceptAll(): void {
+    this.consent.acceptAll();
+    this.visible = false;
+    this.modalOpen = false;
+  }
+
+  rejectAll(): void {
+    this.consent.rejectAll();
+    this.visible = false;
+    this.modalOpen = false;
+  }
+
+  saveAndClose(): void {
+    this.prefs.necessary = true;
+    this.consent.savePreferences(this.prefs);
+    this.visible = false;
+    this.modalOpen = false;
+  }
+}

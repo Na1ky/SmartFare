@@ -1,0 +1,84 @@
+<div class="sf-cookie-banner" *ngIf="visible">
+  <div class="sf-cookie-inner">
+    <div class="sf-cookie-text">
+      Usiamo i cookie per migliorare l'esperienza. Puoi scegliere le tue preferenze.
+    </div>
+    <div class="sf-cookie-actions">
+      <button class="btn btn-outline-light btn-sm" (click)="openPrivacy()">Impostazioni cookie</button>
+      <button class="btn btn-primary btn-sm" (click)="acceptAll()">Accetta tutto</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showPrivacy" class="sf-privacy-backdrop">
+  <div class="sf-privacy-modal" role="dialog" aria-modal="true" aria-labelledby="sf-privacy-title">
+    <div class="sf-privacy-header dark">
+      <div class="tabs">
+        <button [class.active]="activeTab === 'info'" (click)="activeTab='info'">Informativa</button>
+        <button [class.active]="activeTab === 'prefs'" (click)="activeTab='prefs'">Preferenze</button>
+      </div>
+      <button class="sf-privacy-close" (click)="onClosePrivacy()" aria-label="Chiudi">×</button>
+    </div>
+
+    <div class="sf-privacy-body">
+      <div *ngIf="activeTab === 'info'">
+        <h2 id="sf-privacy-title">Informativa sulla privacy</h2>
+        <p>Questa informativa descrive come SmartFare raccoglie, usa e condivide i dati personali quando usi l'applicazione.</p>
+        <!-- shortened for brevity; full text available in privacy modal content -->
+      </div>
+
+      <div *ngIf="activeTab === 'prefs'">
+        <h2>Le tue preferenze relative alla privacy</h2>
+        <p>Usa le impostazioni per gestire i tipi di cookie che vuoi abilitare.</p>
+
+        <div class="pref-row">
+          <div>
+            <h4>Necessari</h4>
+            <p>Strumenti essenziali per il funzionamento del servizio. Non possono essere disattivati.</p>
+          </div>
+          <div class="toggle">
+            <input type="checkbox" [checked]="prefs.necessary" disabled />
+          </div>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <h4>Funzionalità</h4>
+            <p>Consentono funzionalità aggiuntive (es. preferenze di interazione).</p>
+          </div>
+          <div class="toggle">
+            <input type="checkbox" [(ngModel)]="prefs.functional" />
+          </div>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <h4>Analitica</h4>
+            <p>Dati aggregati per capire l'utilizzo dell'app e migliorare il servizio.</p>
+          </div>
+          <div class="toggle">
+            <input type="checkbox" [(ngModel)]="prefs.analytics" />
+          </div>
+        </div>
+
+        <div class="pref-row">
+          <div>
+            <h4>Marketing</h4>
+            <p>Usiamo dati per finalità di marketing e comunicazioni promozionali solo con il tuo consenso.</p>
+          </div>
+          <div class="toggle">
+            <input type="checkbox" [(ngModel)]="prefs.marketing" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="sf-privacy-actions">
+      <button class="btn btn-outline-secondary" (click)="rejectAll()">Rifiuta tutto</button>
+      <button class="btn btn-outline-primary" (click)="saveAndClose()">Salva e continua</button>
+      <button class="btn btn-primary" (click)="acceptAll()">Accetta tutto</button>
+    </div>
+  </div>
+</div>
+
