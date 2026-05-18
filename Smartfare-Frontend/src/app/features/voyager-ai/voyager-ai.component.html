@@ -40,11 +40,34 @@
       </div>
 
       @if (chatService.isLoadingSessions()) {
-      <div class="sidebar-loading">
-        <div class="sidebar-loading__spinner"></div>
-        <div>
-          <strong>Carico le chat</strong>
-          <p>Sto recuperando le conversazioni salvate.</p>
+      <div class="sidebar-skeletons">
+        <div class="skeleton-item">
+          <div class="skeleton-icon shimmer"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line skeleton-line--long shimmer"></div>
+            <div class="skeleton-line skeleton-line--short shimmer"></div>
+          </div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-icon shimmer"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line skeleton-line--medium shimmer"></div>
+            <div class="skeleton-line skeleton-line--short shimmer"></div>
+          </div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-icon shimmer"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line skeleton-line--long shimmer"></div>
+            <div class="skeleton-line skeleton-line--short shimmer"></div>
+          </div>
+        </div>
+        <div class="skeleton-item skeleton-item--faded">
+          <div class="skeleton-icon shimmer"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line skeleton-line--medium shimmer"></div>
+            <div class="skeleton-line skeleton-line--short shimmer"></div>
+          </div>
         </div>
       </div>
       }
@@ -145,34 +168,47 @@
     <!-- MAIN CHAT AREA -->
     <main class="chat-main" [class.chat-locked]="isPlannerLocked()">
       <header class="chat-header">
+        <!-- LEFT: toggle + mode badge + title -->
         <div class="header-left">
-          <!-- Desktop toggle (visible when sidebar is closed) -->
           @if (!chatService.isSidebarOpen()) {
-          <button class="toggle-btn desktop-only" type="button" title="Apri/Chiudi menu" aria-label="Apri/Chiudi menu"
+          <button class="hdr-toggle desktop-only" type="button" title="Apri sidebar" aria-label="Apri sidebar"
             (click)="toggleSidebar()">
-            <i class="bi bi-list"></i>
+            <i class="bi bi-layout-sidebar"></i>
           </button>
           }
-          <!-- Mobile toggle -->
-          <button class="toggle-btn mobile-only" type="button" title="Apri menu conversazioni"
-            aria-label="Apri menu conversazioni" (click)="toggleMobileSidebar()">
-            <i class="bi bi-list"></i>
+          <button class="hdr-toggle mobile-only" type="button" title="Apri menu" aria-label="Apri menu conversazioni"
+            (click)="toggleMobileSidebar()">
+            <i class="bi bi-layout-sidebar"></i>
           </button>
-          <div class="chat-title-wrapper">
-            <span class="header-kicker">{{ currentModeLabel() }}</span>
-            <input class="chat-title-input" [value]="chatService.activeSession()?.title || 'SmartFare AI'"
+
+          <div class="hdr-divider"></div>
+
+          <div class="hdr-mode-badge" [class.hdr-mode-badge--planner]="chatService.mode() === 'planner'"
+            [class.hdr-mode-badge--assistant]="chatService.mode() !== 'planner'">
+            <i class="bi" [class.bi-bookmarks]="chatService.mode() === 'planner'"
+              [class.bi-chat-left-dots]="chatService.mode() !== 'planner'"></i>
+            <span>{{ currentModeLabel() }}</span>
+          </div>
+
+          <div class="hdr-title-group">
+            <input class="hdr-title-input" [value]="chatService.activeSession()?.title || 'SmartFare AI'"
               (blur)="updateSessionTitle($event)" (keydown.enter)="$any($event).target.blur()"
-              aria-label="Titolo della conversazione" title="Titolo della conversazione" />
+              aria-label="Titolo della conversazione" title="Clicca per rinominare" />
+            <i class="bi bi-pencil hdr-title-edit-icon"></i>
           </div>
         </div>
 
+        <!-- RIGHT: home CTA -->
         <div class="header-right">
-          <button class="home-branded-btn" type="button" (click)="goHome()">
-            <img src="favicon.png" alt="SmartFare Logo" class="home-logo" />
-            <div class="home-text">
-              <span class="brand-name">SMARTFARE</span>
-              <span class="back-text">Torna alla home</span>
+          <button class="hdr-home-btn" type="button" (click)="goHome()">
+            <div class="hdr-home-logo-wrap">
+              <img src="favicon.png" alt="SmartFare" class="hdr-home-logo" />
             </div>
+            <div class="hdr-home-text">
+              <span class="hdr-home-brand">SmartFare</span>
+              <span class="hdr-home-sub">Torna alla home</span>
+            </div>
+            <i class="bi bi-arrow-right hdr-home-arrow"></i>
           </button>
         </div>
       </header>
@@ -396,7 +432,8 @@
               <i class="bi bi-globe-europe-africa"></i>
             </div>
             <h2 class="locked-modal__title">Itinerario già generato</h2>
-            <p class="locked-modal__desc">Questo piano di viaggio è stato già creato. Apri il builder per visualizzarlo e modificarlo.</p>
+            <p class="locked-modal__desc">Questo piano di viaggio è stato già creato. Apri il builder per visualizzarlo
+              e modificarlo.</p>
           </div>
           }
 

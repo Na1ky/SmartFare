@@ -9,45 +9,48 @@
 
   <!-- ══════════════════ HEADER BAR ══════════════════ -->
   <header class="preview-header">
-    <div class="top-toolbar">
-
-      <div class="toolbar-left">
-        <a [routerLink]="['/home']" class="brand anchor-reset">
-          <img src="favicon.png" alt="logo" class="logo-small">
-          <div class="brand-copy">
-            <span class="brand-name">SMARTFARE</span>
-          </div>
-        </a>
-      </div>
-
-      <div class="toolbar-center">
-        <div class="preview-itinerary-name-container">
-          <h1 class="preview-itinerary-title">{{ itinerary()?.name || 'Anteprima Itinerario' }}</h1>
+    <div class="hdr-left">
+      <button class="hdr-home-btn" type="button" [routerLink]="['/home']">
+        <div class="hdr-home-logo-wrap">
+          <img src="favicon.png" alt="SmartFare" class="hdr-home-logo" />
         </div>
+        <div class="hdr-home-text d-none d-sm-flex">
+          <span class="hdr-home-brand">SmartFare</span>
+          <span class="hdr-home-sub">Torna alla home</span>
+        </div>
+      </button>
+
+      <div class="hdr-divider d-none d-md-block"></div>
+
+      <div class="hdr-mode-badge d-none d-md-flex">
+        <i class="bi bi-globe-europe-africa"></i>
+        <span>Anteprima</span>
       </div>
 
-      <div class="toolbar-right">
-        @if (!isLoading() && itinerary()) {
-        <button class="preview-action-btn preview-action-btn--favorite" [class.is-favorited]="isFavorite()"
-          (click)="toggleFavorite()" [disabled]="isSaving() || isCopying()" id="preview-favorite-btn">
-          <i [class]="isFavorite() ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-          <span>{{ isFavorite() ? 'Preferito' : 'Aggiungi ai preferiti' }}</span>
-        </button>
+      <div class="hdr-title-group">
+        <h1 class="hdr-title-text">{{ itinerary()?.name || 'Caricamento itinerario...' }}</h1>
+      </div>
+    </div>
 
-        <button class="preview-action-btn preview-action-btn--primary" 
-          (click)="isOwner() ? editItinerary() : copyItinerary()"
-          [disabled]="isSaving() || isCopying()" id="preview-save-btn">
-          @if (isOwner()) {
-            <i class="bi bi-pencil-square"></i>
-            <span>Modifica</span>
-          } @else {
-            <i [class]="isCopying() ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
-            <span>{{ isCopying() ? 'Salvataggio…' : 'Incorpora' }}</span>
-          }
-        </button>
+    <div class="hdr-right">
+      @if (!isLoading() && itinerary()) {
+      <button class="hdr-btn hdr-btn--favorite" [class.is-favorited]="isFavorite()" (click)="toggleFavorite()"
+        [disabled]="isSaving() || isCopying()" id="preview-favorite-btn">
+        <i [class]="isFavorite() ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+        <span class="d-none d-md-inline">{{ isFavorite() ? 'Preferito' : 'Salva' }}</span>
+      </button>
+
+      <button class="hdr-btn hdr-btn--primary" (click)="isOwner() ? editItinerary() : copyItinerary()"
+        [disabled]="isSaving() || isCopying()" id="preview-save-btn">
+        @if (isOwner()) {
+        <i class="bi bi-pencil-square"></i>
+        <span>Modifica</span>
+        } @else {
+        <i [class]="isCopying() ? 'bi bi-hourglass-split' : 'bi bi-check-circle'"></i>
+        <span>{{ isCopying() ? 'Salvataggio…' : 'Incorpora' }}</span>
         }
-      </div>
-
+      </button>
+      }
     </div>
   </header>
 
